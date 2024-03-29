@@ -188,7 +188,9 @@ new_deploy: \
 	_push_local_to_remote \
 
 	@echo "$(COLOR_GREEN)"
-	@echo "To test visit: https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://"$(GITHUB_USERNAME)".github.io/$(DEPLOY_REPO_NAME)/$(DEPLOY_NAME)/$(GAME_NAME).game.json"
+	@echo "To test visit: "
+	@echo "https://morgan3d.github.io/quadplay/console/quadplay.html?game="\
+		"https://"$(GITHUB_USERNAME)".github.io/$(DEPLOY_REPO_NAME)/$(DEPLOY_NAME)/$(GAME_NAME).game.json"
 	@echo "$(COLOR_RESET)"echo "Deployed: " $(GAME_NAME) " to " "foobar"
 # @}
 
