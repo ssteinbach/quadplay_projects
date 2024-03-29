@@ -1,0 +1,64 @@
+MusicMixerTest_discrete
+════════════════════════════════════════════════════════════════════════
+// Put local state for the mode here.  Declare variables with let,
+// constants with const, and functions with def.
+
+const MUSIC_PINS = {
+    "dark_waves_snd":    ["aa", "(a)", true],
+    "drums_snd":         ["bb", "(b)", true],
+    "electric_kick_snd": ["cc", "(c)", true],
+    "odd_strings_snd":   ["dd", "(d)", true],
+    "piano_snd":         ["xx", "[<]", true],
+}
+
+const MUSIC_OBJECTS = {}
+
+const UI_START = xy(0, -SCREEN_SIZE.y/4)
+
+enter
+────────────────────────────────────────────────────────────────────────
+for name in keys(MUSIC_PINS):
+    debug_watch(name)
+    MUSIC_OBJECTS[name] = play_sound(ASSETS[name], true, 100%)
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+debug_watch(MUSIC_OBJECTS)
+set_background(rgb(0,0,0.2))
+
+// camera
+set_camera(-SCREEN_SIZE/2)
+
+let text_start = clone(UI_START)
+
+// music pins
+for snd at name in MUSIC_OBJECTS:
+    // check input
+    if joy[MUSIC_PINS[name][0]] != 0:
+        MUSIC_PINS[name][2] = not MUSIC_PINS[name][2]
+        
+    // display
+    let suff = "on"
+    let mix = 1
+    if not MUSIC_PINS[name][2]:
+        suff = "off"
+        mix = 0
+    let text = name + " " + replace(MUSIC_PINS[name][1], joy.prompt) + ": " + suff
+    let off = draw_text(
+        font,
+        text,
+        text_start,
+        rgb(0,0,0.7),
+        nil,
+        nil,
+        "middle",
+        "top"
+    )
+    text_start += xy(0, off.size.y + 4)
+
+    // change sound state
+    set_volume(snd, mix)
+
+leave
+────────────────────────────────────────────────────────────────────────

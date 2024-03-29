@@ -1,0 +1,139 @@
+{
+    "achievements": false,
+    "assets": {
+        "astronaut": "quad://sprites/kenney-alien-yellow-16x32.sprite.json",
+        "blip_sound": "quad://sounds/blip-04.sound.json",
+        "block_sprite": "img/block.sprite.json",
+        "blue_door_sprite": "img/blue_door.sprite.json",
+        "blue_key_sprite": "img/blue_key.sprite.json",
+        "font": "quad://fonts/deja-8.font.json",
+        "goal_sprite": "img/goal.sprite.json",
+        "grabber_sprite": "img/grabber.sprite.json",
+        "palette_sprite": "img/ufo50_palette_256sq.sprite.json",
+        "pushable_wall_sprite": "img/pushable_wall.sprite.json",
+        "shapes": "quad://sprites/shapes-32x32.sprite.json",
+        "dark_waves_snd": "mus/dark_waves.sound.json",
+        "drums_snd": "mus/drums.sound.json",
+        "electric_kick_snd": "mus/electric_kick.sound.json",
+        "odd_strings_snd": "mus/odd_strings.sound.json",
+        "piano_snd": "mus/piano.sound.json"
+    },
+    "competitive": false,
+    "constants": {
+        "CAMERA_EASE_AMOUNT": {
+            "description": "amount camera approaches lookat target each frame",
+            "format": "0.00",
+            "max": {
+                "type": "number",
+                "value": "+infinity"
+            },
+            "min": 0,
+            "quantum": 0.01,
+            "type": "number",
+            "value": "0.05"
+        },
+        "CAMERA_EASE_BORDER": {
+            "description": "number of cells to keep on screen when moving the camera",
+            "nudge": {
+                "x": "+1",
+                "y": "-1"
+            },
+            "type": "xy",
+            "value": {
+                "x": {
+                    "type": "number",
+                    "value": "7"
+                },
+                "y": {
+                    "type": "number",
+                    "value": "7"
+                }
+            }
+        },
+        "CELL_SIZE_PX": {
+            "description": "size of a grid cell in pixels",
+            "nudge": {
+                "x": "+1",
+                "y": "-1"
+            },
+            "type": "xy",
+            "value": {
+                "x": {
+                    "type": "number",
+                    "value": "16"
+                },
+                "y": {
+                    "type": "number",
+                    "value": "16"
+                }
+            }
+        },
+        "COLORS_YML": {
+            "type": "raw",
+            "url": "colors.yml"
+        },
+        "DEBUG_DISABLE_VISIBILITY": {
+            "description": "show the entire level, useful for debugging layout",
+            "type": "boolean",
+            "value": false
+        },
+        "DEBUG_DRAW_CELL_NUMBERS": {
+            "description": "Draw flat cell indices of empty cells",
+            "type": "boolean",
+            "value": false
+        },
+        "LEVELS": {
+            "type": "raw",
+            "url": "levels.yml"
+        },
+        "TEXT_COLOR": {
+            "type": "rgb",
+            "value": {
+                "b": {
+                    "type": "number",
+                    "value": 1
+                },
+                "g": {
+                    "type": "number",
+                    "value": 1
+                },
+                "r": {
+                    "type": "number",
+                    "value": 1
+                }
+            }
+        },
+        "UNDOSTACK_SIZE_LIMIT": {
+            "format": "0.00",
+            "quantum": 0.01,
+            "type": "number",
+            "value": "100.00"
+        }
+    },
+    "cooperative": false,
+    "copyright": "©2023 Your Name Here",
+    "description": "Description of your game in about 100 characters.",
+    "developer": "Your Name Here",
+    "docs": [],
+    "dual_dpad": false,
+    "highscores": false,
+    "license": "CC0/Public Domain (Replace with your own license)",
+    "max_players": 1,
+    "midi_sysex": false,
+    "min_players": 1,
+    "modes": [
+        "Play",
+        "palette_mode",
+        "MusicMixerTest",
+        "MusicMixerTest_discrete"
+    ],
+    "packages": [],
+    "screenshot_tag": "GridPusher",
+    "scripts": [
+        "grid.pyxl",
+        "palette.pyxl"
+    ],
+    "start_mode": "Play",
+    "title": "GridPusher",
+    "version": 0
+}
