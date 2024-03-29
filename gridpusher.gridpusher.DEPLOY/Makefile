@@ -176,7 +176,7 @@ _copy_local_to_deployment_staging_dir:
 	cp -R . $(DEPLOY_STAGING_DIR)
 	$(DEPLOY_GIT) add $(DEPLOY_STAGING_DIR)
 	# @TODO: fetch the host commit hash and stuff it in the commit message here
-	$(DEPLOY_GIT) commit -m "Updating $(DEPLOY_NAME)"
+	$(DEPLOY_GIT) commit -m "Updating " $(DEPLOY_NAME)
 
 _push_local_to_remote:
 	$(DEPLOY_GIT) push origin main
