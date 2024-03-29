@@ -148,7 +148,8 @@ lint:
 #
 # path to the temp directory where the $(DEPLOY_REMOTE) gets cloned
 DEPLOY_STAGING_ROOT = /var/tmp/project_deployment
-DEPLOY_STAGING_DIR = $(DEPLOY_STAGING_ROOT)/$(GAME_NAME).$(DEV_BRANCH)
+DEPLOY_NAME = $(GAME_NAME).$(DEV_BRANCH)
+DEPLOY_STAGING_DIR = $(DEPLOY_STAGING_ROOT)/$(DEPLOY_NAME)
 DEPLOY_STAGING_ROOT_GIT = $(DEPLOY_STAGING_ROOT)/.git
 
 DEPLOY_GIT = $(GIT) \
@@ -163,7 +164,6 @@ GIT_PULL_RETURN = $(shell $(DEPLOY_GIT) pull 1>&2 2> /dev/null; echo $$?)
 # pieces:
 # * SOURCE_REPO: the repo that you're deploying from.
 # * SOURCE_PROJECT: name of the directory in the deployment system result
-# * DEPLOY_STAGING_ROOT: 
 # * DEPLOY_STAGING_DIR: directory under $(DEPLOY_STAGING_ROOT) where this
 #  	 				    project gets staged.  
 _cloned_deployment_staging_dir:
@@ -176,10 +176,11 @@ _copy_local_to_deployment_staging_dir:
 	cp -R . $(DEPLOY_STAGING_DIR)
 	$(DEPLOY_GIT) add $(DEPLOY_STAGING_DIR)
 	# @TODO: fetch the host commit hash and stuff it in the commit message here
-	$(DEPLOY_GIT) commit -m "Updating " $(DEPLOY_NAME)
+	$(DEPLOY_GIT) commit -m "Updating $(DEPLOY_NAME)"
 
 _push_local_to_remote:
-	$(DEPLOY_GIT) push origin main
+	#$(DEPLOY_GIT) push origin main
+	@echo "Would push"
 
 new_deploy: \
 	_cloned_deployment_staging_dir \
