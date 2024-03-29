@@ -146,9 +146,7 @@ lint:
 
 # @{ new deployment system
 #
-# the path to the deployment system git repo (IE github)
-DEPLOY_SYSTEM_REMOTE = git@github.com:ssteinbach/quadplay_projects.git
-# path to the temp directory where the $(DEPLOY_SYSTEM_REMOTE) gets cloned
+# path to the temp directory where the $(DEPLOY_REMOTE) gets cloned
 DEPLOY_STAGING_ROOT = /var/tmp/project_deployment
 DEPLOY_STAGING_DIR = $(DEPLOY_STAGING_ROOT)/$(GAME_NAME).$(DEV_BRANCH)
 DEPLOY_STAGING_ROOT_GIT = $(DEPLOY_STAGING_ROOT)/.git
@@ -170,7 +168,7 @@ GIT_PULL_RETURN = $(shell $(DEPLOY_GIT) pull 1>&2 2> /dev/null; echo $$?)
 #  	 				    project gets staged.  
 _cloned_deployment_staging_dir:
 ifneq ($(GIT_PULL_RETURN), 0)
-	git clone $(DEPLOY_SYSTEM_REMOTE) $(DEPLOY_STAGING_ROOT)
+	git clone $(DEPLOY_REMOTE) $(DEPLOY_STAGING_ROOT)
 endif
 
 _copy_local_to_deployment_staging_dir:
@@ -188,7 +186,9 @@ new_deploy: \
 	_copy_local_to_deployment_staging_dir \
 	_push_local_to_remote \
 
-	echo "Deployed: " $(GAME_NAME) " to " "foobar"
+	@echo "$(COLOR_GREEN)"
+	@echo "To test visit: https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://"$(GITHUB_USERNAME)".github.io/$(DEPLOY_REPO_NAME)/$(GAME_NAME).game.json"
+	@echo "$(COLOR_RESET)"echo "Deployed: " $(GAME_NAME) " to " "foobar"
 # @}
 
 # print all targets
