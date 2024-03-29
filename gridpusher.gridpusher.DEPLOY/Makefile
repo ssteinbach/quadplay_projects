@@ -179,8 +179,8 @@ _copy_local_to_deployment_staging_dir:
 	$(DEPLOY_GIT) commit -m "Updating $(DEPLOY_NAME)"
 
 _push_local_to_remote:
-	#$(DEPLOY_GIT) push origin main
-	@echo "Would push"
+	$(DEPLOY_GIT) push origin main
+	# @echo "Would push"
 
 new_deploy: \
 	_cloned_deployment_staging_dir \
@@ -189,8 +189,7 @@ new_deploy: \
 
 	@echo "$(COLOR_GREEN)"
 	@echo "To test visit: "
-	@echo "https://morgan3d.github.io/quadplay/console/quadplay.html?game="$\
-		"https://"$(GITHUB_USERNAME)".github.io/$(DEPLOY_REPO_NAME)/$(DEPLOY_NAME)/$(GAME_NAME).game.json"
+	@echo "https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://"$(GITHUB_USERNAME)".github.io/$(DEPLOY_REPO_NAME)/$(DEPLOY_NAME)/$(GAME_NAME).game.json"
 	@echo "$(COLOR_RESET)"echo "Deployed: " $(GAME_NAME) " to " "foobar"
 # @}
 
