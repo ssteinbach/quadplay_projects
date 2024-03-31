@@ -22,7 +22,7 @@ CONTENT_TEMPLATE = """
 |-----------------|
 |project name: {dirname}|
 |this is where a description would be nice to generate somehow|
-|[play]({game_url})|
+|[play {dirname}]({game_url})|
 """
 
 
