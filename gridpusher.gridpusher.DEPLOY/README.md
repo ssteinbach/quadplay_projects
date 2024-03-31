@@ -28,7 +28,8 @@
 - [x] add some easing to the camera
 - [x] remove push limit on crates
 - [x] "pull" power that is activated by picking something up
-- [ ] music mixing test
+- [x] music mixing test
+- [ ] fixed up deployment system
 - [ ] floating point movement with gridded rocks test
 - [ ] "lighting" system
 - [ ] function that walks across the grid in a given direction and finds the
