@@ -2,6 +2,12 @@ import os
 import subprocess
 import re
 
+# @TODO:
+# - sort by recent commits
+# - read a description out of the game.json
+# - make sure that the other makefile cleanup stuff doesn't wipe this stuff
+# - do some test deployments
+
 SKIPDIRS = set([".git"])
 
 URL_TEMPLATE = (
@@ -17,12 +23,14 @@ CONTENT_TEMPLATE = """
 |[play]({game_url})|
 """
 
+
 def main():
     all_stuff = os.listdir(".")
     subdirs = [d for d in all_stuff if os.path.isdir(d) and d not in SKIPDIRS]
     print(subdirs)
-    git_remote = subprocess.check_output(["git", "remote","-v"]).decode("utf-8")
-    first = git_remote.split(" ")[0].split("\t")[1]
+    git_remote = subprocess.check_output(
+        ["git", "remote", "-v"]
+    ).decode("utf-8")
     m = re.match(r".*:(?P<username>.*)/(?P<reponame>.*)\.git", git_remote)
     username = m.group("username")
     reponame = m.group("reponame")
@@ -49,7 +57,6 @@ def main():
         )
 
     print("updated readme.")
-
 
 
 if __name__ == "__main__":
