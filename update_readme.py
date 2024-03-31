@@ -4,6 +4,7 @@ import re
 
 # @TODO:
 # - sort by recent commits
+# - fetch the human readable game name out of the game.json
 # - read a description out of the game.json
 # - make sure that the other makefile cleanup stuff doesn't wipe this stuff
 # - do some test deployments
@@ -19,6 +20,7 @@ URL_TEMPLATE = (
 CONTENT_TEMPLATE = """
 |[![{dirname}]({dirname}/label128.png)]({game_url})|
 |-----------------|
+|project name: {dirname}|
 |this is where a description would be nice to generate somehow|
 |[play]({game_url})|
 """
