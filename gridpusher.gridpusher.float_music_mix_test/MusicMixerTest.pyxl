@@ -1,0 +1,122 @@
+MusicMixerTest
+════════════════════════════════════════════════════════════════════════
+// Put local state for the mode here.  Declare variables with let,
+// constants with const, and functions with def.
+
+const PLAYER = make_entity(
+    {
+        pos: xy(0, 0),
+        shape: "rect",
+        color: rgb(1,0,0),
+        // size: xy(100,100),
+        size: xy(5,5),
+        name: "player_music_testr"
+    }
+)
+
+const RADIUS = 250
+const GUTTER = 10
+
+const MUSIC_PINS = {
+    "dark_waves_snd":    xy(-0.5, -0.5), // ul
+    "drums_snd":         xy( 0.5, -0.5), // ur
+    "electric_kick_snd": xy( 0.5,  0.5), // lr
+    "odd_strings_snd":   xy(-0.5,  0.5), // ll
+    "piano_snd":         xy(   0, -0.5), // um
+    "all":               xy(   0,  0.5), // lm
+}
+
+const MUSIC_OBJECTS = {
+}
+
+
+enter
+────────────────────────────────────────────────────────────────────────
+for name in keys(MUSIC_PINS):
+    if name == "all":
+        continue
+
+    let thing = play_sound(ASSETS[name], true, 100%)
+    MUSIC_OBJECTS[name] = thing
+
+frame
+────────────────────────────────────────────────────────────────────────
+// This event runs 60 times per second. Game logic, simulation,
+// user input, and drawing all go here.
+
+debug_watch(MUSIC_OBJECTS)
+
+// camera
+set_camera(-SCREEN_SIZE/2)
+
+// player
+PLAYER.pos += joy
+
+draw_rect(PLAYER.pos, PLAYER.size, PLAYER.color)
+
+// music pins
+for pos at name in MUSIC_PINS:
+    let rad = RADIUS
+    if name == "all":
+        rad = 20
+    let screen_pos = pos * clone((SCREEN_SIZE - 2*xy(GUTTER, GUTTER)))
+
+    const player_dist = magnitude(PLAYER.pos - screen_pos)
+
+    let color = rgb(0,0.2,0)
+    if player_dist < rad:
+        color = rgb(0,0.6,0)
+
+    draw_disk(screen_pos, 5, rgb(0,1,0))
+    draw_disk(screen_pos, rad, nil, color)
+
+    let off = xy(0, 0)
+    const gut = GUTTER
+
+    //                                    l1  h1      l2  h2
+    // want to take a value in the range (0, 0.9) -> (0, 1)
+    const mix = max(
+        min(
+            (1 - (player_dist/rad))/0.9,
+            1
+        ), 
+        0
+    )
+
+    let x_align = "center"
+    if pos.x < 0:
+        off.x = gut
+        x_align = "left"
+    if pos.x > 0:
+        off.x = -gut
+        x_align = "right"
+    let y_align = "center"
+    if pos.y < 0:
+        off.y = gut
+        y_align = "top"
+    if pos.y > 0:
+        off.y = -gut
+        y_align = "bottom"
+    draw_text(
+        font,
+        name + " " + format_number(mix, "percent"),
+        screen_pos + off,
+        color,
+        nil,
+        nil,
+        x_align,
+        y_align,
+    )
+
+    if name != "all":
+        set_volume(MUSIC_OBJECTS[name], mix)
+    else:
+        if mix > 0:
+            for snd at name in MUSIC_OBJECTS:
+                set_volume(snd, mix)
+
+leave
+────────────────────────────────────────────────────────────────────────
+// This event runs just before leaving for another mode by
+// set_mode() or pop_mode().
+
