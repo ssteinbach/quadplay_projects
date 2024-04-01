@@ -33,7 +33,7 @@
 - [ ] floating point movement with gridded rocks test
 - [ ] "lighting" system
 - [ ] function that walks across the grid in a given direction and finds the
-      first thing
+      first thin
 - [ ] refactored list of things the player has to make it easier to add pickups
 - [ ] integrate palette
     - [ ] separate art experiments out from code experiments
