@@ -90,7 +90,7 @@ def main():
         # @TODO: this needs to be left in the source repo, maybe a small json
         #        blob? or into a file
         try:
-            with open(os.path.join(d, "description.md")) as fi:
+            with open(os.path.join(d, "description.md"), 'r') as fi:
                 game_data["description"] = fi.read().strip()
         except FileNotFoundError:
             game_data["description"] = "No description on branch."
@@ -130,7 +130,8 @@ def main():
     with open("README.template.md", 'r') as fi:
         header = fi.read()
 
-    with open("README.md", 'w') as fo:
+    target_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(target_dir, "README.md"), 'w') as fo:
         fo.write(
             header.format(contents=content_txt)
         )
