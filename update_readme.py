@@ -72,7 +72,8 @@ def main():
                 "--work-tree", d,
                 "log",
                 "-n", "1",
-                "--pretty=format:%ct"
+                "--pretty=format:%ct",
+                d
             ]
         ).decode("utf-8")
         game_data["commit-date-readable"] = subprocess.check_output(
@@ -83,6 +84,7 @@ def main():
                 "-n", "1",
                 "--date=format-local:%m/%d/%Y",
                 "--pretty=format:%cd",
+                d
             ]
         ).decode("utf-8")
         # @TODO: this needs to be left in the source repo, maybe a small json
