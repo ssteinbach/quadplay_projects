@@ -12,6 +12,6 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|gridpusher.DEPLOY|
 |description|Testing out the deployment pipeline|
-|Deployed on|03/30/2024|
+|Deployed on|03/31/2024|
 |link|[play gridpusher](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.DEPLOY/gridpusher.game.json)|
 

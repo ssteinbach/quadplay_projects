@@ -31,8 +31,10 @@ GAME_HEADER_TEMPLATE = """
 
 
 def main():
-    all_stuff = os.listdir(".")
-    subdirs = [d for d in all_stuff if os.path.isdir(d) and d not in SKIPDIRS]
+    target_dir = os.path.dirname(os.path.abspath(__file__))
+    print(target_dir)
+    all_stuff = (os.path.join(target_dir, d) for d in os.listdir(target_dir))
+    subdirs = [d for d in all_stuff if os.path.isdir(d) and not d.endswith(".git")]
     print(subdirs)
     git_remote = subprocess.check_output(
         ["git", "remote", "-v"]
@@ -49,6 +51,7 @@ def main():
 
     for d in subdirs:
         game_data = {}
+        dirname = os.path.basename(d)
 
         # should only be one game.json
         game_data["jsonpath"] = next(
@@ -57,14 +60,14 @@ def main():
         game_data["url"] = URL_TEMPLATE.format(
             gh_user=username,
             reponame=reponame,
-            dirname=d,
+            dirname=dirname,
             gamejson=game_data["jsonpath"],
         )
 
-        m = re.match(r"(?P<game_name>.*?)\.(?P<branch_name>.*)", d)
+        m = re.match(r"(?P<game_name>.*?)\.(?P<branch_name>.*)", dirname)
         game_data["name"] = m.group("game_name")
         game_data["branch"] = m.group("branch_name")
-        game_data["dirname"] = d
+        game_data["dirname"] = dirname
 
         game_data["commit-date-unix"] = subprocess.check_output(
             [
@@ -127,10 +130,9 @@ def main():
         content_txt += time + "\n"
         content_txt += link + "\n"
 
-    with open("README.template.md", 'r') as fi:
+    with open(os.path.join(target_dir, "README.template.md"), 'r') as fi:
         header = fi.read()
 
-    target_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(target_dir, "README.md"), 'w') as fo:
         fo.write(
             header.format(contents=content_txt)
