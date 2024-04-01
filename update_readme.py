@@ -32,10 +32,8 @@ GAME_HEADER_TEMPLATE = """
 
 def main():
     target_dir = os.path.dirname(os.path.abspath(__file__))
-    print(target_dir)
     all_stuff = (os.path.join(target_dir, d) for d in os.listdir(target_dir))
     subdirs = [d for d in all_stuff if os.path.isdir(d) and not d.endswith(".git")]
-    print(subdirs)
     git_remote = subprocess.check_output(
         ["git", "remote", "-v"]
     ).decode("utf-8")
@@ -111,7 +109,6 @@ def main():
         content_txt += GAME_HEADER_TEMPLATE.format(gamename=gamename)
 
         for build in builds:
-
             dirname = game_data["dirname"]
 
             label += (
