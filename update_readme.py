@@ -109,16 +109,16 @@ def main():
         content_txt += GAME_HEADER_TEMPLATE.format(gamename=gamename)
 
         for build in builds:
-            dirname = game_data["dirname"]
+            dirname = build["dirname"]
 
             label += (
-                f'[![{dirname}]({dirname}/label128.png)]({game_data["url"]})|'
+                f'[![{dirname}]({dirname}/label128.png)]({build["url"]})|'
             )
             separator += "-----|"
-            branch += f'{game_data["branch"]}|'
-            description += f'{game_data["description"]}|'
-            time += f'{game_data["commit-date-readable"]}|'
-            link += f'[play {game_data["name"]}]({game_data["url"]})|'
+            branch += f'{build["branch"]}|'
+            description += f'{build["description"]}|'
+            time += f'{build["commit-date-readable"]}|'
+            link += f'[play {build["name"]}]({build["url"]})|'
 
         content_txt += label + "\n"
         content_txt += separator + "\n"
