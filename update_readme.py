@@ -110,7 +110,7 @@ def main():
             branch += f'{build["branch"]}|'
             description += f'{build["description"]}|'
             time += f'{build["commit-date-readable"]}|'
-            link += f'[play {build["name"]}]({build["url"]})|'
+            link += f'[play {build["branch"]}]({build["url"]})|'
 
         content_txt += label + "\n"
         content_txt += separator + "\n"
