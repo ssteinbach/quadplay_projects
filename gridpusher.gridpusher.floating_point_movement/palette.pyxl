@@ -1,0 +1,12 @@
+// compute a color palette based on sampling the pixel values from a palette 
+// image.  Colors_YAML is a dictionary mapping color name to pixel coordinate,
+// stored in a yaml file.
+const COLORS = {}
+for coordinate at name in COLORS_YML:
+    COLORS[name] = get_sprite_pixel_color(
+        // the sprite to sample
+        palette_sprite[0][0],
+        // pixel coordinate to sample
+        xy(coordinate)
+    )
+

@@ -1,0 +1,478 @@
+Play
+════════════════════════════════════════════════════════════════════════
+
+const DUST = []
+
+// todo move stuff into enter instead of init
+
+const GRID_CENTER_px = SCREEN_SIZE / 2
+
+const LEVEL_PARSE_DEBUG_MESSAGES = false
+
+const PLAYER = {
+    pos: xy(0, 0),
+    accel: {
+        "x": make_accelerator_from_profile("celeste"),
+        "y": make_accelerator_from_profile("celeste"),
+    },
+}
+
+def make_cell(coord, flatcoord, game_grid, cell_size_px):
+    return {
+        occupied_by: nil,
+        coord: coord,
+        flat: flatcoord,
+        GAME_GRID: game_grid,
+        pos: xy(
+            CELL_SIZE_PX.x * coord.x,
+            CELL_SIZE_PX.y * coord.y
+        ) + GRID_CENTER_px - game_grid.size_px/2 + CELL_SIZE_PX/2
+    }
+
+let GAME_GRID = nil
+
+def set_player_start(coord, game_grid):
+    game_grid.current_cell = coord
+    PLAYER.pos = clone(grid_cell_xy(game_grid, coord).pos)
+
+def add_barrier(coord, game_grid):
+    let cell = grid_cell_xy(game_grid, coord)
+    cell["occupied_by"] = {
+        "draw": "block_sprite",
+    }
+
+def add_block(coord, game_grid):
+    debug_print("adding block at: ", coord)
+    let cell = grid_cell_xy(game_grid, coord)
+    cell["occupied_by"] = {
+        "pushes": 2,
+        "draw": "pushable_wall_sprite",
+        "frame": 0,
+    }
+
+def advance_levels():
+    // todo: maybe a transition?
+    CURRENT_LEVEL += 1
+    GAME_GRID = load_level(LEVELS.level_order, CURRENT_LEVEL)
+
+def add_goal(coord, game_grid):
+    debug_print("adding goal at: ", coord)
+    let cell = grid_cell_xy(game_grid, coord)
+    cell["occupied_by"] = {
+        "goal": true,
+        "draw": "goal_sprite",
+        "overlap_fn":advance_levels,
+    }
+    cell.visibility = true
+    push(game_grid.goals, cell)
+
+def activate_blue_key(cell):
+    GAME_GRID.player_has_blue_key = true
+    cell.occupied_by = nil
+
+def activate_grabber(cell):
+    GAME_GRID.player_has_grabber = true
+    cell.occupied_by = nil
+
+def add_blue_key(coord, game_grid):
+    debug_print("adding blue key at: ", coord)
+    let cell = grid_cell_xy(game_grid, coord)
+    cell["occupied_by"] = {
+        "draw": "blue_key_sprite",
+        "overlap_fn": activate_blue_key,
+    }
+
+def sprite_blue_door_fn(cell, level):
+    if level.player_has_blue_key:
+        cell.occupied_by.pushes = nil
+        return blue_door_sprite["open"][0]
+
+    cell.occupied_by.pushes = 0
+    return blue_door_sprite["closed"][0]
+
+def add_blue_door(coord, game_grid):
+    debug_print("adding blue door at: ", coord)
+    let cell = grid_cell_xy(game_grid, coord)
+    cell["occupied_by"] = {
+        "sprite_fn": sprite_blue_door_fn,
+        "frame": nil
+    }
+
+def add_grabber(coord, game_grid):
+    debug_print("adding grabber at: ", coord)
+    let cell = grid_cell_xy(game_grid, coord)
+    cell["occupied_by"] = {
+        "draw": "grabber_sprite",
+        "overlap_fn": activate_grabber,
+    }
+
+let LAST_FOUND = []
+def player_fn_pull(game_grid):
+    remove_all(LAST_FOUND)
+    const player_pos = clone(game_grid.current_cell)
+    for dir in [
+        xy(-1, 0),
+        xy(1, 0),
+        xy(0, 1),
+        xy(0, -1),
+    ]:
+        let current = clone(player_pos)
+        let next = current + dir
+        while (
+                grid_cell_xy(game_grid, next) 
+                and grid_cell_xy(game_grid, next).occupied_by == nil
+        ):
+            current = clone(next)
+            next = next + dir
+
+        push(LAST_FOUND, next)
+        
+        const to_cell = grid_cell_xy(game_grid, current)
+        const from_cell = grid_cell_xy(game_grid, next)
+
+        if (
+                from_cell.occupied_by.pushes != nil
+                and to_cell.occupied_by == nil
+        ):
+            move_object(from_cell, to_cell)
+            for i < 6:
+                let pos = (
+                    CELL_SIZE_PX/2 * random_within_square() + from_cell.pos
+                )
+                push(DUST, {p: pos, f: mode_frames, l: 10, d:-dir})
+
+
+// values are functions of signature (coord: xy()) <- grid cell coordinates
+// where they appear
+const LEVEL_ENTRY_KEY = { 
+    "P": set_player_start,
+    "#": add_barrier,
+    "*": add_block,
+    "O": add_goal,
+    "b": add_blue_key,
+    "B": add_blue_door,
+    "g": add_grabber,
+}
+
+def grid_size_of(lvl):
+    // make sure there are layers in the level
+    assert(size(lvl) != 0)
+    const lyr = lvl
+    debug_print(lvl)
+    const lines = split(lyr, "\n")
+
+    // assert it has a level defined
+    assert(size(lines) != 0 and size(lines) != nil)
+
+    // assert that the lines have stuff
+    assert(size(lines[0]) != 0 and size(lines[0]) != nil)
+    return xy(size(lines[0]), size(lines))
+
+def load_level(levels, l_num):
+    const lvl = LEVELS.levels[[levels[l_num]]]
+
+    debug_print(lvl)
+
+    const g_size = grid_size_of(lvl)
+    assert(g_size)
+    debug_print(g_size)
+
+    let result = make_grid(g_size, make_cell, CELL_SIZE_PX)
+
+    const key = lvl.key
+
+    // for layer in lvl.layers:
+    const lines = split(lvl, "\n")
+    debug_print(lines)
+    for line at y in lines:
+        for char at x in line:
+            const fn = LEVEL_ENTRY_KEY[char]
+            if fn == nil:
+                continue
+            // debug_print(char)
+            fn(xy(x, y), result)
+
+    // make sure that the start location was parsed correctly
+    assert(
+        "Current cell is nil - probably means the level is missing a player start"
+        + " or the key isn't what is in the level descrption"
+        and result.current_cell != nil
+    )
+
+    let c = grid_cell_xy(result, result.current_cell)
+    c.occupied_by = "player"
+    result.camera_position = c.pos
+    
+
+    // initialize visibility system
+    for cell in result.cells:
+        // let the goal be visible
+        if not cell.visibility:
+            cell.visibility = false
+
+        // all cells start invisible
+        cell.visibility = false
+
+    c.visibility = true
+
+    return result
+
+// load the level
+let CURRENT_LEVEL = 0
+GAME_GRID = load_level(LEVELS.level_order, CURRENT_LEVEL) 
+
+def update_visibility(level):
+    // check visibility to the player
+    const player_cell = grid_cell_xy(level, level.current_cell)
+    for cell in level.cells:
+        if cell.visibility:
+            continue
+
+        // is there a path to the player?
+        if has_route_to_cell_through(level, cell, player_cell):
+            cell.visibility = true
+
+    for goal in level.goals:
+        for cell in level.cells:
+            if cell.visibility:
+                continue
+
+            // is there a path to the goal?
+            if has_route_to_cell_through(level, cell, goal):
+                cell.visibility = true
+
+
+
+let pos = xy(SCREEN_SIZE.x / 2, 132)
+let flip = xy(1, 1)
+
+
+def move_object(old_cell, new_cell):
+    new_cell.occupied_by = clone(old_cell.occupied_by)
+    // @feature PUSH LIMIT -- this is part of the push limit code
+    // if new_cell.occupied_by.frame != nil:
+    //     new_cell.occupied_by.frame += 1
+    old_cell.occupied_by = nil
+
+
+def update_player_pos(input, grid):
+    PLAYER.pos += joy.xy
+
+
+def draw_player(play):
+    draw_sprite(astronaut.idle[0], play.pos)
+
+
+def update_player_pos_discrete(input, grid):
+    const movedir = xy(input.xx, input.yy)
+    const new_cell_loc = grid.current_cell + movedir
+    const new_cell = grid_cell_xy(GAME_GRID, new_cell_loc)
+
+    if not new_cell:
+        return
+
+    const old = grid_cell_xy(grid, grid.current_cell)
+
+    if new_cell: 
+        if not new_cell.occupied_by:
+            move_object(old, new_cell)
+            grid.current_cell = new_cell_loc
+            return
+        if new_cell.occupied_by.overlap_fn:
+            new_cell.occupied_by.overlap_fn(new_cell)
+            return
+
+    // allow one push if nothing is on the other side of the block
+    const cell_past_push_loc = new_cell_loc + movedir
+    const cell_past_push = grid_cell_xy(GAME_GRID, cell_past_push_loc)
+
+    if (
+            cell_past_push 
+            and not cell_past_push.occupied_by
+            and (
+                new_cell.occupied_by.pushes == nil
+                or new_cell.occupied_by.pushes > 0
+            )
+    ):
+        if new_cell.occupied_by.pushes != nil:
+            // @feature PUSH LIMIT -- this is part of the push limit code
+            // new_cell.occupied_by.pushes -= 1
+            move_object(new_cell, cell_past_push)
+
+        move_object(old, new_cell)
+        grid.current_cell = new_cell_loc
+
+
+let UNDOSTACK = []
+update_visibility(GAME_GRID)
+
+enter
+────────────────────────────────────────────────────────────────────────
+debug_print("cell", GAME_GRID.current_cell)
+
+frame
+────────────────────────────────────────────────────────────────────────
+set_background(COLORS.bg)
+        
+// screen-anchored text
+set_camera(xy(0, 0))
+let txt = "(a): undo"
+if GAME_GRID.player_has_grabber:
+    txt += " (b): pull"
+draw_text(
+    font,
+    replace(txt, joy.prompt),
+    xy(SCREEN_SIZE.x/2, SCREEN_SIZE.y-2),
+    COLORS.text,
+    nil,
+    nil,
+    "center",
+    "bottom",
+    11
+)
+
+draw_text(
+    font,
+    "Level "+ CURRENT_LEVEL + ": " + LEVELS.level_order[CURRENT_LEVEL],
+    xy(SCREEN_SIZE.x/2, SCREEN_SIZE.y-16),
+    COLORS.text,
+    nil,
+    nil,
+    "center",
+    "bottom",
+    11
+)
+
+draw_text(
+    font,
+    CREDITS.title,
+    xy(SCREEN_SIZE.x/2, 2),
+    COLORS.text,
+    nil,
+    nil,
+    "center",
+    "top",
+    11
+)
+
+debug_watch(GAME_GRID.size - CAMERA_EASE_BORDER)
+debug_watch(GAME_GRID.size)
+const camera_target_cell = max(
+    min(
+        GAME_GRID.current_cell,
+        GAME_GRID.size - CAMERA_EASE_BORDER
+    ),
+    CAMERA_EASE_BORDER
+)
+debug_watch(camera_target_cell)
+
+const camera_target_position = (
+    grid_cell_xy(GAME_GRID, camera_target_cell).pos 
+    - SCREEN_SIZE/2
+)
+debug_watch(camera_target_position)
+
+// camera tries to frame the player
+GAME_GRID.camera_position = lerp(
+    GAME_GRID.camera_position,
+    camera_target_position,
+    CAMERA_EASE_AMOUNT
+)
+
+// camera-anchored game board
+set_camera(GAME_GRID.camera_position)
+
+debug_watch(GAME_GRID.current_cell)
+debug_watch(size(UNDOSTACK))
+let pos = []
+for u in UNDOSTACK:
+    push(pos, u.current_cell)
+debug_watch(pos)
+
+
+let sprite = astronaut.idle[0]
+
+update_player_pos(joy, GAME_GRID)
+
+if joy.xx or joy.yy:
+    flip.x = joy.x
+    const last_game_state = deep_clone(GAME_GRID)
+    // update_player_pos(joy, GAME_GRID)
+    if (
+            GAME_GRID.current_cell.x != last_game_state.current_cell.x
+            or GAME_GRID.current_cell.y != last_game_state.current_cell.y
+    ):
+        push(UNDOSTACK, last_game_state)
+        update_visibility(GAME_GRID)
+    debug_print(size(UNDOSTACK))
+    if size(UNDOSTACK) > UNDOSTACK_SIZE_LIMIT:
+        pop_front(UNDOSTACK)
+else if joy.aa:
+    if size(UNDOSTACK) > 0:
+        debug_print("Undo")
+        GAME_GRID = pop(UNDOSTACK)
+    debug_print(size(UNDOSTACK))
+else if joy.bb and GAME_GRID.player_has_grabber:
+    player_fn_pull(GAME_GRID)
+
+draw_rect(GRID_CENTER_px, GAME_GRID.size_px, COLORS.bg_grid)
+
+
+const DUST_TO_REMOVE = []
+for d at i in DUST:
+    draw_disk(d.p, 2, rgb(0.2, 0.2, 0.2))
+    d.p = d.p + d.d
+
+    if mode_frames + 1 - d.f > d.l:
+        push(DUST_TO_REMOVE, i)
+
+for i in reversed(DUST_TO_REMOVE):
+    remove_key(DUST, i)
+
+// draw the grid
+for c in GAME_GRID.cells:
+    if not DEBUG_DISABLE_VISIBILITY and not c.visibility:
+        draw_rect(c.pos, xy(16,16), COLORS.bg)
+        continue
+
+    if c.occupied_by:
+        let spr = sprite
+        let spr_old = sprite
+        if c.occupied_by.sprite_fn:
+            spr = c.occupied_by.sprite_fn(c, GAME_GRID)
+        else if c.occupied_by.draw != nil:
+            spr = ASSETS[c.occupied_by.draw]
+
+        let frame = 0
+        if c.occupied_by.frame != nil:
+            frame = c.occupied_by.frame
+            spr = spr[frame][0]
+            if c.occupied_by.sprite_fn:
+                debug_print("set frame", frame)
+
+        if not c.follow_input_dir:
+            flip = xy(0, 0)
+
+        draw_sprite(spr, c.pos, 0, flip)
+        // draw_sprite(blue_door_sprite.closed[0], c.pos, 0, flip)
+    else:
+        if DEBUG_DRAW_CELL_NUMBERS:
+            draw_text(
+                font,
+                unparse(c.flat),
+                c.pos,
+                rgb(1,1,1),
+                nil,
+                rgb(0.2, 0.2, 0.2),
+                "center",
+                "center",
+                0
+            )
+
+draw_player(PLAYER)
+
+debug_watch(LAST_FOUND)
+
+// for thing in LAST_FOUND:
+//     draw_disk(grid_cell_xy(GAME_GRID, thing).pos, 5, rgb(1,0,0))
+debug_watch(DUST)
