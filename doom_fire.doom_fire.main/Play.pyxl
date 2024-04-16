@@ -4,7 +4,7 @@ Play
 const FIRE_START = xy(0, 0)
 const FIRE_END = SCREEN_SIZE - xy(1, 1)
 
-const SCALE = 2
+const SCALE = 4
 const FIRE_DIM = floor(SCREEN_SIZE / SCALE)
 const FIRE_TABLE = []
 
