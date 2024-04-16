@@ -1,0 +1,90 @@
+Play
+════════════════════════════════════════════════════════════════════════
+
+const FIRE_START = xy(0, 0)
+const FIRE_END = SCREEN_SIZE - xy(1, 1)
+
+const SCALE = 2
+const FIRE_DIM = floor(SCREEN_SIZE / SCALE)
+const FIRE_TABLE = []
+
+debug_print(FIRE_DIM)
+
+def init_table():
+    for x < FIRE_DIM.x:
+        for y < FIRE_DIM.y:
+            push(FIRE_TABLE, 0)
+            // if y == FIRE_DIM.y - 1:
+            //     push(FIRE_TABLE, 36)
+            // else:
+            //     // push(FIRE_TABLE, 0)
+            //     push(FIRE_TABLE, x/FIRE_DIM.x)
+    for x < FIRE_DIM.x:
+        let y = FIRE_DIM.y - 1
+        FIRE_TABLE[y * FIRE_DIM.x + x] = 36
+
+init_table()
+
+def update_fire():
+    for x < FIRE_DIM.x:
+        FIRE_TABLE[(FIRE_DIM.y - 1) * FIRE_DIM.x + x] = joy.a
+
+        let y = 1
+        for y < FIRE_DIM.y:
+            spread_fire(y * FIRE_DIM.x + x)
+
+
+def spread_fire(from):
+    let r = random_integer(0, 3) bitand 3
+    let to = from - FIRE_DIM.x - r + 1
+    FIRE_TABLE[to] = FIRE_TABLE[from] - (r bitand 2)
+
+def draw_fire():
+    for x < FIRE_DIM.x:
+        for y < FIRE_DIM.y:
+            const value = FIRE_TABLE[y * FIRE_DIM.x + x] / 36
+            draw_corner_rect(
+                xy(x, y) * SCALE,
+                xy(SCALE, SCALE),
+                rgb(value, value, value)
+            )
+
+
+
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+update_fire()
+draw_fire()
+
+// let sprite = astronaut.idle[0]
+// if joy.x:
+//    flip.x = joy.x
+//    sprite = astronaut.run[⌊mode_frames / 10⌋ mod 2]
+//    pos.x = loop(pos.x + joy.x, SCREEN_SIZE.x)
+//
+// // Sky
+// set_background(rgb(20%, 60%, 90%))
+// draw_text(font, CREDITS.title, xy(½ SCREEN_SIZE.x, 10), TEXT_COLOR, ∅, ∅, 0, 0)
+//
+// // Ground
+// draw_corner_rect(xy(0, 140), xy(SCREEN_SIZE.x, SCREEN_SIZE.y - 139), #DDD)
+//
+// // Shadow
+// draw_line(pos + xy(-4, 8), pos + xy(+4, 8), rgba(0, 0, 0, 20%))
+//
+// // Alien
+// draw_sprite(sprite, pos, 0, flip)
+//
+// // Ball
+// with vel, acc, pos in ball:
+//     vel += acc
+//     entity_simulate(ball)
+//     const h = ½ ball.size.y * ball.scale.y
+//     if pos.y + h > 140:
+//         play_sound(blip_sound)
+//         pos.y = 140 - h
+//         vel.y = -5
+//         
+// draw_entity(ball)
