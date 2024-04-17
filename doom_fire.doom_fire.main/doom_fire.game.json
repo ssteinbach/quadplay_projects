@@ -1,7 +1,7 @@
 {
-    "title": "Starter Example",
-    "developer": "Your Name Here",
-    "copyright": "©2024 Your Name Here",
+    "title": "Fire!",
+    "developer": "Stephan Steinbach",
+    "copyright": "©2024 Stephan Steinbach",
     "license": "CC0/Public Domain (Replace with your own license)",
     "packages": [],
     "scripts": [],
@@ -11,10 +11,7 @@
     "start_mode": "Play",
     "docs": [],
     "assets": {
-        "font": "quad://fonts/deja-8.font.json",
-        "astronaut": "quad://sprites/kenney-alien-yellow-16x32.sprite.json",
-        "shapes": "quad://sprites/shapes-32x32.sprite.json",
-        "blip_sound": "quad://sounds/blip-04.sound.json"
+        "font": "quad://fonts/deja-8.font.json"
     },
     "version": 0,
     "min_players": 1,
@@ -25,7 +22,7 @@
     "highscores": false,
     "dual_dpad": false,
     "midi_sysex": false,
-    "description": "Description of your game in about 100 characters.",
+    "description": "Quadplay implementation of the doom fire effect from: ",
     "constants": {
         "TEXT_COLOR": {
             "type": "rgb",
@@ -45,5 +42,5 @@
             }
         }
     },
-    "screenshot_tag": "Starter Example"
+    "screenshot_tag": "Fire!"
 }
