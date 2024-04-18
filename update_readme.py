@@ -13,7 +13,9 @@ URL_TEMPLATE = (
 
 
 GAME_HEADER_TEMPLATE = """
+
 ### {gamename}
+
 """
 
 
