@@ -91,7 +91,7 @@ def main():
 
     content_txt = ""
     for gamename, builds in DATA["games"].items():
-        builds = sorted(builds, key=lambda b: b["commit-date-unix"])
+        builds = reversed(sorted(builds, key=lambda b: b["commit-date-unix"]))
         label = "|label|"
         separator = "|-|"
         branch = "|branch|"
