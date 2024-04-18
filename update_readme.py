@@ -62,23 +62,23 @@ def main():
         game_data["commit-date-unix"] = subprocess.check_output(
             [
                 "git",
-                "--work-tree", d,
                 "log",
                 "-n", "1",
                 "--pretty=format:%ct",
                 d
-            ]
+            ],
+            cwd=d,
         ).decode("utf-8")
         game_data["commit-date-readable"] = subprocess.check_output(
             [
                 "git",
-                "--work-tree", d,
                 "log",
                 "-n", "1",
                 "--date=format-local:%m/%d/%Y",
                 "--pretty=format:%cd",
                 d
-            ]
+            ],
+            cwd=d
         ).decode("utf-8")
         # @TODO: this needs to be left in the source repo, maybe a small json
         #        blob? or into a file
