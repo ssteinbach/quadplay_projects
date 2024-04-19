@@ -2115,8 +2115,10 @@ def draw_enemies()
     const suffix = if en.is_near_player then suffix = "*" else ""
     const offset = xy(0, en.size.y/2+2)
     let status_text = ""
-    for i < en.health:
-        status_text += "♥"
+
+    if DEBUG_FLAGS.DRAW_ENEMY_HEALTH:
+        for i < en.health:
+            status_text += "♥"
 
     if DEBUG_FLAGS.DRAW_ENEMY_AI_STATUS:
         const name = if en.action then en.action.name else "nil"
@@ -2180,7 +2182,7 @@ def draw_debug_hud()
 
     const first_bounds = draw_text_block(
         txt,
-        xy(SCREEN_SIZE.x/2, SCREEN_SIZE.y),
+        xy(SCREEN_SIZE.x/2, SCREEN_SIZE.y - 10),
         "center",
         "bottom"
     )
