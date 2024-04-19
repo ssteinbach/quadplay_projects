@@ -33,7 +33,7 @@ This repo contains a number of prototypes in various stages of completion.
 |label|[![snes_prototype.snes_prototype.boxes](snes_prototype.snes_prototype.boxes/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/btw_deploy_test/snes_prototype.snes_prototype.boxes/snes_prototype.game.json)|
 |-|-----|
 |branch|snes_prototype.boxes|
-|description||
+|description|box throwing demo from the snes_prototype/super beat the wizzard|
 |Deployed on|04/18/2024|
 |link|[play snes_prototype.boxes](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/btw_deploy_test/snes_prototype.snes_prototype.boxes/snes_prototype.game.json)|
 
