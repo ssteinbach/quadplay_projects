@@ -1,0 +1,72 @@
+# which setup to load
+CURRENT: "filled_boxes"
+# CURRENT: "single_box"
+# CURRENT: "single_bat"
+# CURRENT: "many_bats"
+
+# SETUPS
+
+single_box: 
+  - [box, [-6, 0]]
+
+single_bat:
+  - [bat, [-8, 12]]
+
+many_bats:
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+  - [bat, "rnd"]
+
+filled_boxes:
+  - [box, [-14, 12]]
+  - [box, [-14, 6]]
+  - [box, [-14, 0]]
+  - [box, [-14, -6]]
+  - [box, [-14, -12]]
+
+  - [box, [-8, 12]]
+  - [box, [-8, 6]]
+  - [box, [-8, 0]]
+  - [box, [-8, -6]]
+  - [box, [-8, -12]]
+
+  - [box, [-2, 12]]
+  - [box, [-2, 6]]
+  - [box, [-2, 0]]
+  - [box, [-2, -6]]
+  - [box, [-2, -12]]
+
+  - [box, [4, 12]]
+  - [box, [4, 6]]
+  - [box, [4, 0]]
+  - [box, [4, -6]]
+  - [box, [4, -12]]
+
+  - [box, [10, 12]]
+  - [box, [10, 6]]
+  - [box, [10, 0]]
+  - [box, [10, -6]]
+  - [box, [10, -12]]
+
+  - [box, [16, 12]]
+  - [box, [16, 6]]
+  - [box, [16, 0]]
+  - [box, [16, -6]]
+  - [box, [16, -12]]

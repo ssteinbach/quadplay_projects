@@ -1,0 +1,9 @@
+// palette image library, convert coordinates in the YAML to colors in the map
+def palette_initialize(from_coord_map, palette_sprite):
+    const result = {}
+    for coord at name in from_coord_map:
+        result[name] = get_sprite_pixel_color(
+            palette_sprite[0][0],
+            xy(coord)
+        )
+    return result

@@ -1,0 +1,213 @@
+{
+    "aseprite_json": "driz.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "Attack": {
+            "end": {
+                "x": 4.0,
+                "y": 2.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6,
+                6.6,
+                13.2,
+                13.2,
+                9.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 2.0
+            }
+        },
+        "Block": {
+            "end": {
+                "x": 1.0,
+                "y": 7.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                13.2,
+                13.2
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 7.0
+            }
+        },
+        "Dash": {
+            "end": {
+                "x": 3.0,
+                "y": 6.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                13.2,
+                13.2,
+                13.2,
+                13.2
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 6.0
+            }
+        },
+        "FX": {
+            "end": {
+                "x": 1.0,
+                "y": 5.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                13.2,
+                13.2
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 5.0
+            }
+        },
+        "Idle": {
+            "end": {
+                "x": 3.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6,
+                6.6,
+                6.6,
+                6.6
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        "Roll": {
+            "end": {
+                "x": 1.0,
+                "y": 4.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                13.2,
+                13.2
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 4.0
+            }
+        },
+        "Run": {
+            "end": {
+                "x": 3.0,
+                "y": 1.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6,
+                6.6,
+                6.6,
+                6.6
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 1.0
+            }
+        },
+        "Yay": {
+            "end": {
+                "x": 3.0,
+                "y": 8.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                13.2,
+                13.2,
+                13.2,
+                13.2
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 8.0
+            }
+        },
+        "abovefx": {
+            "end": {
+                "x": 3.0,
+                "y": 11.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                8.4,
+                8.4,
+                8.4,
+                8.4
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 11.0
+            }
+        },
+        "atk_2": {
+            "end": {
+                "x": 2.0,
+                "y": 9.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                7.199999999999999,
+                3.5999999999999996,
+                3.5999999999999996
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 9.0
+            }
+        },
+        "backfx": {
+            "end": {
+                "x": 3.0,
+                "y": 10.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                8.4,
+                8.4,
+                8.4,
+                8.4
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 10.0
+            }
+        },
+        "stun": {
+            "end": {
+                "x": 2.0,
+                "y": 3.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6,
+                6.6,
+                19.8
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 3.0
+            }
+        }
+    },
+    "pivot": {
+        "x": 8,
+        "y": 32
+    },
+    "sprite_size": {
+        "x": 48,
+        "y": 48
+    },
+    "url": "driz.png"
+}

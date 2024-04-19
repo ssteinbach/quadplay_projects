@@ -1,0 +1,16 @@
+// actions @{
+// from: https://www.gameaipro.com/GameAIPro/GameAIPro_Chapter06_The_Behavior_Tree_Starter_Kit.pdf
+//
+// ACTION_FAILURE = "failure"
+// ACTION_SUCCESS = "success"
+// ACTION_RUNNING = "running"
+//
+// // a behavior operates on an ACTOR and takes additional inputs, and returns
+// // ACTION_SUCCESS, ACTION_FAILURE, ACTION_RUNNING
+// def action_move_towards(en, target_xy):
+//     return ACTION_FAILURE
+//
+// ACTION = {
+//     "move_towards": action_move_towards,
+// }
+// @}

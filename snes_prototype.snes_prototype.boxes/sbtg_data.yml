@@ -1,0 +1,507 @@
+# marker that goes on the screen, top right
+CURRENT_PROJECT_TAG: SBtG.repel_nonphysics
+
+# mappings into the palette image
+PALETTE:
+  # at present all the color are in the 0 row
+  flash: [0, 0]
+  ai_motion_dir: [2, 0]
+
+# @{ DEBUG
+# @TODO: move these into a DEBUG group
+DEBUG_FLAGS:
+  DRAW_ENEMY_AI_INFO: false
+  DRAW_ENEMY_AI_STATUS: false
+  INPUT_SELECTION: false
+  DRAW_WIZ_BIG: false
+  TAKE_DAMAGE: false
+  DRAW_COLLISION_MARKERS: false
+  DRAW_SPELL_VOLUMES: false
+  DRAW_SPRITE_SIZES_TEXT: false
+
+CURRENT_ZOMBIE_SPRITE_INDEX: 0
+CURRENT_RAT_SPRITE_INDEX: 0
+# @}
+#
+# @{ inputs to the acceleration system
+acceleration_profiles:
+  player_move_normal:
+    max_velocity: 2.2
+    num_frames_attack: 10
+    num_frames_release: 15
+
+  player_move_dash:
+    max_velocity: 5
+    num_frames_attack: 3
+    num_frames_release: 60
+# @}
+
+# @{ Additional Dash variables
+PLAYER_DASH_COOLDOWN_f60: 20
+PLAYER_DASH_DURATION_f60: 20
+
+player:
+  config:
+    text_offset: 4
+
+  flash_frames:
+    stun: 10
+    color: flash
+
+  initial:
+    name: "driz"
+    pos: [0, 0]
+    health: 3
+
+    # movement stuff
+    vel: [0, 0]
+    x_accel: none
+    y_accel: nil
+
+    # hitbox size 
+    size: [8, 16]
+
+    # initial direction
+    scale: [1, 1]
+    dir: [1, 0]
+
+    # cleared per-frame
+    # map of enemy-> collision
+    collide: {}
+    # map of frame -> list of enemies collided
+    repelled_enemies: []
+
+    # sprite data
+    offset: [0, -2]
+    sprite: driz
+
+    # flags
+    lock_input: false
+
+    # which controller to read from (for multiplayer)
+    index: 0
+
+    # tracks the state/mode of the PLAYER. Can be dash, attack, idle
+    state: "idle"
+
+    pulled_enemies: []
+
+  spells:
+    attack:
+      strength: 3.5
+      hitbox:
+        # these are in world coordinates in front of the character
+        start_x: 10
+        size: [40, 30]
+      color: [0.8, 0.3, 0.1, 0.1]
+      outline: [0.8, 0.3, 0.1, 1]
+    hold:
+      radius: 90
+      color: [0.3, 0.8, 0.1, 0.1]
+      outline: [0.3, 0.8, 0.1, 1]
+      strength: 3
+      particle:
+        frequency: 6
+        color: [0.8, 0.8, 0.8, 1]
+        frames: 12 
+        count: 16
+        speed: 4
+    repel:
+      radius: 90
+      color: [0.3, 0.8, 0.1, 0.1]
+      outline: [0.3, 0.8, 0.1, 1]
+      strength: 15
+      duration_60f: 20
+      particle:
+        color: [0.8, 0.8, 0.8, 1]
+        frames: 12 
+        count: 48
+        speed: 8
+    wind:
+      color: [0.3, 0.1, 0.8, 0.1]
+      outline: [0.1, 0.3, 0.8, 1]
+      strength: 0.5
+      region:
+        # these are in world coordinates in front of the character
+        start_x: 15
+        size: [50, 90]
+      particle:
+        frequency: 6
+        color: [0.8, 0.8, 0.8, 1]
+        frames: 12 
+        count: 4
+        speed: 4
+    pull:
+      radius: 60
+      color: [0.8, 0.3, 0.1, 0.1]
+      outline: [0.8, 0.3, 0.1, 1]
+      strength: 1.5
+      grab_window_60f: 10
+      particle:
+        frequency: 6
+        color: [0.8, 0.8, 0.8, 1]
+        frames: 12 
+        count_sqr: 4
+        speed: 1
+      # rotating particles around pulled enemies
+      pulled_particle:
+        color: [0, 0.2, 0.8, 1]
+        count: 12
+        size_px: 2
+        rot_time_f: 15
+      rear_box:
+        # these are in world coordinates in front of the character
+        start_x: 15
+        size: [30, 30]
+      target:
+        offset: [27, 27]
+        inner_radius: 5
+        outer_radius: 7
+        color: [0.9, 0.1, 0.1, 1]
+        outline: [0.9, 0.1, 0.1, 1]
+  # @}
+
+# @{ room boundaries and contents
+
+# for the snes overlay
+black_out_sides: true
+ 
+obstacle_sizes:
+  grid: [8, 8]
+
+room: [45, 30]
+
+obstacles:
+  # origin size (from corner?)
+  - [[3, 3], [2, 2]]
+
+# @{ enemy stuff
+state_info:
+  default: &state
+    color: [0.3, 0.3, 0.3]
+    duration: [30, 60]
+    sprite: "proc_box"
+
+    # # after triggering the state, return it to the deck or remove it
+    # return_to_deck: "remove"
+    # # after triggering the deck, reshuffle the deck
+    # shuffle_deck_after: false
+
+  Idle:
+    <<: *state
+    color: [1,1,1]
+    # return_to_deck: true
+  Run: 
+    <<: *state
+    color: [0, 1, 0]
+    duration: [60, 120]
+  RunAway: 
+    <<: *state
+    color: [0,1,1]
+  Charge: 
+    <<: *state
+    color: [0.5, 0.5, 0]
+    duration: [120, 240]
+
+
+# primitives:
+#   - [ ] interruptable_select
+#   - [ ] commit_select
+#   - [ ] sequence
+#   - [ ] condition
+#   - [x] action
+
+conditions:
+  - can_see
+  - in_range
+  - move_towards
+  - EDIBLE_THING, PLAYER, nearest_aggro_zombie, random_nearby_position
+
+# sketch of a behavior tree for a zombie
+Zombie:
+  interruptable_select:
+    - "aggro":
+      - sequence:
+        - condition: [can_see, EDIBLE_THING]
+        - commit_select:
+          - "attack":
+            - sequence:
+              - condition: [in_range, EDIBLE_THING]
+              - action: [attack, EDIBLE_THING]
+          - "move_closer":
+            - action: [move_towards, PLAYER]
+    - "see_aggro_zombie":
+      - sequence:
+        - condition: [can_see, aggro_zombie]
+        - action: [move_towards, nearest_aggro_zombie]
+    - "meander":
+      - sequence:
+        - action: [move_towards, random_nearby_position]
+
+
+enemy_def_map:
+  default_enemy: &enemy
+    size: [16, 16]
+    scale: [1, 1]
+
+    # @todo: move scale into a subdictionary
+    draw: "rect"
+    sprite_scale: 2
+
+    collide: {}
+    touch_damage: 1
+
+    swoop_length: 150
+    swoop_vel: 5
+
+    near_radius_px: 150
+    idle_radius: 50
+    drag: 0.005
+    deck_far: 
+      - Idle
+      - Run
+    deck_near: 
+      - RunAway
+    accel_profile:
+      max_velocity: 1.0
+      num_frames_attack: 40
+      num_frames_release: 30
+
+    health: 3
+    danger_velocity: 3
+
+    # for move to
+    walk_distance_range_px: [10, 30]
+    idle_range_f: [45, 90]
+
+  ranged:
+    <<: *enemy
+    # @TODO: for now using the test sprite
+    sprite_index: 1
+    draw: en_zombie
+
+    attack_charge_time_f: 60
+    cooldown_time_f: 60
+
+    move:
+      sprite_scale_mult: 0.5
+      sprite_color_rgb: [0.3, 0.3, 0.3]
+
+    projectile:
+      speed_px_f: 1.75
+      radius_px: 10
+      lifetime_f: 180
+
+    accel_profile:
+      max_velocity: 3
+      num_frames_attack: 10
+      num_frames_release: 10
+
+  beam:
+    <<: *enemy
+    # @TODO: for now using the test sprite
+    size: [48, 48]
+    sprite_index: 2
+    scale: [3, 3]
+    draw: en_zombie
+
+    # like the rat for now
+    walk_distance_range_px: [30, 60]
+    idle_range_f: [45, 90]
+
+  # simple test enemy that is just physics
+  box:
+    <<: *enemy
+    draw: rect
+
+    drag: 0.1
+    walk_distance_range_px: [0, 0]
+    idle_range_f: [infinity, infinity]
+
+  zombie: 
+    <<: *enemy
+    size: [16, 16]
+    deck_near:
+      - Charge
+    lurch_length: 40
+    draw: en_zombie
+
+    accel_profile:
+      max_velocity: 0.5
+      num_frames_attack: 10
+      num_frames_release: 0
+
+  rat: 
+    <<: *enemy
+    size: [16, 8]
+    draw: en_worm
+
+    walk_distance_range_px: [60, 90]
+    idle_range_f: [45, 90]
+
+    accel_profile:
+      max_velocity: 1.35
+      num_frames_attack: 3
+      num_frames_release: 3
+
+  bat: 
+    <<: *enemy
+    size: [16, 16]
+
+    draw: bat_sprite
+    animator: flap
+
+    drag: 0.1
+    sprite_index: 0
+    sprite_scale: 1
+
+    # the 'visible' radius
+    near_radius_px: 75
+
+    walk_distance_range_px: [60, 90]
+    # idle_range_f: [180, 240]
+    idle_range_f: [18, 60]
+
+    accel_profile:
+      max_velocity: 2.35
+      num_frames_attack: 5
+      num_frames_release: 3
+
+  monster: 
+    <<: *enemy
+    size: [32, 16]
+
+    monster:
+      max_velocity: 0.9
+      num_frames_attack: 20
+      num_frames_release: 20
+
+  beast: 
+    <<: *enemy
+    size: [32, 32]
+  wizard:
+    <<: *enemy
+    size: [40, 40]
+
+animation_curves:
+  default: &curve
+    points:
+      # time - val
+      - [0, 0]
+      - [0, 0]
+      - [1, 1]
+      - [2, 1]
+    order: 3
+    extrapolate: stall
+
+  zombie:
+    <<: *curve
+    points:
+      - [-1, 0]
+      - [0, 0]
+      # - [0.9, 1.3]
+      - [1, 1]
+      - [2, 1]
+# @}
+
+# @{ spells
+SPELLS:
+  bolt:
+    shape: disk
+    scale: [16, 16]
+    color: #FF602D
+# @}
+
+# @{
+camera:
+  follow_amount: 0.12
+  follow_camera: true
+  shake_increment: 10
+# @}
+
+# @{ WIZZARD BOX
+WIZZARD_SIZES: [48, 64, 96, 128]
+WIZZARD_BOX_SIZE: [80, 40]
+WIZZARD_BOX_OFFSET: [0, 25]
+WIZZARD_SCALE: 48
+WIZZARD_FLOAT_SCALE_PX: 10
+WIZZARD_FLOAT_PERIOD_FR: 20
+# offset of the wizard above the center of the box
+WIZZARD_OFFSET_PX: [0, 15]
+
+LAKITU_CLOUD_OFFSET: 
+  - [[0, 20], 10]
+  - [[10, 10], 10]
+  - [[-10, 15], 10]
+  - [[12, 18], 7]
+LAKITU_FOLLOW: 0.05
+LAKITU_WIZZ_OFFSET: [0, 5]
+LAKITU_SCREEN_OFFSET: [80, -60]
+
+WIZZARD_BOX_LEFT_OFFSET: [10, 0]
+WIZZARD_BOX_LEFT_SIZE: [40, 80]
+# @}
+
+# @{
+# PLAYER_START_POS_PX: [0, -100]
+# PLAYER_START_POS_PX: [-100, -100]
+PLAYER_START_POS_PX: [0, 0]
+# @}
+
+# {@ TRANSITION
+level_end:
+  transition_time: 45
+  pause_time: 0
+  fume_time: 75
+  fume_period_fr: 2.5
+  fume_scale_px: 10
+# @}
+
+# @{ generic collision damage
+collision:
+  damage_depth: 5
+  repel_force: 0.5
+  repel_frames: 10
+# @}
+
+Actions:
+  MoveToPoint:
+    end_predicate: first_end
+    children:
+      - MOVER.towards_location:
+        root: "pos"
+      - ANIMATION.play_loop:
+        tag: "walk"
+  Idle:
+    end_predicate: first_end
+    argument: 
+      - duration_60f
+    children:
+      - GAP: 
+        duration_60f: argument.duration
+      - ANIMATION.play_loop:
+        tag: "idle"
+
+
+Behaviors:
+  Patrol:
+    end_action: loop
+    actions:
+      - REQUEST.movable_location
+      - Actions.MoveToPoint
+      - Actions.Idle:
+        duration_60f: 10
+
+  Attack:
+    end_action: once
+    actions:
+      - REQUEST.player_position
+      - MOVER.rotate_toward
+      - STACK:
+        - ANIMATION.play_once:
+          tag: "windup"
+        - SOUND_PLAYER.looping:
+          tag: "winding up"
+      - STACK:
+        - ANIMATION_PLAY.looping:
+          tag: "attack"

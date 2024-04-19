@@ -1,0 +1,11 @@
+{
+    "aseprite_json": "16x16.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {},
+    "sprite_size": {
+        "x": 80,
+        "y": 16
+    },
+    "url": "16x16.png"
+}

@@ -1,0 +1,83 @@
+{
+    "achievements": false,
+    "assets": {
+        "16x16_sprite": "ref/16x16.sprite.json",
+        "16x8_sprite": "ref/16x8.sprite.json",
+        "bat_sprite": "ref/bat.sprite.json",
+        "driz": "driz.sprite.json",
+        "drizSprite": "driz.sprite.json",
+        "driz_sprite": "driz.sprite.json",
+        "en_worm": "ref/16x8.sprite.json",
+        "en_zombie": "ref/16x16.sprite.json",
+        "font": "quad://fonts/deja-8.font.json",
+        "palette_sprite": "ufo-50-1x.sprite.json",
+        "shapes_sprite": "quad://sprites/shapes-32x32.sprite.json",
+        "smallfont": "quad://fonts/deja-7.font.json",
+        "ufo-50-1x_sprite": "ufo-50-1x.sprite.json",
+        "void_explosion_64x64px_sprite": "ref/void_explosion_64x64px.sprite.json",
+        "wand": "wand.sprite.json",
+        "wand_sprite": "wand.sprite.json",
+        "wizSprite": "wiz.sprite.json",
+        "wiz_bigSprite": "wiz_big.sprite.json",
+        "wiz_big_sprite": "wiz_big.sprite.json",
+        "wiz_sprite": "wiz.sprite.json"
+    },
+    "competitive": false,
+    "constants": {
+        "YAML_DATA": {
+            "type": "raw",
+            "url": "sbtg_data.yml"
+        },
+        "LEVELS": {
+            "type": "raw",
+            "url": "levels.yml"
+        },
+        "text_color": {
+            "type": "rgb",
+            "value": {
+                "b": {
+                    "type": "number",
+                    "value": 1
+                },
+                "g": {
+                    "type": "number",
+                    "value": 1
+                },
+                "r": {
+                    "type": "number",
+                    "value": 1
+                }
+            }
+        }
+    },
+    "cooperative": false,
+    "copyright": "\u00a9Stephan Steinbach and Friends ",
+    "description": "Description of your game in about 100 characters.",
+    "developer": "Your Name Here",
+    "docs": [
+        "todo.md"
+    ],
+    "highscores": false,
+    "license": "CC0/Public Domain (Replace with your own license)",
+    "max_players": 1,
+    "min_players": 1,
+    "modes": [
+        "Title",
+        "YouDied",
+        "Play"
+    ],
+    "packages": [],
+    "screenshot_tag": "snes_prototype",
+    "scripts": [
+        "accel_lib.pyxl",
+        "bounce_lib.pyxl",
+        "yaml_spline.pyxl",
+        "quad://scripts/particle.pyxl",
+        "camera_shake.pyxl",
+        "palette.pyxl",
+        "behavior.pyxl"
+    ],
+    "start_mode": "Title",
+    "title": "snes_prototype",
+    "version": 0
+}

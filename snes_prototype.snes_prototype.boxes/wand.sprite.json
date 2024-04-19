@@ -1,0 +1,11 @@
+{
+    "aseprite_json": "wand.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {},
+    "sprite_size": {
+        "x": 8,
+        "y": 16
+    },
+    "url": "wand.png"
+}

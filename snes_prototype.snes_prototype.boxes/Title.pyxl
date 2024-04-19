@@ -1,0 +1,32 @@
+Title 
+════════════════════════════════════════════════════════════════════════
+
+// title scene
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+draw_text(
+    font,
+    "SUPER BEAT THE GOBBLINS",
+    SCREEN_SIZE/2,
+    rgb(1,1,1),
+    nil,
+    rgb(0.2,0.2,0.2),
+    "center",
+    "center",
+)
+
+draw_text(
+    font,
+    replace("press (a) to start", gamepad_array[0].prompt),
+    SCREEN_SIZE/2 + xy(0, 20),
+    rgb(1,1,1),
+    nil,
+    rgb(0.2,0.2,0.2),
+    "center",
+    "center",
+)
+
+if gamepad_array[0].aa:
+    set_mode(Play)

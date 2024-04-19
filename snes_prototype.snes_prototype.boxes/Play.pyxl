@@ -1,0 +1,2342 @@
+Play 
+════════════════════════════════════════════════════════════════════════
+const COLORS = palette_initialize(YAML_DATA.PALETTE, palette_sprite)
+
+const PARTICLES = make_particles()
+
+const DEBUG_FLAGS = YAML_DATA["DEBUG_FLAGS"]
+// @{ animation system
+def make_animator(
+        ent,
+        sprite_tag,
+        policy,
+        end_callback default nil,
+        start_frame default 0,
+        // holds the first frame as a flash frame
+        flash_frames default nil,
+        flash_color default rgb(1,1,1),
+):
+    const start_frame_real = if start_frame != nil then start_frame else 0
+    const initial_sprite = sprite_tag[start_frame_real] 
+    let initial_modef = initial_sprite.frames
+    let override_color = nil
+    if (flash_frames != nil and flash_frames > 0):
+        initial_modef = flash_frames
+        override_color = flash_color
+
+    // policy can be loop, once
+    return {
+        // inputs
+        target: ent,
+        sprite_tag: sprite_tag,
+        policy: policy,
+        end_callback: end_callback,
+        flash_frames: flash_frames,
+
+        // data
+        stop: false,
+        sprite: initial_sprite,
+        current_frame: start_frame,
+        last_update: mode_frames,
+        modef_until_update: initial_modef,
+        override_color: override_color,
+    }
+
+def update_animator(animator):
+    // not time yet to update the frame
+    const modef_elapsed_since_update = (mode_frames - animator.last_update)
+
+    if (
+            animator.stop 
+            or modef_elapsed_since_update < animator.modef_until_update
+    ):
+        debug_watch("noop anim")
+        return
+
+    // flash frames are completed
+    if (animator.flash_frames != nil):
+        animator.override_color = nil
+        animator.flash_frames = nil
+        animator.modef_until_update = animator.sprite.frames
+
+    animator.current_frame += 1
+    animator.last_update = mode_frames
+
+    if animator.current_frame >= size(animator.sprite_tag):
+        if animator.end_callback:
+            animator.end_callback()
+
+        if animator.policy != "loop":
+            animator.modef_until_update = infinity
+            animator.stop = true
+            return
+        else:
+            animator.current_frame = 0
+
+    animator.sprite = array_value(animator.sprite_tag, animator.current_frame)
+    animator.target.sprite = animator.sprite
+    animator.modef_until_update = animator.sprite.frames
+
+// @}
+
+// @{ apply forces over time
+def make_pusher(thing_to_push, force_per_frame, nframes):
+    def pusher(frames_left, total_frames):
+        thing_to_push.force += force_per_frame
+    add_frame_hook(pusher, nil, nframes)
+// @}
+
+const SPRITE_SCALE = 1
+
+def fmt_xy(pt):
+    return (
+        "(" + format_number(pt.x, ".00") + ", " 
+        + format_number(pt.y, ".00") + ")"
+    )
+
+// @{ firing styles
+//    trying to explore how to map a twin-stick idea onto a SNES controller
+//    
+//      L               R
+//      ^               y
+//     < >   -- --   x    a
+//      v               b
+// 1- Use xy/ab as a d-pad for which direction to shoot in
+// 2- the wand "swings" in the direction you're going in (animated toward the
+//      current direction of travel)
+// 3- like #2 but the animation time is 0
+def xyab_dpad(character, gpad):
+    // sets the wand position
+    // also triggers the fire
+    let rel_loc = character.wand.relative_location
+    if gpad.d:
+        rel_loc.y = 1
+    if gpad.a:
+        rel_loc.y = -1
+    if gpad.b:
+        rel_loc.x = 1
+    if gpad.c:
+        rel_loc.x = 1
+
+def motion_only(character, gpad):
+    let rel_loc = character.wand.relative_location
+
+    if gpad.x == 0 and gpad.y == 0:
+        return
+
+    for dim in ["x", "y"]:
+        rel_loc[dim] = gpad.xy[dim]
+
+const TWINSTICK_INPUT = {
+    "xyab_dpad": {
+        fn: xyab_dpad,
+    },
+    "wand_swings": nil,
+    "motion_only": {
+        fn: motion_only,
+    },
+}
+let CURRENT_TWINSTICK_INDEX = 0
+let CURRENT_TWINSTICK = ""
+def set_twinstick_index(new_index):
+    CURRENT_TWINSTICK_INDEX = new_index
+    CURRENT_TWINSTICK = keys(TWINSTICK_INPUT)[new_index]
+set_twinstick_index(0)
+const TWINSTICK_TEST = true
+// @}
+
+// @{ vector utils
+// returns v : xy reflected about n : xy
+def reflect(v, n):
+    return v - 2 * (dot(v, n)) *n
+
+def arr_to_color(arr):
+    return rgb(arr[0], arr[1], arr[2])
+// @}
+
+// @{ 
+const CONTROLS = {
+    "a": "pull/repel",
+    "q": "reset",
+    // @TODO: hold in position
+}
+// @}
+
+// @{ acceleration profile stuff
+def set_profile(ent, prof_name, preserve_vel default true):
+    const start_vel_x = if preserve_vel then ent.vel.x else 0
+    const start_vel_y = if preserve_vel then ent.vel.y else 0
+
+    ent.accel_profile_name = prof_name
+    ent.accel_profile = ACCELERATION_PROFILES[prof_name]
+    ent.x_accel = make_accelerator_from_profile(prof_name, start_vel_x)
+    ent.y_accel = make_accelerator_from_profile(prof_name, start_vel_y)
+
+def reset_accel_profile(ent):
+    ent.x_accel.current_velocity = ent.vel.x
+    ent.y_accel.current_velocity = ent.vel.y
+// @}
+
+// profiles for this test are defined in the yaml data
+extend(ACCELERATION_PROFILES, YAML_DATA["acceleration_profiles"])      
+
+// initialize physics system
+const enemy_category = 1 bitshl 1
+const wall_category = 1 bitshl 2
+const enemy_projectile = 1 bitshl 3
+const player_category = 1 bitshl 4
+
+const physics = make_physics({gravity: xy(0, 0)})
+
+def collision_handler(contact):
+    debug_print(
+        mode_frames + ":: hit a: " + contact.entityA.name
+        + " b: " + contact.entityB.name
+        + " at " + fmt_xy(contact.point0)
+        + " with normal " + fmt_xy(contact.normal)
+        + " depth: " + format_number(contact.depth, ".00")
+    )
+
+    if DEBUG_FLAGS.DRAW_COLLISION_MARKERS:
+        // capture and reset repelled flags
+        const dangerous = contact.depth > YAML_DATA.collision.damage_depth
+        const start_color = if dangerous then rgba(1,0,0,1) else rgba(0,1,0,1)
+        const   end_color = if dangerous then rgba(1,0,0,0) else rgba(0,1,0,0)
+
+        def mk_callback(pos):
+            def draw_collision(frames_left, total_frames):
+                draw_disk(
+                    pos,
+                    5,
+                    nil,
+                    lerp(
+                        start_color,
+                        end_color,
+                        frames_left/total_frames
+                    ),
+                    299
+                )
+            return draw_collision
+
+        add_frame_hook(mk_callback(contact.point0), nil, 60)
+
+        if contact.point1:
+            add_frame_hook(mk_callback(contact.point1), nil, 60)
+
+    if contact.entityA.collide:
+        const existing = contact.entityA.collide[contact.entityB.name] 
+        // keep the collision with more depth
+        if (existing == nil or existing.depth < contact.depth):
+            contact.entityA.collide[contact.entityB.name] = {
+                frame: mode_frames,
+                contact: contact,
+                depth: contact.depth,
+                other: contact.entityB,
+            }
+
+    if contact.entityB.collide:
+        const existing = contact.entityB.collide[contact.entityA.name] 
+        // keep the collision with more depth
+        if (existing == nil or existing.depth < contact.depth):
+            contact.entityB.collide[contact.entityA.name] = {
+                frame: mode_frames,
+                contact: contact,
+                depth: contact.depth,
+                other: contact.entityA,
+            }
+
+
+physics_add_contact_callback(
+    physics,
+    collision_handler,
+    // min depth
+    0,
+    // max depth
+    infinity,
+    // bitmask
+    // (enemy_category bitor wall_category)
+)
+
+// @{ obstacles system
+const obstacles = []
+const grid_size = xy(YAML_DATA["obstacle_sizes"]["grid"])
+
+def block_coords_to_px(block_coord):
+    const result = xy(
+        (block_coord.x)*grid_size.x,
+        (block_coord.y)*grid_size.y
+    )
+    debug_print(
+        "converted: " 
+        + unparse(block_coord) 
+        + " to: " + unparse(result)
+    )
+    return result
+
+
+def populate_obstacle(origin, size_xy):
+    for ix < size_xy.x:
+        for iy < size_xy.y:
+            physics_add_entity(
+                physics,
+                push(
+                    obstacles,
+                    make_entity(
+                        {
+                            name: "obstacle",
+                            pos: block_coords_to_px(origin + xy(ix, iy)),
+                            size: grid_size,
+                            shape: "rect",
+                            density: infinity,
+                            contact_category_mask: wall_category,
+                        }
+                    )
+                )
+            )
+
+// size of the room in grid cells
+const ROOM_SIZE_TILES_XY = xy(YAML_DATA["room"][0], YAML_DATA["room"][1])
+// size of the room in pixels
+const ROOM_SIZE_PX_XY = ROOM_SIZE_TILES_XY*grid_size
+
+def read_obstacles():
+    debug_print("ROOM SIZE:", ROOM_SIZE_TILES_XY)
+    // walls
+    // top
+    populate_obstacle(
+        xy(-ROOM_SIZE_TILES_XY.x/2, -ROOM_SIZE_TILES_XY.y/2),
+        xy(ROOM_SIZE_TILES_XY.x, 2)
+    )
+    // left
+    populate_obstacle(
+        xy(-ROOM_SIZE_TILES_XY.x/2, -ROOM_SIZE_TILES_XY.y/2),
+        xy(2, ROOM_SIZE_TILES_XY.y)
+    )
+    // right
+    populate_obstacle(
+        xy(ROOM_SIZE_TILES_XY.x/2, -ROOM_SIZE_TILES_XY.y/2),
+        xy(2, ROOM_SIZE_TILES_XY.y)
+    )
+    // bottom
+    populate_obstacle(
+        xy(-ROOM_SIZE_TILES_XY.x/2, ROOM_SIZE_TILES_XY.y/2),
+        xy(ROOM_SIZE_TILES_XY.x+2, 2)
+    )
+
+    for thing in YAML_DATA["obstacles"]:
+        const origin = thing[0]
+        const size_tuple = thing[1]
+        populate_obstacle(xy(origin), xy(size_tuple[0], size_tuple[1]))
+
+// the global background color
+const ROOM_BG_COLOR = rgb(0.05, 0.05, 0.1)
+const ARENA_BG_COLOR = rgb(0.2, 0.2, 0.2)
+const LINE_COLOR = rgb(0.4, 0.4, 0.4)
+
+def draw_bg_tower_top_square():
+    set_background(ROOM_BG_COLOR)
+
+    // the arena background
+    draw_rect(xy(0, 0), ROOM_SIZE_PX_XY, ARENA_BG_COLOR, nil, 0, -1)
+
+
+    // left angled line
+    const bottom_left_px = (
+        xy(-ROOM_SIZE_PX_XY.x/2, ROOM_SIZE_PX_XY.y/2)
+        + xy(0, 2*grid_size.y)
+    )
+    const Y_BOTTOM = 2*ROOM_SIZE_PX_XY.y
+    draw_line(
+        bottom_left_px,
+        xy(bottom_left_px.x, Y_BOTTOM),
+        ARENA_BG_COLOR,
+    )
+
+    // right angled line
+    const bottom_right_px = (
+        xy(ROOM_SIZE_PX_XY.x/2, ROOM_SIZE_PX_XY.y/2) 
+        + 2*grid_size
+    )
+    draw_line(
+        bottom_right_px,   
+        xy(bottom_right_px.x, Y_BOTTOM),
+        ARENA_BG_COLOR,
+    )
+
+    // draw the bottom part background
+    draw_corner_rect(
+        bottom_left_px,
+        xy(bottom_right_px.x, Y_BOTTOM) - bottom_left_px,
+        ARENA_BG_COLOR
+    )
+
+    let y = ROOM_SIZE_PX_XY.y/2
+    let inc = 30
+    const dec = 6
+    while (y <= ROOM_SIZE_PX_XY.y):
+        draw_line(
+            xy(bottom_left_px.x, y),
+            xy(bottom_right_px.x, y),
+            LINE_COLOR
+        )
+        y+=inc
+        inc -= dec
+        inc = max(inc, dec)
+
+    // left blocker
+    draw_tri(
+        bottom_left_px,
+        xy(bottom_left_px.x, Y_BOTTOM),
+        xy(bottom_left_px.x/4, Y_BOTTOM),
+        ROOM_BG_COLOR
+    )
+
+    // right blocker
+    draw_tri(
+        bottom_right_px,
+        xy(bottom_right_px.x, Y_BOTTOM),
+        xy(bottom_right_px.x/4, Y_BOTTOM),
+        ROOM_BG_COLOR
+    )
+
+    // left border line
+    draw_line(
+        bottom_left_px,
+        xy(bottom_left_px.x/4, Y_BOTTOM),
+        LINE_COLOR
+    )
+
+    // right border line
+    draw_line(
+        bottom_right_px,
+        xy(bottom_right_px.x/4, Y_BOTTOM),
+        LINE_COLOR
+    )
+
+def cantilever_balcony_bg():
+    set_background(ROOM_BG_COLOR)
+
+    // the arena background
+    draw_rect(xy(0, 0), ROOM_SIZE_PX_XY, ARENA_BG_COLOR, nil, 0, -2)
+
+    const tower_top_left = xy(1.5*(-ROOM_SIZE_PX_XY.x/2), -ROOM_SIZE_PX_XY.y)
+    const tower_top_size = ROOM_SIZE_PX_XY.x + grid_size.x*2 + ROOM_SIZE_PX_XY.x/2
+    const tower_top_right = tower_top_left + xy(tower_top_size, 0)
+
+    // tower_main
+    draw_corner_rect(
+        tower_top_left,
+        // todo extend to right and left
+        xy(
+            tower_top_size,
+            ROOM_SIZE_PX_XY.y/2
+        ),
+        ARENA_BG_COLOR,
+        nil,
+        -2
+    )
+
+    // left triangle
+    const above_arena_left = xy(-ROOM_SIZE_PX_XY.x/2, -ROOM_SIZE_PX_XY.y)
+    const arena_top_left = xy(-ROOM_SIZE_PX_XY.x/2, -ROOM_SIZE_PX_XY.y/2)
+
+
+    // right triangle
+    const top_right_x = ROOM_SIZE_PX_XY.x/2 + 2*grid_size.x
+    const above_arena_right = xy(top_right_x, -ROOM_SIZE_PX_XY.y)
+    const arena_top_right = xy(top_right_x, -ROOM_SIZE_PX_XY.y/2)
+
+    // perspective lines from the top
+    let y = -ROOM_SIZE_PX_XY.y/2
+    let gap = 20
+    const gap_inc = 5
+    while (y >= -ROOM_SIZE_PX_XY.y):
+        draw_line(
+            xy(tower_top_left.x, y),
+            xy(tower_top_right.x, y),
+            LINE_COLOR,
+            -1
+        )
+        y-=gap
+        gap += gap_inc
+
+    draw_tri(
+        tower_top_left,
+        arena_top_left + xy(0, 1),
+        xy(tower_top_left.x, arena_top_left.y) + xy(0, 1),
+        ROOM_BG_COLOR,
+    )
+
+    draw_tri(
+        tower_top_right,
+        arena_top_right+ xy(0, 1),
+        xy(tower_top_right.x, arena_top_left.y) + xy(0, 1),
+        ROOM_BG_COLOR,
+    )
+
+    // left bottom angled line
+    const bottom_left_px = (
+        xy(-ROOM_SIZE_PX_XY.x/2, ROOM_SIZE_PX_XY.y/2)
+        + xy(0, 2*grid_size.y)
+    )
+    const Y_BOTTOM = 2*ROOM_SIZE_PX_XY.y
+
+    // right angled line
+    const bottom_right_px = (
+        xy(ROOM_SIZE_PX_XY.x/2, ROOM_SIZE_PX_XY.y/2) 
+        + 2*grid_size
+    )
+
+def draw_none():
+    return
+
+
+const BG_MODES = {
+    "cantilever_balcony_bg": cantilever_balcony_bg,
+    "tower_top_square": draw_bg_tower_top_square,
+    "none": draw_none,
+}
+const CURRENT_BG_INDEX = 0
+
+const WIZ_BOX_CENTER_TOP = (
+    xy(0, 0) 
+    - xy(0, ROOM_SIZE_PX_XY.y/2) 
+    - xy(YAML_DATA["WIZZARD_BOX_OFFSET"])
+)
+let default_bob_animation_wizzard = true
+let wiz_pos = xy(0, 0)
+def draw_wizzard_box_above():
+    draw_rect(
+        WIZ_BOX_CENTER_TOP,
+        xy(YAML_DATA["WIZZARD_BOX_SIZE"]),
+        ARENA_BG_COLOR,
+        LINE_COLOR,
+        0,
+        -1
+    )
+
+    // draw the wizzard
+    if default_bob_animation_wizzard:
+        wiz_pos = (
+            WIZ_BOX_CENTER_TOP 
+            - xy(YAML_DATA["WIZZARD_OFFSET_PX"])
+            - xy(
+                0,
+                sin(mode_frames/YAML_DATA["WIZZARD_FLOAT_PERIOD_FR"]) 
+                * YAML_DATA["WIZZARD_FLOAT_SCALE_PX"]
+            )
+        )
+
+    const spr = (
+        if DEBUG_FLAGS.DRAW_WIZ_BIG then wiz_bigSprite else wizSprite 
+    )
+    const scale_fact = YAML_DATA["WIZZARD_SCALE"]/spr.size.y
+    const scale = xy(scale_fact, scale_fact)
+
+    draw_sprite(
+        {
+            sprite: spr,
+            pos: wiz_pos,
+            scale: scale,
+        }
+    )
+    return
+
+// the cneter of the box if the box is on the left (w/ parallax)
+const WIZ_BOX_CENTER_LEFT = (
+    xy(0, 0) 
+    - xy(ROOM_SIZE_PX_XY.x/2, 0) 
+    - xy(YAML_DATA["WIZZARD_BOX_LEFT_SIZE"][0]/2, 0)
+    - xy(YAML_DATA["WIZZARD_BOX_LEFT_OFFSET"])
+)
+def draw_wizzard_box_side():
+    draw_rect(
+        WIZ_BOX_CENTER_LEFT,
+        xy(YAML_DATA["WIZZARD_BOX_LEFT_SIZE"]),
+        LINE_COLOR,
+        LINE_COLOR,
+        0,
+        -1
+    )
+
+    draw_sprite(
+        {
+            sprite: wiz_bigSprite,
+            pos: (
+                WIZ_BOX_CENTER_LEFT 
+                - xy(YAML_DATA["WIZZARD_OFFSET_PX"])
+                - xy(
+                    0,
+                    sin(mode_frames/YAML_DATA["WIZZARD_FLOAT_PERIOD_FR"]) 
+                    * YAML_DATA["WIZZARD_FLOAT_SCALE_PX"]
+                )
+            ),
+            scale: xy(YAML_DATA["WIZZARD_SCALE"], YAML_DATA["WIZZARD_SCALE"]),
+        }
+    )
+
+
+let LAKITU_POS = clone(WIZ_BOX_CENTER_TOP)
+def draw_wizzard_lakitu():
+    const target_pos = PLAYER.pos + xy(YAML_DATA["LAKITU_SCREEN_OFFSET"])
+    LAKITU_POS = lerp(LAKITU_POS, target_pos, YAML_DATA["LAKITU_FOLLOW"])
+    const final_lakitu_pos = (
+        LAKITU_POS 
+        - xy(
+            0,
+            sin(mode_frames/YAML_DATA["WIZZARD_FLOAT_PERIOD_FR"]) 
+            * YAML_DATA["WIZZARD_FLOAT_SCALE_PX"]
+        )
+    )
+
+    // draw the cloud
+    for data in YAML_DATA["LAKITU_CLOUD_OFFSET"]:
+        const color = if size(data) >2 then rgb(data[2]) else rgb(1,1,1)
+
+        draw_disk(
+            final_lakitu_pos + xy(data[0]),
+            data[1],
+            color,
+            nil,
+            9
+        )
+
+    draw_sprite(
+        {
+            sprite: wiz_bigSprite,
+            pos: (
+                final_lakitu_pos 
+                + xy(YAML_DATA["LAKITU_WIZZ_OFFSET"])
+            ),
+            scale: xy(YAML_DATA["WIZZARD_SCALE"], YAML_DATA["WIZZARD_SCALE"]),
+            z:10,
+        }
+    )
+
+
+const WIZZARD_MODES = {
+    "box_above_arena": draw_wizzard_box_above,
+    "box_left_arena": draw_wizzard_box_side,
+    "lakitu": draw_wizzard_lakitu,
+    "none": draw_none,
+}
+let CURRENT_WIZZ_INDEX = 0
+
+def draw_wizzard():
+    // let fn = values(WIZZARD_MODES)[CURRENT_WIZZ_INDEX]
+    const fn = values(WIZZARD_MODES)[0]
+    fn()
+
+// draw the arena
+def draw_bg():
+    const fn = values(BG_MODES)[CURRENT_BG_INDEX]
+    fn()
+
+def draw_obstacles():
+    const shad_color = rgb(0.3, 0.3, 0.3)
+    const fill_color = rgb(0.6, 0.6, 0.6)
+    const hi_color = rgb(0.8, 0.8, 0.8)
+    for thing in obstacles:
+        draw_corner_rect(thing.pos, thing.size, fill_color)
+
+        // in case you need the center for some reason
+        // draw_disk(thing.pos, 3, rgb(0,1, 0))
+
+        // shadow
+        draw_line(
+            thing.pos + thing.size - xy(1, 1),
+            thing.pos + xy(thing.size.x-1, 0),
+            shad_color
+        )
+        draw_line(
+            thing.pos + thing.size - xy(1, 1),
+            thing.pos + xy(0, thing.size.y-1),
+            shad_color
+        )
+
+        // highlight
+        draw_line(thing.pos, thing.pos + xy(thing.size.x-1, 0), hi_color)
+        draw_line(thing.pos, thing.pos + xy(0, thing.size.y-1), hi_color)
+
+read_obstacles()
+// @}
+
+
+// @{
+const PROJECTILES = []
+def draw_projectiles():
+    debug_watch(size(PROJECTILES))
+    for proj in PROJECTILES:
+        draw_disk(proj)
+
+def update_projectiles():
+    const things_to_prune = []
+    for proj at index in PROJECTILES:
+        // check extinction condition first
+        if proj.extinction_frame <= mode_frames:
+            push(things_to_prune, [index, proj])
+            continue
+
+        if overlaps(proj, PLAYER):
+            proj.hit_callback(proj, PLAYER)
+
+    for val in things_to_prune:
+        physics_remove_entity(physics, val[1])
+        fast_remove_key(PROJECTILES, val[0])
+
+
+def deal_damage(projectile, thing_being_hit):
+    if not DEBUG_FLAGS.TAKE_DAMAGE:
+        return
+    todo("deal damage")
+
+def make_ranged_attack(pos, dir, speed, proj_size, callback, lifetime):
+    const new_proj = make_entity(
+        {
+            pos: pos,
+            vel: dir * speed,
+            shape: "disk",
+            radius: proj_size,
+            size: xy(proj_size, proj_size),
+            z: 100,
+            color: rgb(1,1,1),
+            extinction_frame: mode_frames + lifetime,
+
+            // contact
+            contact_category_mask: enemy_projectile,
+            // hits walls and players
+            contact_hit_mask: (
+                enemy_projectile 
+                bitand player_category 
+                bitand wall_category
+            ),
+            hit_callback: callback,
+        }
+    )
+
+    physics_add_entity(physics, new_proj)
+    push(PROJECTILES, new_proj)
+// @}
+
+
+// @{ enemies
+const ENEMIES = []
+const enemy_info_map = YAML_DATA["enemy_def_map"]
+def enemy_info(en):
+    return enemy_info_map[en.kind]
+
+// load the enemy profiles into the accel structure map
+for en at name in enemy_info_map:
+    ACCELERATION_PROFILES[name] = en["accel_profile"]
+
+def default_move(en, start_frame):
+    en.vel = (
+        direction(en.target - en.pos) * en.accel_profile["max_velocity"]
+    )
+
+    return ACTION_RUNNING
+
+def zombie_move(en, start_frame):
+    const lurch_length = enemy_info_map["zombie"]["lurch_length"]
+    en.joy = direction(en.target - en.pos)
+    en.vel = lerp(
+        en.accel_profile["max_velocity"],
+        0,
+       smootherstep(
+           0,
+           1,
+           ((mode_frames - start_frame) mod lurch_length)/lurch_length
+       )
+    ) * en.joy
+    if (mode_frames - start_frame) mod lurch_length == 0:
+        displace_bouncer(en.scale_y_bouncer, 0.7)
+
+    return ACTION_RUNNING
+
+def ranged_move(en, start_frame):
+    if mode_frames == start_frame+1:
+        // reset acceleration
+        set_profile(en, en.kind, false)
+
+        //override the look
+        en.sprite_orig = clone(en.sprite)
+        en.sprite = shapes_sprite.circle
+        en.sprite_scale_orig = clone(en.sprite_scale)
+        en.sprite_scale = enemy_info_map[en.kind].move.sprite_scale_mult
+        en.sprite_override_color_orig = clone(en.sprite_override_color)
+        en.sprite_override_color = rgb(
+            enemy_info_map[en.kind].move.sprite_color_rgb
+        )
+
+    const diff = en.target - en.pos
+
+    if magnitude(diff) < 7:
+        displace_bouncer(en.scale_y_bouncer, 0.7)
+        en.joy = xy(0, 0)
+    else:
+        en.joy = direction(diff)
+
+    if distance_is_within(en.pos, en.target, 10):
+        // restore values
+        en.sprite = en.sprite_orig
+        en.sprite_scale = en.sprite_scale_orig
+        en.sprite_override_color = en.sprite_override_color_orig
+
+    update_accelerators(en, en.joy)
+
+    return ACTION_RUNNING
+
+const MOVERS = {
+    "zombie": zombie_move,
+    "ranged": ranged_move,
+}
+
+def angle_towards_player(en):
+    const player_dir = direction(PLAYER.pos - en.pos)
+    const player_angle = xy_to_angle(player_dir)
+
+    return player_angle
+
+// works
+const STATE_INFO_MAP = YAML_DATA.state_info
+
+def state_wander(en):
+    en.joy = random_direction2D()
+
+def state_idle(en):
+    en.joy = xy(0, 0)
+
+def state_run_away(en):
+    // get angle _away_ from player
+    const player_angle = pi + angle_towards_player(en)
+    const angle_offset = random(-pi/4, pi/4)
+    en.joy = angle_to_xy(player_angle + angle_offset)
+
+def state_charge(en):
+    if en.last_change == mode_frames:
+        // find the player
+        const player_angle = angle_towards_player(en)
+        const angle_offset = random(-pi/4, pi/4)
+        en.joy = angle_to_xy(player_angle + angle_offset)
+        en.target = clone(PLAYER.pos)
+
+    draw_disk(
+        en.target,
+        5,
+        nil,
+        rgb(0,1,0),
+    )
+    draw_line(
+        en.pos,
+        en.target,
+        rgb(0,1,0),
+    )
+
+const STATE_ACTIONS = {
+    "Idle": state_idle,
+    "Run": state_wander,
+    "RunAway": state_run_away,
+    "Charge": state_charge,
+}
+
+const ACTION_SUCCESS = "success"
+const ACTION_FAILURE = "failure"
+const ACTION_RUNNING = "running"
+
+def action_ranged_shoot(en, at_point):
+    const start_frame = mode_frames
+    const en_info = enemy_info(en)
+    const attack_charge_time_f = en_info["attack_charge_time_f"]
+    assert(attack_charge_time_f != nil, "charge time is nil")
+    const shoot_frame = mode_frames + attack_charge_time_f
+    const done_frame = shoot_frame + en_info["cooldown_time_f"]
+
+    def update(en):
+        if mode_frames == shoot_frame:
+            make_ranged_attack(
+                en.pos,
+                direction(PLAYER.pos - en.pos),
+                en_info["projectile"]["speed_px_f"],
+                en_info["projectile"]["radius_px"],
+                deal_damage,
+                en_info["projectile"]["lifetime_f"],
+            )
+
+        if mode_frames == done_frame:
+            return ACTION_SUCCESS
+
+
+    return {
+        name: "Shoot",
+        update: update,
+    }
+
+def action_idle(en, count):
+    const end_frame = mode_frames + count
+    const en_info = enemy_info(en)
+    let first = true
+    def update(en):
+        if first:
+            first = false
+            if en_info["animator"] != nil:
+                en.animator = make_animator(
+                    en,
+                    (ASSETS[en_info.draw])[en_info.animator],
+                    "loop",
+                )
+
+
+        // for now its idle so periodically it switches direction
+        debug_watch(mode_frames)
+        debug_watch(end_frame)
+        if end_frame == mode_frames:
+            return ACTION_SUCCESS
+
+        return ACTION_RUNNING
+
+    return {
+        name: "Idle",
+        update: update,
+    }
+
+def action_stunned(en):
+    const end_frame = mode_frames + 2
+
+    def update(en):
+        if end_frame <= mode_frames:
+            return ACTION_SUCCESS
+
+        const en_info = enemy_info(en)
+        if ASSETS[en_info.draw]:
+            const stun_frame = ASSETS[en_info.draw]["stun"]
+            if stun_frame:
+                en.animator = make_animator(en, stun_frame, "loop")
+
+        return ACTION_RUNNING
+
+    return {
+        name: "Stun",
+        update: update,
+    }
+
+def action_swoop_windup_at(en):
+    const en_info = enemy_info(en)
+    en.animator = make_animator(
+        en, 
+        (ASSETS[en_info.draw])["swoop_windup"],
+        "once"
+    )
+    def update(en):
+        // end once animation is over
+        if en.animator.stop:
+            return ACTION_SUCCESS
+    return {
+        name: "swoop_windup",
+        update: update,
+    }
+
+def action_swoop_at(en, target):
+    const en_info = enemy_info(en)
+    en.animator = make_animator(
+        en, 
+        (ASSETS[en_info.draw])["swoop"],
+        "once"
+    )
+    return action_move_in_direction(
+        en,
+        direction(target.pos - en.pos),
+        en_info.swoop_length,
+        en_info.swoop_vel,
+    )
+
+def action_move_in_direction(en, dir, dist, vel default nil):
+    // assume that motion is constant for now
+    const en_info = enemy_info(en)
+    const velocity = if vel != nil then vel else en_info.accel_profile.max_velocity
+    const end_frame = mode_frames + dist / velocity
+    const start_frame = mode_frames
+    let motion_direction = clone(dir)
+
+    def update(en):
+        if mode_frames >= end_frame:
+            return ACTION_SUCCESS
+
+        for c at thing in en.collide
+        & if dot(c.N, motion_direction) <= 0:
+            motion_direction = reflect(
+                motion_direction,
+                c.contact.normal
+            )
+            break
+
+        en.contact = nil
+        en.vel = motion_direction * velocity
+        if sign(en.vel.x) != 0:
+            en.dir.x = sign(en.vel.x)
+
+        if DEBUG_FLAGS.DRAW_ENEMY_AI_STATUS:
+            draw_line(
+                en.pos,
+                en.pos + 30*direction(motion_direction),
+                COLORS.ai_motion_dir,
+                100
+            )
+
+    return {
+        name: "Run",
+        update: update,
+    }
+
+
+def action_move_to(en, pos, proximity default 5, timeout default 480):
+    const start = mode_frames
+    displace_bouncer(en.scale_y_bouncer, 0.01)
+
+    en.target = clone(pos)
+    en.joy = direction(en.target - en.pos)
+    if sign(en.joy.x) != 0 and sign(en.joy.x) != en.dir.x:
+        en.dir.x = sign(en.joy.x)
+    if sign(en.joy.y) != 0 and sign(en.joy.y) != en.dir.y:
+        en.dir.y = sign(en.joy.y)
+
+    def update(en):
+        if distance_is_within(en.pos, en.target):
+            en.target = nil
+            en.joy = xy(0, 0)
+            en.vel = xy(0, 0)
+            return ACTION_SUCCESS
+
+        if mode_frames - start > timeout:
+            en.target = nil
+            en.joy = xy(0, 0)
+            en.vel = xy(0, 0)
+            return ACTION_FAILURE
+
+        // if the enemy doesn't have a move defined
+        const move_func = (
+            if MOVERS[en.kind] != nil 
+            then MOVERS[en.kind] 
+            else default_move
+        )
+
+        return move_func(en, start)
+
+    return {
+        name: "Run",
+        update: update,
+        start: start,
+    }
+
+def distance_is_within(fst_v2, snd_v2, rad_px default 5):
+    return magnitude(fst_v2 - snd_v2) < rad_px
+
+def is_visible_to(first_en, second):
+    const near_radius_px = enemy_info(first_en)["near_radius_px"]
+    return distance_is_within(first_en.pos, second.pos, near_radius_px)
+
+def brain_zombie(en):
+    assert(false, "handle the case where the player is visible")
+
+    // is the player visible?
+    // if is_visible_to(en, PLAYER):
+    //     if _in_range_of(en, PLAYER):
+
+    // if is_visible_to(en, PLAYER):
+    if false:
+        assert(false, "handle the case where the player is visible")
+    else if false:
+        // if another zombie that is aggro is visible
+        return
+
+def brain_ranged(en):
+    if en.last_action == nil or en.last_action.name == "Run":
+        en.dir.x *= -1
+        return action_ranged_shoot(en, PLAYER.pos)
+
+    const mult = if en.pos.x - en.spawn_location.x > 0 then -1 else 1
+    const next_pos = xy(mult * 80, 0) + en.spawn_location
+
+    return action_move_to(en, next_pos)
+
+
+// just walk back and forth
+def fallback_brain(en):
+    if en.last_action == nil or en.last_action.name == "Run":
+        en.dir.x *= -1
+        return action_idle(en, floor(random(60,120)))
+
+    const mult = if en.pos.x - en.spawn_location.x > 0 then -1 else 1
+    const next_pos = xy(mult * 80, 0) + en.spawn_location
+
+    return action_move_to(en, next_pos)
+
+def brain_rat(en):
+    // put an idle in between other actions
+    if en.last_action == nil or en.last_action.name != "Idle":
+        const idle_time = enemy_info(en)["idle_range_f"]
+        return action_idle(en, floor(random(idle_time[0], idle_time[1])))
+
+    const walk_range = enemy_info(en)["walk_distance_range_px"]
+    return action_move_in_direction(
+        en,
+        // direction
+        random_direction2D(),
+        // walk distance
+        random(walk_range[0], walk_range[1])
+    )
+
+def brain_bat(en):
+    if en.last_action != nil and en.last_action.name == "swoop_windup":
+        return action_swoop_at(en, en.target)
+
+    // put an idle in between other actions
+    if en.last_action == nil or en.last_action.name != "Idle":
+        const idle_time = enemy_info_map[en.kind]["idle_range_f"]
+        return action_idle(en, floor(random(idle_time[0], idle_time[1])))
+
+    en.target = if is_visible_to(en, PLAYER) then PLAYER else nil
+
+    if en.target:
+        return action_swoop_windup_at(en)
+    else:
+        const walk_range = enemy_info_map[en.kind]["walk_distance_range_px"]
+        return action_move_in_direction(
+            en,
+            // direction
+            random_direction2D(),
+            // walk distance
+            random(walk_range[0], walk_range[1])
+        )
+
+def brain_always_idle(en):
+    return action_idle(en, infinity)
+
+
+const BRAINS = {
+    // "zombie": brain_zombie,
+    "zombie": brain_rat,
+    "ranged": brain_ranged,
+    "rat": brain_rat,
+    "bat": brain_bat,
+    "beam": brain_rat,
+    "box": brain_always_idle,
+}
+def brain_for(en):
+    const brain = BRAINS[en.kind]
+    if brain != nil:
+        return brain
+    else:
+        return fallback_brain
+
+def next_action_for(en):
+    const brain = brain_for(en)
+    return brain(en)
+
+
+def enemy_dies(en):
+    push(EFFECTS, make_effect(en.pos, void_explosion_64x64px_sprite.explode))
+    en.is_dead = true
+
+// called by iterate
+def update_enemy(en):
+    if en.collide
+    & for other_entity at other_name in en.collide
+    & if other_entity.enchantment_state == "repel":
+        // do damage
+        // en.health -= 1
+        todo("check collision for enemy damage")
+
+    if (en.health == 0):
+        enemy_dies(en)
+
+    if en.is_dead:
+        // @TODO: how to prune enemies
+        physics_remove_entity(physics, en)
+        return iterate.REMOVE
+
+    if en.action:
+        const result = en.action.update(en)
+        if result == ACTION_SUCCESS or result == ACTION_FAILURE:
+            en.last_action = clone(en.action)
+            en.action = nil
+        en.last_result = clone(result)
+
+    if en.action == nil:
+        en.action = next_action_for(en)
+        en.state = en.action.name
+
+    en.animated_scale = update_bouncer(en.scale_y_bouncer)
+    if en.animator != nil:
+        update_animator(en.animator)
+        en.sprite = en.animator.sprite
+
+    en.collide = {}
+
+
+// useful for debugging the movement system
+def set_mode_constant(en, dir):
+    en.ready = infinity
+    en.state = "constant"
+    en.joy = clone(dir)
+
+// for tracking sprite offsets
+const SPRITE_INDEXES = {}
+
+// starts empty
+const ENEMY_KIND_COUNT = {}
+for data at en_kind in YAML_DATA["enemy_def_map"]:
+    debug_print(en_kind)
+    ENEMY_KIND_COUNT[en_kind] = 1
+    SPRITE_INDEXES[en_kind] = 0
+    if data["sprite_index"]:
+        SPRITE_INDEXES[en_kind] = data["sprite_index"]
+
+
+def make_enemy(kind, pos):
+    const name = kind + ENEMY_KIND_COUNT[kind]
+    debug_print("adding: " + name + " [" + kind + "] at: " + fmt_xy(pos))
+    const en_info = enemy_info_map[kind]
+    let spr = nil
+    const sprite_scale = SPRITE_SCALE
+
+    // if you specify that its a specific sprite otherwise use the sprite index
+    if ASSETS[en_info["draw"]]:
+        const sprite_index = SPRITE_INDEXES[kind]
+        if sprite_index == nil:
+            debug_print(en.kind + " INDEX IS NULL: " + str)
+            debug_print(sprite_index)
+        spr = ASSETS[en_info["draw"]][sprite_index]
+        if size(spr) > 0:
+            spr = spr[0]
+
+    const new_en = make_entity(
+        {
+            name: name,
+            kind: kind,
+            count: ENEMY_KIND_COUNT[kind],
+            pos: pos,
+            spawn_location: clone(pos),
+            animated_scale: 1,
+            dir: xy(1, 1),
+            size: xy(en_info.size),
+            drag: en_info.drag,
+            scale_y_bouncer: make_bouncer_from_profile("_BUILTIN"),
+            health: en_info.health,
+            collide: clone(en_info.collide),
+            shape: "rect",
+            state: "Idle",
+            scale: xy(enemy_info_map[kind]["scale"]),
+            ready: mode_frames + random_integer(10),
+            last_change: mode_frames,
+            joy: xy(0, 0),
+            contact_category_mask: enemy_category,
+            is_enemy: true,
+
+            sprite: spr,
+            sprite_scale: sprite_scale,
+
+            // behavior decks
+            deck_near: en_info.deck_near,
+            deck_far: en_info.deck_far,
+
+            // being grabbed/repelled/etc by player
+            enchantment_state: nil,
+        }
+    )
+
+    if en_info["animator"] != nil:
+        new_en.animator = make_animator(
+            new_en,
+            (ASSETS[en_info.draw])[en_info.animator],
+            "loop",
+        )
+
+    ENEMY_KIND_COUNT[kind] += 1
+    set_profile(new_en, kind)
+    physics_add_entity(physics, new_en)
+    physics_attach(physics, "gyro", {entityB: new_en, angle: 0 deg})
+    return new_en
+
+const ENEMIES_DATA = LEVELS[LEVELS.CURRENT]
+
+def read_enemies()
+& for en_spec in ENEMIES_DATA:
+    const en = en_spec[0]
+    const pos = (
+        if en_spec[1] == "rnd" 
+        // @TODO: make sure the position is safe and inside the boundaries
+        then xy(ROOM_SIZE_PX_XY) * xy(random_within_square())
+        else block_coords_to_px(xy(en_spec[1]))
+    )
+
+    push(ENEMIES, make_enemy(en, pos))
+
+read_enemies()
+// @}
+
+
+// @{ PLAYER setup
+// build the PLAYER object
+def make_player(index default 0):
+    const base_player = deep_clone(YAML_DATA.player.initial)
+
+    // @TODO: better dispatch using type suffixes (_RGBA, _XY, _XYZ etc)
+
+    for xyparam in ["pos", "vel", "size", "scale", "dir", "offset"]:
+        base_player[xyparam] = xy(base_player[xyparam])
+    for cloneparam in ["collide"]:
+        base_player[cloneparam] = clone(base_player[cloneparam])
+
+    base_player.sprite = ASSETS[base_player.sprite].Idle[0]
+    base_player.contact_category_mask = player_category
+    base_player.wand = make_entity(
+        {
+            name: "wand",
+            // not used
+            pos: xy(0, 0),
+            sprite: wand[0][0],
+            relative_location: xy(1, 0),
+        }
+    )
+
+    return make_entity(base_player)
+
+const PLAYER = make_player()
+PLAYER.animator = make_animator(PLAYER, driz.Idle, "loop", nil, 0, 30, rgb(1,0,0))
+
+// set the acceleration profile -- unrelated to physics, this leverages
+// the acceleration profiles set up by accel_lib
+set_profile(PLAYER, "player_move_normal")
+
+// physics configuration @{
+// add it to the physics system
+physics_add_entity(physics, PLAYER)
+// @}
+
+// the gyro attachment prevents rotation
+physics_attach(physics, "gyro", {entityB: PLAYER, angle: 0 deg})
+
+def update_accelerators(character, input):
+    character.vel.x = accelerator_update(character.x_accel, input.x)
+    character.vel.y = accelerator_update(character.y_accel, input.y)
+
+// @{ repel system - prune
+const repel_duration = YAML_DATA.player.spells.repel.duration_60f
+def prune_old_repel_groups(repel_group):
+    if repel_group.time < mode_frames - repel_duration:
+        debug_print(
+            "[" + mode_frames + "] "
+            + "pruning repel group with " 
+            + size(repel_group.enemies)
+            + " enemies, created on: " 
+            + repel_group.time
+        )
+        return iterate.REMOVE
+
+def repel_apply_collision_rules(repel_group):
+    iterate(repel_group.enemies, prune_collided_enemies)
+    if size(repel_group.enemies) <= 0:
+        debug_print(
+            "[" + mode_frames + "] "
+            + "pruning empty repel group with " 
+            + size(repel_group.enemies)
+            + " enemies, created on: " 
+            + repel_group.time
+        )
+        return iterate.REMOVE
+
+def prune_collided_enemies(en)
+& with collide in en
+& if (size(collide) > 0 or en.is_dead):
+    for collide at name in en.collide
+    & if (collide.other and collide.other.health > 0):
+        collide.other.health -= 1
+        FREEZE_FRAME_COUNT += 2
+    return iterate.REMOVE
+// @}
+
+def update_player(character):
+    const gamepad = gamepad_array[character.index]
+
+    if gamepad.qq:
+        reset_game()
+
+    if character.health <= 0:
+        set_mode(YouDied)
+
+    // repel system - prune old groups
+    iterate(character.repelled_enemies, prune_old_repel_groups)
+
+    if character.lock_input == false:
+        if gamepad.aa:
+            character.pull_activated = mode_frames
+        if character.pull_activated != nil and gamepad.a:
+            const grab_window_60f = YAML_DATA.player.spells.pull.grab_window_60f
+            if (mode_frames - character.pull_activated < grab_window_60f):
+                // clear pull state
+                for en in character.pulled_enemies:
+                    en.enchantment_state = nil
+                character.pulled_enemies = compute_pulled_enemies(character)
+            move_pulled_enemies(character)
+
+        if gamepad.released_a:
+            character.pull_activated = nil
+            // repel system - create new group
+            const new_repel_group = {
+                vel: (
+                    clone(character.vel) 
+                    + YAML_DATA.player.spells.repel.strength * character.dir
+                ),
+                time: mode_frames,
+                enemies: clone(character.pulled_enemies)
+            }
+            for en in new_repel_group.enemies:
+                en.enchantment_state = "repel"
+            if size(new_repel_group.enemies) > 0:
+                push(character.repelled_enemies, new_repel_group)
+                debug_print(
+                    "[" + new_repel_group.time + "] "
+                    + "adding prune group with " 
+                    + size(new_repel_group.enemies) 
+                    + " enemies.  Will be pruned on frame "
+                    + (mode_frames + repel_duration) + ""
+                )
+
+            // repel system render FX
+            repel_attack(character)
+            character.pulled_enemies = []
+
+    // debug_watch(size(character.repelled_enemies))
+    // debug_watch(character.repelled_enemies)
+
+    // repel system - apply forces
+    debug_watch(character.repelled_enemies)
+    for repel_group in character.repelled_enemies
+    & for en in repel_group.enemies:
+        en.vel = repel_group.vel
+
+    if character.state == "dashing":
+        apply_dash(character)
+
+    const stick_index = 0
+    const joy_xy = (
+        // @TODO: push lock_input into being a state property
+        //        ie current_state_locks_input(character)
+        if character.lock_input == false 
+        then (
+            device_control("get_analog_axes", character.index, stick_index)
+            + joy.xy
+        )
+        else xy(0, 0)
+    )
+    update_accelerators(character, joy_xy)
+    const joy_sign = sign(joy_xy)
+    if joy_sign.x != 0:
+        character.scale.x = joy_sign.x
+
+    // assign the direction vector
+    if joy_sign.x != 0 or joy_sign.y != 0:
+        character.dir = clone(joy_sign)
+
+    debug_watch(character.dir)
+
+    // normalize and clamp the velocity
+    if magnitude(character.vel) > character.accel_profile.max_velocity:
+        character.vel = (
+            direction(character.vel) 
+            * character.accel_profile.max_velocity
+        )
+
+        // apply the clamp to the accelerators
+        character.x_accel.current_velocity = character.vel.x
+        character.y_accel.current_velocity = character.vel.y
+
+    physics_simulate(physics)
+
+    // repel system - deal damage from collisions
+    iterate(character.repelled_enemies, repel_apply_collision_rules)
+
+    for coll at other_name in character.collide:
+        // if an enemy is neither pulled nor repelled, it does damage to the 
+        // player
+        if coll.other.enchantment_state == nil:
+            todo("damage player")
+
+    if (character.state != "stun"):
+        if (
+                abs(magnitude(character.vel)) > 0.05 
+                and (character.state == "idle")
+        ):
+            if (character.animator.sprite_tag != driz.Run):
+                // make it a run loop that starts from the same frame
+                character.animator = make_animator(
+                    character,
+                    driz.Run,
+                    "loop",
+                    nil,
+                    character.animator.current_frame
+                )
+        else if (
+            character.state == "idle" 
+            and character.animator.sprite_tag != driz.Idle
+        ):
+            const current_frame = (
+                if character.animator.sprite_tag == driz.Run 
+                then character.animator.current_frame 
+                else 0
+            )
+
+            character.animator = make_animator(
+                character,
+                driz.Idle,
+                "loop",
+                nil,
+                current_frame
+            )
+
+    // update the animator for the sprite
+    update_animator(character.animator)
+    character.sprite = character.animator.sprite
+
+    const fn_map = TWINSTICK_INPUT[CURRENT_TWINSTICK]
+    const fn = if fn_map then fn_map["fn"] else nil 
+    if fn != nil:
+        fn(character, gamepad)
+    else:
+        debug_print("no input: ". CURRENT_TWINSTICK)
+
+    debug_watch(character.state)
+    debug_watch(character.animator.sprite_tag)
+    debug_watch(character.animator.modef_until_update)
+    debug_watch(character.animator.override_color)
+    debug_watch(character.animator.flash_frames)
+    debug_watch(character.animator.current_frame)
+
+    // check collisions
+    for collision at key in character.collide
+    & if (
+        collision.other 
+        and enemy_info(collision.other)
+        and enemy_info(collision.other).touch_damage
+        // only enemies that are not being pulled can damage
+        and find(character.pulled_enemies, collision.other) == nil
+    ):
+        // character takes damage
+        character.lock_input = true
+        // @TODO: could be wrapped in a state machine transition
+        character.state = "stun"
+        def unlock_char_input():
+            character.lock_input = false
+            character.state = "idle"
+        default_bob_animation_wizzard = true
+        character.animator = make_animator(
+            character,
+            driz.stun,
+            "once", 
+            unlock_char_input, 
+            nil,
+            YAML_DATA.player.flash_frames.stun,
+            COLORS[YAML_DATA.player.flash_frames.color]
+        )
+        // character.health -= 1
+        cam_add_shake(MAIN_CAM, YAML_DATA.camera.shake_increment)
+        FREEZE_FRAME_COUNT += 4
+
+        const force_vec = direction(character.pos - collision.other.pos)
+        
+        make_pusher(
+            character,
+            YAML_DATA.collision.repel_force * force_vec,
+            YAML_DATA.collision.repel_frames
+        )
+
+        make_pusher(
+            collision.other,
+            -YAML_DATA.collision.repel_force * force_vec,
+            YAML_DATA.collision.repel_frames
+        )
+
+        // @TODO: knock the enemy out of its current state back into idle
+
+    character.collide = {}
+// @}
+
+
+/// @{ Draw an overlay of the Super Famicom/SNES NTSC Screen region
+def draw_sfmc_clipping_region(z default 300, black_out):
+    const fill_color = if black_out then rgba(0, 0, 0, 1) else rgba(1,0,0,0.5)
+    
+    preserving_transform:
+        reset_transform()
+        draw_rect(
+            SCREEN_SIZE/2,
+            xy(256,224),
+            nil,
+            rgb(1,0,0),
+            nil,
+            0,
+            z
+        )
+        draw_rect(
+            xy(0, SCREEN_SIZE.y/2),
+            xy(256/2,224),
+            fill_color,
+            nil,
+            0,
+            z
+        )
+        draw_rect(
+            xy(SCREEN_SIZE.x, SCREEN_SIZE.y/2),
+            xy(256/2,224),
+            fill_color,
+            nil,
+            0,
+            z
+        )
+// @}
+
+
+// @{ attack system
+def can_attack(character):
+    return character.state == "idle"
+
+def set_attacking(character):
+    const attack = YAML_DATA["player"].attack
+    const hitbox_min = (
+        character.pos 
+        + character.scale * xy(attack.hitbox.start_x, -attack.hitbox.size[1]/2)
+    )
+    const hit_ent = {
+        "shape": "rect",
+        "pos": hitbox_min + character.scale * xy(attack.hitbox.size)/2,
+        "size": xy(attack.hitbox.size),
+    }
+
+    def draw_hitbox():
+        draw_rect(
+            hit_ent.pos,
+            hit_ent.size,
+            rgba(attack.color),
+            rgba(attack.outline),
+        )
+
+    const hook = add_frame_hook(draw_hitbox)
+    def atk_done():
+        character.state = "idle"
+        character.animator = make_animator(character, driz.Idle, "loop")
+        remove_frame_hook(hook)
+
+    character.state = "attack"
+    character.animator = make_animator(
+        character,
+        driz.atk_2,
+        "once",
+        atk_done
+    )
+
+    draw_entity(hit_ent)
+
+    for en in ENEMIES
+    & if overlaps(en, hit_ent):
+        en.force = attack.strength * direction(en.pos - character.pos)
+
+
+def wind_attack(character):
+    const config = YAML_DATA.player.spells.wind
+    const region_center = (
+        character.pos 
+        - character.scale * xy(config.region.start_x, 0)
+    )
+
+    // area of effect
+    if DEBUG_FLAGS.DRAW_SPELL_VOLUMES:
+        draw_rect(
+            region_center,
+            xy(config.region.size),
+            rgba(config.color),
+            rgba(config.outline),
+        )
+    const region_ent = {
+        "shape": "rect",
+        "pos": region_center,
+        "size": xy(config.region.size),
+    }
+
+    for en in ENEMIES
+    & if overlaps(en, region_ent):
+        // en.force += config.strength * xy(1, 0)
+        en.force += config.strength * xy(character.scale.x, 0)
+
+    character.force += config.strength * xy(character.scale.x, 0)
+
+    const pcolor = rgba(config.particle.color)
+    const region_bounds = [
+        region_center - xy(config.region.size)/2,
+        region_center + xy(config.region.size)/2,
+    ]
+    if mode_frames mod config.particle.frequency == 0
+    & for i < config.particle.count:
+        const pos = xy(
+            random(region_bounds[0].x, region_bounds[1].x),
+            random(region_bounds[0].y, region_bounds[1].y),
+        )
+        // const vel = config.particle.speed * xy(1, 0)
+        const vel = config.particle.speed * xy(character.scale.x, 0)
+        particles_spawn(
+            PARTICLES,
+            pos,
+            vel,
+            pcolor,
+            -1,
+            config.particle.frames
+        )
+
+def hold_attack(character):
+    const config = YAML_DATA.player.spells.hold
+    const target = character.pos
+
+    const overlap_ent = {
+        "shape": "rect",
+        "pos": character.pos + character.scale * xy(config.radius/2, 0),
+        "size": xy(config.radius, config.radius)
+    }
+
+    // area of effect
+    if DEBUG_FLAGS.DRAW_SPELL_VOLUMES:
+        draw_rect(
+            overlap_ent.pos,
+            overlap_ent.size,
+            rgba(config.color),
+            rgba(config.outline)
+        )
+
+    const max_distance = config.radius
+
+    for en in ENEMIES
+    & if overlaps(en, overlap_ent):
+        en.vel = clone(character.vel)
+        // en.force = character.force
+    debug_watch(character.vel)
+
+    const pcolor = rgba(config.particle.color)
+    for i < config.particle.count:
+        const pos = character.pos + character.scale * (
+            xy(
+                random(0, overlap_ent.size.x),
+                random(-overlap_ent.size.y/2, overlap_ent.size.y/2)
+            )
+        )
+        const vel = (
+            config.particle.speed * direction(pos - target) + character.vel
+        )
+        particles_spawn(
+            PARTICLES,
+            pos,
+            vel,
+            pcolor,
+            -1,
+            config.particle.frames
+        )
+
+def repel_attack(character):
+    const config = YAML_DATA.player.spells.repel
+    const dir = xy(
+        if character.dir.x == 0 then 1 else character.dir.x,
+        if character.dir.y == 0 then 1 else character.dir.y,
+    )
+    const pcolor = rgba(config.particle.color)
+    const halflife = config.particle.frames/2
+    const halfsize = xy(config.radius, config.radius)/2
+    for i < config.particle.count:
+        const pos = character.pos + dir * halfsize * random_within_square()
+        const vel = config.particle.speed * character.dir + character.vel
+        particles_spawn(
+            PARTICLES,
+            pos,
+            vel,
+            pcolor,
+            -1,
+            halflife + halflife*random()
+        )
+
+def compute_pulled_enemies(character):
+    const config = YAML_DATA.player.spells.pull
+    const center = character.pos
+    const target = character.pos + (character.dir * xy(config.target.offset))
+
+    // area of effect
+    if DEBUG_FLAGS.DRAW_SPELL_VOLUMES:
+        draw_disk(
+            center,
+            config.radius,
+            rgba(config.color),
+            rgba(config.outline),
+        )
+
+        // target
+        draw_disk(
+            target,
+            config.target.inner_radius,
+            rgba(config.target.color),
+            nil,
+        )
+        draw_disk(
+            target,
+            config.target.outer_radius,
+            nil,
+            rgba(config.target.outline),
+        )
+
+    // find enemies impacted by push & apply forces
+    let result = []
+    for en in ENEMIES
+    & if magnitude(en.pos - center) < config.radius:
+        push(result, en)
+        en.enchantment_state = "pull"
+    return result
+
+def move_pulled_enemies(character):
+    const config = YAML_DATA.player.spells.pull
+    const center = character.pos
+    const target = character.pos + (character.dir * xy(config.target.offset))
+    const max_distance = config.radius + config.target.offset[0]
+    // behind the character
+    const target_back_center = (
+        character.pos 
+        - (
+            character.dir 
+            * xy(config.rear_box.start_x, config.rear_box.start_x)
+        )
+    )
+    const back_vol = {
+        "shape": "rect",
+        "pos": target_back_center,
+        "size": xy(config.rear_box.size),
+    }
+
+    if DEBUG_FLAGS.DRAW_SPELL_VOLUMES:
+        draw_rect(
+            target_back_center,
+            xy(config.rear_box.size),
+            rgba(config.color),
+            rgba(config.outline),
+        )
+
+
+    for en in character.pulled_enemies:
+        en.velocity = xy(0, 0)
+        en.action = action_stunned(en)
+
+        if overlaps(en, back_vol):
+            let force = xy(0, 0)
+            if character.dir.x != 0 and character.dir.y == 0:
+                if sign(en.pos.y - character.pos.y) >= 0:
+                    force = xy(0, 1)
+                else:
+                    force = xy(0, -1)
+            else if character.dir.x == 0 and character.dir.y != 0:
+                if sign(en.pos.x - character.pos.x) >= 0:
+                    force += xy(1, 0)
+                else:
+                    force += xy(-1, 0)
+            else if character.dir.x != 0 and character.dir.y != 0:
+
+            en.force = config.strength * force
+            continue
+
+        const en_to_target = target - en.pos
+        const en_to_target_mag = magnitude(en_to_target)
+        const t = en_to_target_mag / max_distance
+
+        const force = lerp(0, config.strength, t)
+        en.force = force * direction(en_to_target) 
+
+    // particle graphics
+    const pcolor = rgba(config.particle.color)
+    if mode_frames mod config.particle.frequency == 0
+    & for i < config.particle.count_sqr
+    & for j < config.particle.count_sqr:
+        const theta = random(0, 2*pi)
+        const r = random(20, config.radius)
+        const pos = r*angle_to_xy(theta) + character.pos
+        const vel = (
+            config.particle.speed * direction(target - pos) 
+            + character.vel
+        )
+        particles_spawn(
+            PARTICLES,
+            pos,
+            vel,
+            pcolor,
+            -1,
+            config.particle.frames
+        )
+// @}
+
+
+// @{ dash system
+def can_dash(character):
+    return character.state == "idle" and (
+        character.dash_start == nil 
+        or (game_frames - character.dash_end) > (
+            YAML_DATA["PLAYER_DASH_COOLDOWN_f60"]
+        )
+    )
+
+def set_dashing(character):
+    character.dash_start = game_frames
+    character.dash_end = nil
+    character.last_profile_accel = clone(character.accel_profile_name)
+    character.state = "dashing"
+
+def apply_dash(character):
+    if magnitude(character.vel) < 0.01:
+        // always dash in the direction the character is facing
+        character.vel = xy(character.scale.x, 0)
+
+    character.vel = direction(character.vel) * (
+        character.accel_profile.max_velocity
+    )
+
+    // set the profile to the dash profile
+    set_profile(character, "player_move_dash")
+
+    // if the dash is over
+    if (
+            game_frames - character.dash_start > (
+                YAML_DATA["PLAYER_DASH_DURATION_f60"]
+            )
+    ):
+        // restore the previous profile
+        set_profile(character, character.last_profile_accel)
+        character.dash_end = game_frames
+        character.dash_start = nil
+        character.state = "idle"
+// @}
+
+ 
+// @{ camera 
+def camera_initialize(camera):
+    const new_cam = clone(camera)
+    // layer in YAML settings
+    extend(new_cam, YAML_DATA.camera)
+    return new_cam
+
+def camera_update(cam):
+    if cam.follow_camera:
+        cam.goal_pos = lerp(
+            cam.goal_pos,
+            PLAYER.pos,
+            YAML_DATA.camera.follow_amount
+        )
+    cam_update_frame(cam, cam.goal_pos)
+    set_transform(-cam.pos + SCREEN_SIZE/2)
+// @}
+
+// @{
+def draw_player(player):
+    player.override_color = player.animator.override_color
+    draw_entity(player)
+
+    const off = xy(12, 12) 
+    const float = xy(0, 3*sin(mode_frames/60))
+
+    player.wand.pos = (
+        player.pos + player.wand.relative_location * off + float
+    )
+
+    if player.wand.relative_location.y < 0:
+        player.wand.z = -1
+    else:
+        player.wand.z = 1
+
+
+    debug_watch(player.wand.relative_location)
+    draw_entity(player.wand)
+
+    let status_text = ""
+    for i < player.health:
+        status_text += "♥"
+
+    draw_text(
+        smallfont,
+        status_text,
+        player.pos + xy(0, player.sprite.size.y/4 + YAML_DATA.player.config.text_offset),
+        rgb(1,1,1),
+        nil,
+        rgb(0,0,0),
+        "center",
+        "top",
+    )
+
+    // juice for pulled enemies
+    const pconfig = YAML_DATA.player.spells.pull.pulled_particle
+    const psize = xy(pconfig.size_px, pconfig.size_px)
+    for en in player.pulled_enemies
+    & for c < pconfig.count:
+        const phase_offset = (
+            c * 2*pi/pconfig.count + mode_frames/pconfig.rot_time_f
+        )
+        const p = en.size.x * angle_to_xy(phase_offset) + en.pos
+        draw_rect(p, psize, rgba(pconfig.color), nil, 1)
+
+    for repel_group in player.repelled_enemies
+    & for en in repel_group.enemies
+    & for c < pconfig.count:
+        const phase_offset = (
+            c * 2*pi/pconfig.count + mode_frames/pconfig.rot_time_f
+        )
+        const p = en.size.x * angle_to_xy(phase_offset) + en.pos
+        draw_rect(p, psize, rgb(1,0,0), nil, 1)
+// @}
+
+// @{ draw enemies
+def update_enemies():
+    iterate(ENEMIES, update_enemy)
+
+def draw_enemies()
+& for en in ENEMIES:
+    // fade it based on how long its been since the last time a state
+    // changed
+    const decision_fade = (
+        (mode_frames - en.last_change) / (en.ready - en.last_change)
+    )
+
+    const state_color_base = (
+        if STATE_INFO_MAP[en.state] 
+        then STATE_INFO_MAP[en.state] 
+        else STATE_INFO_MAP["Idle"]
+    )
+
+    const start_color_state = (
+        if is_visible_to(en, PLAYER) 
+        then rgb(0, 0.8, 0) 
+        else rgb(0.8, 0, 0)
+    )
+    const state_color = lerp(
+        arr_to_color(state_color_base["color"]),
+        start_color_state,
+        decision_fade
+    )
+
+    const en_info = enemy_info_map[en.kind]
+    const near_radius_px = en_info["near_radius_px"]
+
+    if DEBUG_FLAGS.DRAW_ENEMY_AI_INFO:
+        draw_disk(
+            en.pos,
+            near_radius_px,
+            nil,
+            state_color,
+            -1
+        )
+        draw_disk(
+            en.pos,
+            1,
+            nil,
+            rgb(1,1,1),
+            -1
+        )
+
+        if en.target:
+            draw_line(
+                en.pos,
+                en.pos + en.joy * 50,
+                rgb(0,0,0),
+            )
+            draw_disk(
+                en.target.pos,
+                5,
+                nil,
+                state_color,
+            )
+            draw_line(
+                en.pos,
+                en.target.pos,
+                state_color,
+            )
+
+            debug_watch(magnitude(en.pos - en.target))
+            debug_watch(magnitude(en.joy)*50)
+            debug_watch(magnitude(en.vel))
+            debug_watch(en.vel)
+            debug_watch(en.last_result)
+
+    const sz = xy(
+        en.size.x,
+        abs(en.animated_scale * en.size.y)
+    )
+
+    if en_info["draw"] == "rect":
+        draw_corner_rect(
+            en.pos + xy(-sz.x/2, en.size.y/2),
+            xy(sz.x, -sz.y),
+            rgba(0.4, 0, 0, 0.5),
+            state_color
+        )
+
+        // eyes
+        const eye_center = en.pos + xy(en.dir.x*(sz.x/2 - 4), -(sz.y/6))
+        for off in [xy(-1, 0), xy(1, 0)]:
+            const this_eye_center = eye_center + off
+            draw_line(
+                this_eye_center, 
+                this_eye_center - xy(0, 4),
+                rgb(0,0,0)
+            )
+    else:
+        debug_watch(en.dir)
+        draw_sprite(
+            {
+                sprite:en.sprite,
+                pos: (
+                    en.pos 
+                    // offset so jiggle is from the bottom of the sprite
+                    + xy(
+                        0,
+                        (
+                            en.sprite_scale
+                            *en.sprite.size.y
+                            *(1-en.animated_scale)/2
+                        )
+                    )
+                ),
+                scale: (
+                    en.sprite_scale*xy(
+                        en.scale.x * en.dir.x,
+                        en.scale.y * en.animated_scale
+                    )
+                ),
+                override_color: en.sprite_override_color,
+            }
+        )
+
+    // text label
+    const suffix = if en.is_near_player then suffix = "*" else ""
+    const offset = xy(0, en.size.y/2+2)
+    let status_text = ""
+    for i < en.health:
+        status_text += "♥"
+
+    if DEBUG_FLAGS.DRAW_ENEMY_AI_STATUS:
+        const name = if en.action then en.action.name else "nil"
+        status_text = (
+            en.kind[0] + en.count 
+            + "\n" + name + suffix 
+            + "\n" + format_number(magnitude(en.vel), ".00")
+            + "\n" + status_text
+        )
+
+    draw_text(
+        smallfont,
+        status_text,
+        en.pos + offset,
+        rgb(1,1,1),
+        nil,
+        rgb(0,0,0),
+        "center",
+        "top"
+    )
+
+// @}
+
+
+// @{ print the text info on the side
+def draw_text_block(text, pos, x_align, y_align):
+    return draw_text(
+        smallfont,
+        // @TODO: prompt based on character input.  For single player game this
+        //        is ok.
+        replace(join(text, ""), gamepad_array[0].prompt),
+        pos,
+        rgb(1,1,1),
+        rgb(0,0,0),
+        rgb(0.2, 0.2, 0.2),
+        x_align, 
+        y_align,
+        301
+    )
+
+def draw_debug_hud()
+& preserving_transform:
+    reset_transform()
+
+
+
+    const txt = []
+    let count = 0
+    for move at btn in CONTROLS:
+        if count mod 2 == 0:
+            push(txt, "\n")
+        else:
+            push(txt, " ")
+        push(txt, "(" + btn + "): " + move)
+        count += 1
+
+    if DEBUG_FLAGS.DRAW_SPRITE_SIZES_TEXT:
+        push(txt, "zombie index: " + SPRITE_INDEXES["zombie"])
+        push(txt, "rat index: " + SPRITE_INDEXES["rat"])
+        push(txt, "wizzard sprite size: " + YAML_DATA["WIZZARD_SCALE"])
+
+    const first_bounds = draw_text_block(
+        txt,
+        xy(SCREEN_SIZE.x/2, SCREEN_SIZE.y),
+        "center",
+        "bottom"
+    )
+
+    if DEBUG_FLAGS.DRAW_SPRITE_SIZES_TEXT:
+        const en_txt = ["Enemy Sizes:"]
+        for en at name in enemy_info_map:
+            push(en_txt, name + ": " + en["size"][0] + ", " + en["size"][1])
+        draw_text_block(en_txt, xy(0, SCREEN_SIZE.y), "left", "bottom")
+
+
+    // draw what flags are active
+    const active_flags = [
+        "Active Debug Flags:",
+        "\n-------------------"
+    ]
+    let draw = false
+    for val at FLAG in DEBUG_FLAGS
+    & if val:
+        push(active_flags, "\n" + FLAG)
+        draw = true
+
+    if draw:
+        draw_text_block(active_flags, SCREEN_SIZE, "right", "bottom")
+
+    draw_text_block(
+        join(
+            [
+                YAML_DATA["CURRENT_PROJECT_TAG"] + " " ,
+                "lvl: " + LEVELS.CURRENT + " " 
+            ], 
+            "\n"
+        ),
+        xy(SCREEN_SIZE.x, 0),
+        "right",
+        "top",
+    )
+// @}
+
+def start_level_end_transition():
+    PLAYER.lock_input = true
+    follow_camera = false
+    const start_pos = clone(camera_pos)
+
+    const opts = YAML_DATA["level_end"]
+
+    def move_to_wizzard(framesleft, total_frames):
+        const val = smootherstep(
+                0,
+                1,
+                (total_frames-framesleft)/total_frames
+            )
+        debug_print(
+            "progress: ",
+            val * val
+        )
+        camera_pos = lerp(
+            start_pos,
+            WIZ_BOX_CENTER_TOP,
+            val*val
+        )
+    def wizzard_fume():
+        default_bob_animation_wizzard = false
+        wiz_pos = (
+            WIZ_BOX_CENTER_TOP 
+            - xy(YAML_DATA["WIZZARD_OFFSET_PX"])
+            - xy(sin(mode_frames/opts.fume_period_fr) * opts.fume_scale_px, 0)
+        )
+    def move_back_to_player(framesleft, total_frames):
+        camera_pos = lerp(
+            WIZ_BOX_CENTER_TOP,
+            PLAYER.pos,
+            smootherstep(
+                0,
+                1,
+                (total_frames-framesleft)/total_frames
+            )
+        )
+    def after_func():
+        follow_camera = true
+        PLAYER.lock_input = false
+        default_bob_animation_wizzard = true
+
+    sequence(
+        {callback: move_to_wizzard, frames: opts.transition_time},
+        {callback: wizzard_fume, frames: opts.fume_time},
+        {callback: nil, frames: opts.pause_time},
+        {callback: move_back_to_player, frames: opts.transition_time},
+        after_func,
+    )
+
+// @{ effects
+const EFFECTS = []
+def make_effect(pos, sprite):
+    let fx = {
+        pos:pos,
+    }
+    fx.animator = make_animator(fx, sprite, "stop")
+    return fx
+
+def update_effect(fx):
+    update_animator(fx.animator)
+    if fx.animator.stop:
+        return iterate.REMOVE
+
+def update_and_draw_fx():
+    iterate(EFFECTS, update_effect)
+
+    // draw
+    for fx in EFFECTS:
+        draw_sprite(
+            {
+                sprite: fx.animator.sprite,
+                pos: fx.pos,
+            }
+        )
+// @}
+
+const MAIN_CAM = camera_initialize(SHAKE_CAMERA)
+
+let FREEZE_FRAME_COUNT = 10
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+if FREEZE_FRAME_COUNT > 0:
+    FREEZE_FRAME_COUNT -= 1
+else:
+    update_projectiles()
+    update_player(PLAYER) 
+    camera_update(MAIN_CAM)
+    particles_update_and_draw(PARTICLES)
+    update_enemies()
+
+draw_bg()
+draw_wizzard()
+// reference objects
+draw_obstacles()
+draw_enemies()
+draw_projectiles()
+
+// Driz
+draw_player(PLAYER)
+update_and_draw_fx()
+
+draw_sfmc_clipping_region(300, YAML_DATA["black_out_sides"])
+
+draw_debug_hud()
+draw_entity(
+    make_entity(
+        {
+            pos: PLAYER.pos,
+            shape: "disk",
+            size: xy(50, 50),
+            color: rgb(1,1,1),
+            z:100,
+        }
+    )
+)

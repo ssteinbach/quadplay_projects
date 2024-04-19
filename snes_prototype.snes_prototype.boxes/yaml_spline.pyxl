@@ -1,0 +1,33 @@
+def yaml_spline(spline_struct):
+    let time_array = []
+    let value_array = []
+
+    for time_val in spline_struct.points:
+        let t = time_val[0]
+        let v = time_val[1]
+        push(time_array, t)
+        push(value_array, v)
+
+    debug_print("made spline:")
+    debug_print(time_array)
+    debug_print(value_array)
+    debug_print(spline_struct.order)
+    debug_print(spline_struct.extrapolate)
+    // debug_print(
+    //     "SPLINE VAL:", 
+    //     make_spline(
+    //         [0, 1],
+    //         [0, 1],
+    //         3,
+    //         "clamp"
+    //     )(0.5)
+    // )
+    debug_print("DONE")
+
+
+    return make_spline(
+        time_array,
+        value_array,
+        spline_struct.order,
+        spline_struct.extrapolate
+    )

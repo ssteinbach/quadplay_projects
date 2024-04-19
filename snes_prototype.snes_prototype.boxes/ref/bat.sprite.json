@@ -1,0 +1,171 @@
+{
+    "aseprite_json": "ref/bat.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "death": {
+            "end": {
+                "x": 4.0,
+                "y": 4.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                7.92,
+                15.84,
+                7.92,
+                9.0,
+                30.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 4.0
+            }
+        },
+        "flap": {
+            "end": {
+                "x": 4.0,
+                "y": 1.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                3.0,
+                0.96,
+                7.199999999999999,
+                6.6,
+                9.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 1.0
+            }
+        },
+        "neutral": {
+            "end": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        "pull": {
+            "end": {
+                "x": 1.0,
+                "y": 2.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                7.92,
+                7.92
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 2.0
+            }
+        },
+        "stun": {
+            "end": {
+                "x": 1.0,
+                "y": 3.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                7.92,
+                15.84
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 3.0
+            }
+        },
+        "swoop": {
+            "end": {
+                "x": 1.0,
+                "y": 6.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                7.68,
+                72.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 6.0
+            }
+        },
+        "swoop_recover": {
+            "end": {
+                "x": 1.0,
+                "y": 7.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6,
+                9.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 7.0
+            }
+        },
+        "swoop_test": {
+            "end": {
+                "x": 18.0,
+                "y": 8.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                3.0,
+                0.96,
+                7.199999999999999,
+                6.6,
+                9.0,
+                3.0,
+                0.96,
+                7.199999999999999,
+                6.6,
+                9.0,
+                3.0,
+                0.96,
+                7.199999999999999,
+                6.6,
+                9.0,
+                7.68,
+                72.0,
+                6.6,
+                9.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 8.0
+            }
+        },
+        "swoop_windup": {
+            "end": {
+                "x": 3.0,
+                "y": 5.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                7.68,
+                18.0,
+                24.0,
+                30.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 5.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 32,
+        "y": 32
+    },
+    "url": "bat.png"
+}
