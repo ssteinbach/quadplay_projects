@@ -1,0 +1,448 @@
+// constants
+const INCREMENT = xy(0, -10)
+const ACTIVE_COLOR = rgb(1,1,1)
+const ACTIVE_ENEMY_COLOR = rgb(1,0,0)
+const DONE_COLOR = rgb(0.4, 0.4, 0.4)
+const DONE_ENEMY_COLOR = rgb(0.4, 0.0, 0.0)
+const PRESSED_AND_OK_COLOR = rgb(0.8, 0.8, 0)
+const PRESSED_AND_CANT_COLOR = rgb(0.3, 0.0, 0)
+const ATTENTION_POSITIVE_COLOR = rgb(0,0.8,0)
+const COMMAND_QUEUE = []
+const UNDO_QUEUE = []
+const PAST_COMMANDS = []
+const ENTITIES = []
+const START_POS = xy(SCREEN_SIZE.x, -20)
+let TAKING_INPUT = true
+let TOP = xy(0, 0)
+let turn_count = 0
+let CURRENT_TURN = "player"
+const ACTIONS_PER_TURN = 2
+let ACTIONS_REMAINING = ACTIONS_PER_TURN
+
+def replace_prompt(text, player=0):
+    return replace(text, gamepad_array[0].prompt)
+
+def command_names(queue):
+    let result = []
+    for c in queue:
+        push(result, c.name)
+    return result
+
+def make_action_taco():
+    ACTIONS_REMAINING -= 1
+    push(
+        COMMAND_QUEUE,
+        {
+            name: "taco",
+            pos: START_POS,
+            update: animate_text,
+            start: mode_frames,
+        }
+    )
+
+def make_action_burrito():
+    ACTIONS_REMAINING -= 1
+    return push(
+        COMMAND_QUEUE,
+        {
+            pos: START_POS,
+            name: "burrito",
+            update: animate_text,
+            start: mode_frames,
+        }
+    )
+
+def undo_action():
+    if size(COMMAND_QUEUE) < 1:
+        return
+    ACTIONS_REMAINING += 1
+    TOP -= INCREMENT
+    pop(COMMAND_QUEUE)
+
+let END_OF_THE_LINE = 0
+def animate_text(ent):
+    if ent.done:
+        return
+
+    TAKING_INPUT = false
+    const DURATION = 30
+    ent.pos = lerp(
+        START_POS + TOP,
+        xy(END_OF_THE_LINE, -20) + TOP, 
+        smootherstep(0, 1, (mode_frames - ent.start)/DURATION)
+    )
+    if mode_frames - ent.start > DURATION:
+        TOP += INCREMENT
+        TAKING_INPUT = true
+        ent.done = true
+
+def end_turn(next_mode default enemy_turn):
+    TAKING_INPUT = false
+    // book keeping on the end of the player turn
+    for thing in clone(COMMAND_QUEUE):
+        push(PAST_COMMANDS, pop(COMMAND_QUEUE))
+    set_mode(next_mode)
+
+def push_front_command(cmd):
+    push_front(COMMAND_QUEUE, cmd)
+
+def push_end_command(cmd):
+    push(COMMAND_QUEUE, cmd)
+
+def command_fn_immediate(fn, name):
+    debug_print(
+        "making command run immediate with name: " + name
+    )
+
+    def cmd_call_immediately(ent):
+        // is immadiately done
+        ent.done = true
+        debug_print("executing: " + name)
+        return fn(ent)
+
+    // pushes a command to the queue that immediately calls the function when
+    // it comes up
+    let cmd = {
+        name: name,
+        update: cmd_call_immediately,
+    }
+
+    return cmd
+
+
+def command_move_camera_to(target):
+    debug_print(
+        "making camera target: " + str_vec(target) 
+        + " (from: " + str_vec(CAMERA.pos)
+    )
+    def cam_at_target(ent):
+        CAMERA.target = clone(target)
+        if magnitude(CAMERA.pos - target) < 1:
+            ent.done = true
+
+    return {
+        name: "move camera",
+        update: cam_at_target,
+    }
+    
+
+def start_player_turn():
+    // start of the player turn
+    turn_count += 1
+    TAKING_INPUT = true
+    CURRENT_TURN = "player"
+    ACTIONS_REMAINING = ACTIONS_PER_TURN
+    push(
+        COMMAND_QUEUE, 
+        command_move_camera_to(PLAYER_LEADERS[0].pos)
+    )
+
+
+def basic_command_color(action):
+    // if its the players turn:
+    //     if an action is playing, don't react even if the player hits a button
+    //     otherise, if the button is down, show yellow, but if another button
+    //     is pressed, turn red and "cancel" on release
+    // If it isn't the players turn, always show the disabled color (and we'll
+    //     make the whole menu fade out
+
+    let btn_down = gamepad_array[0][action.button]
+    let btn_pressed = gamepad_array[0]["pressed_" + action.button]
+
+    if not TAKING_INPUT:
+        if btn_pressed:
+            return PRESSED_AND_CANT_COLOR
+        else:
+            return DONE_COLOR
+    else:
+        if ACTIONS_REMAINING > 0:
+            if btn_down:
+                return PRESSED_AND_OK_COLOR
+            else:
+                return ACTIVE_COLOR
+        else:
+            return DONE_COLOR
+
+def undo_command_color(action):
+    let btn_down = gamepad_array[0][action.button]
+    let btn_pressed = gamepad_array[0]["pressed_" + action.button]
+
+    if not TAKING_INPUT:
+        return if btn_pressed then PRESSED_AND_CANT_COLOR else DONE_COLOR
+    else:
+        if ACTIONS_REMAINING < 2:
+            return if btn_down then PRESSED_AND_OK_COLOR else ACTIVE_COLOR
+        else:
+            return DONE_COLOR
+        
+
+def turn_over_command_color(action):
+    let btn_down = gamepad_array[0][action.button]
+    let btn_pressed = gamepad_array[0]["pressed_" + action.button]
+
+    if not TAKING_INPUT:
+        return if btn_pressed then PRESSED_AND_CANT_COLOR else DONE_COLOR
+    else:
+        if ACTIONS_REMAINING == 0:
+            
+            return if btn_down then PRESSED_AND_OK_COLOR else (
+                perceptual_lerp_color(
+                    ACTIVE_COLOR,
+                    ATTENTION_POSITIVE_COLOR,
+                    cos(mode_frames/15)+0.5
+                )
+            )
+        else:
+            return ACTIVE_COLOR
+
+def slide_camera():
+    CAMERA.target += abs(CAMERA.z)*gamepad_array[0].xy
+
+def menu_color():
+    if not TAKING_INPUT:
+        return DONE_COLOR
+    else if arrow_keys_pressed():
+        return PRESSED_AND_OK_COLOR
+    else:
+        return ACTIVE_COLOR
+
+const PLAYER_ACTIONS = [
+    {
+        label: "move camera",
+        arrow_keys: "^v<>",
+        label_color: menu_color,
+        exec: slide_camera,
+        actions_required: 1,
+    },
+    {
+        label: "add burrito",
+        button: "b",
+        label_color: basic_command_color,
+        exec: make_action_burrito,
+        actions_required: 1,
+    },
+    {
+        label: "undo",
+        button: "c",
+        label_color: undo_command_color,
+        exec: undo_action,
+        actions_required: 0,
+    },
+    {
+        label: "end turn",
+        button: "d",
+        label_color: turn_over_command_color,
+        exec: end_turn,
+        actions_required: 0,
+    },
+]
+
+def draw_command_test(
+        turn_count, 
+        actions_remaining,
+        current_enemy default -1
+):
+    let menu_color = ACTIVE_COLOR
+    let pressed_color = PRESSED_AND_OK_COLOR
+    if actions_remaining < 1:
+        menu_color = DONE_COLOR
+        pressed_color = PRESSED_AND_CANT_COLOR
+
+    // center stuff
+    draw_disk(xy(0,0), 5, rgb(1,1,1))
+    draw_line(
+        xy(-SCREEN_SIZE.x/2, 0), xy(SCREEN_SIZE.x/2, 0), rgb(1,1,1), 0, 1
+    )
+
+    let taking_input_str = "no"
+    if TAKING_INPUT:
+        taking_input_str = "yes"
+
+    let enemy_str = ""
+    if current_enemy >= 0:
+        enemy_str = "Current Enemy: " + current_enemy
+
+    draw_text(
+        font,
+        join(
+            [
+                "turn: " + turn_count,
+                "taking input: " + taking_input_str,
+                "turn: [" + CURRENT_TURN + "]",
+                enemy_str
+            ],
+            "\n"
+        ),
+        xy(10-SCREEN_SIZE.x/2, -SCREEN_SIZE.y/2 + 10),
+        menu_color,
+        nil,
+        nil,
+        "left",
+        "top",
+    )
+
+    let undoable_color = ACTIVE_COLOR
+    if size(COMMAND_QUEUE) == 0 or not TAKING_INPUT:
+        undoable_color = DONE_COLOR
+    else if gamepad_array[0].c:
+        undoable_color = PRESSED_AND_OK_COLOR
+
+    let actions = [
+        ["action menu: ", ACTIVE_COLOR],
+        [
+            (
+                "actions remaining: " 
+                + ACTIONS_REMAINING + "/" + ACTIONS_PER_TURN
+            ),
+            menu_color
+        ],
+    ]
+
+    let top = xy(0,0)
+    for line in actions:
+        let str = line[0]
+        let col = line[1]
+
+        let bbox = draw_text(
+            font,
+            replace(str, gamepad_array[0].prompt),
+            xy(10-SCREEN_SIZE.x/2, 20) + top,
+            col,
+            nil,
+            nil,
+            "left",
+            "top",
+        )
+        top += xy(0, bbox.y+2)
+    for action in PLAYER_ACTIONS:
+        let key_str = ""
+        if action.button:
+            key_str = "(" + action.button + ")"
+        else if action.arrow_keys:
+            key_str = "[^][<][v][>]"
+        else:
+            assert(false, "never hit this, arrow keys version")
+        let bbox = draw_text(
+            font,
+            replace(key_str+ ": " + action.label, gamepad_array[0].prompt),
+            xy(10-SCREEN_SIZE.x/2, 20) + top,
+            action.label_color(action),
+            nil,
+            nil,
+            "left",
+            "top",
+        )
+        top += xy(0, bbox.y+2)
+
+    let commands_in_queue = [
+        "undo-able commands"
+    ]
+    extend(commands_in_queue, reversed(command_names(COMMAND_QUEUE)))
+
+    draw_text(
+        font,
+        replace_prompt(
+            join(
+                commands_in_queue,
+                "\n"
+            )
+        ),
+        xy(0,20),
+        rgb(1,1,1),
+        nil,
+        nil,
+        "center",
+        "top",
+    )
+
+    let undo_command_names = ["past commands"]
+    extend(undo_command_names, reversed(command_names(PAST_COMMANDS)))
+
+    draw_text(
+        font,
+        replace_prompt(
+            join(
+                undo_command_names,
+                "\n"
+            )
+        ),
+        xy(SCREEN_SIZE.x/2-10, 20),
+        rgb(1,1,1),
+        nil,
+        nil,
+        "right",
+        "top",
+    )
+
+    for ent in clone(COMMAND_QUEUE):
+        if not ent.done:
+            ent.update(ent)
+            break
+
+    //     let color = ACTIVE_COLOR
+    //     if ent.enemy_move:
+    //         color = ACTIVE_ENEMY_COLOR
+    //     // draw_text(font, ent.name, ent.pos, color)
+    // for ent in PAST_COMMANDS:
+    //     ent.update(ent)
+    //     let color = DONE_COLOR
+    //     if ent.enemy_move:
+    //         color = DONE_ENEMY_COLOR
+    //     draw_text(font, ent.name, ent.pos, color)
+
+def arrow_keys_pressed():
+    return (abs(gamepad_array[0].x) > 0 or abs(gamepad_array[0].y) > 0)
+
+def action_activated(action):
+    if action.button:
+        return (
+            action.actions_required <= ACTIONS_REMAINING 
+            and gamepad_array[0]["released_" + action.button]
+        )
+    if action.arrow_keys:
+        return arrow_keys_pressed()
+
+
+// cq = [a, b, c]
+// cq pop front: [a], [b, c]
+// cq::a -> [before1, before2], a, [after1, after2, after3]
+// cq = extend([after1, after2, after3]. [b, c])
+// cq = push_front(cq, a)
+// cq = extend([before1, before2], cq)
+def update_command_queue():
+    if size(COMMAND_QUEUE) == 0:
+        debug_watch("current task: NO TASKS IN QUEUE")
+        return
+
+    // fetch the current task
+    let current_task = pop_front(COMMAND_QUEUE)
+    assert(current_task != nil, "no tasks in queue")
+    debug_watch("current task: " + current_task.name)
+
+    let new_tasks = current_task.update(current_task)
+
+    if new_tasks != nil and new_tasks.after_current != []:
+        push_front(COMMAND_QUEUE, ...new_tasks.after_current)
+
+    if not current_task.done:
+        push_front(COMMAND_QUEUE, current_task)
+    else:
+        debug_print("task done: " + current_task.name)
+        if current_task.undo:
+            push(UNDO_QUEUE, current_task)
+
+    if new_tasks != nil and new_tasks.before_current != []:
+        push_front(COMMAND_QUEUE, ...new_tasks.before_current)
+
+
+def execute_action(action):
+    return action.exec()
+
+
+def update_command_test():
+    if not TAKING_INPUT:
+        return
+
+    for action in PLAYER_ACTIONS:
+        if action_activated(action):
+            execute_action(action)

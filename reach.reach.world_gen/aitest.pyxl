@@ -1,0 +1,460 @@
+init
+────────────────────────────────────────────────────────────────────────
+// current enemy being processed
+let CURRENT_ENEMY = 0
+let ENEMIES = []
+
+const CELL_SIZE_PX = 16
+const BOARD_SIZE = xy(8,8)
+const GUTTER_SIZE = 3
+const BOARD_SIZE_PX = (
+    BOARD_SIZE * (CELL_SIZE_PX + GUTTER_SIZE) + 1*xy(GUTTER_SIZE,GUTTER_SIZE)
+)
+const SHOW_ALL_SCORES = false
+const SHOW_TOP_SCORES = true
+
+def neighbors(grid_size, index_xy):
+    let result = []
+    for inc in [xy(-1, 0), xy(1, 0), xy(0, 1), xy(0, -1)]:
+        let candidate = index_xy + inc
+        // in bounds
+        if (
+                candidate.x >= 0 and candidate.x < grid_size.x
+                and candidate.y >= 0 and candidate.y < grid_size.y
+        ):
+            push(result, candidate)
+    return result
+
+def make_cell(index_xy, index_flat, grid):
+    return {
+        index_xy: index_xy,
+        index_flat: index_flat,
+        neighbors: neighbors(grid.size, index_xy),
+        contains: nil,
+        grid: grid,
+    }
+
+def pix_coord(cell):
+    return (
+        -BOARD_SIZE_PX/2 + xy(
+            cell.index_xy.x * (CELL_SIZE_PX + GUTTER_SIZE),
+            cell.index_xy.y * (CELL_SIZE_PX + GUTTER_SIZE)
+        )
+    )
+
+def draw_move(monster):
+    let move = monster.intent
+
+    if move["attack_dir"] == nil:
+        return
+
+    let target_cell_index = monster.contained_by.index_xy + move["attack_dir"]
+    let target_cell = grid_cell_xy(GRID, target_cell_index)
+
+    // highlight target cell
+    draw_rect(
+        pix_coord(target_cell),
+        xy(CELL_SIZE_PX - 2, CELL_SIZE_PX - 2),
+        (sin(mode_frames/15)+0.5) * rgba(1, 0, 0, 0.2),
+        ACTIVE_ENEMY_COLOR,
+    )
+
+    // draw direction indicator
+    draw_disk(
+        pix_coord(target_cell) - 9*move["attack_dir"],
+        3,
+        ACTIVE_ENEMY_COLOR,
+    )
+
+// for now the size of ItB
+const GRID=make_grid(BOARD_SIZE, make_cell)
+
+def generate_next_move(monster):
+    // draw_disk(result.pos, 5, rgb(0,1,0))
+    let movable_cells = cells_wthin_move_range(
+        monster.contained_by,
+        3,
+        monster
+    )
+    shuffle(movable_cells)
+
+    let cell_scores = []
+    for cell in movable_cells:
+        let base_cell_score = 0
+
+        let move_scores = []
+
+        // compute score for cell
+        // lets say that this monster can hit one square in
+        // any direction
+        let offsets = [
+                xy(-1,  0),
+                xy( 1,  0),
+                xy( 0,  1),
+                xy( 0, -1)
+        ]
+        shuffle(offsets)
+        for offset in offsets:
+            // get the cell at that offset
+            let neighbor = grid_cell_xy(GRID, (cell.index_xy + offset))
+            let score = 0 + base_cell_score
+
+            // figure out if there is anything in the cell
+            if (
+                    neighbor
+                    and neighbor.contains != nil
+                    and neighbor.contains.kind == "building"
+            ):
+                score += 1
+            else:
+                offset = nil
+
+            push(move_scores, [score, offset])
+
+        // sort by score (0th element, put highest score in 0 element)
+        sort(move_scores, 0, true)
+
+        // add the top score for this square to the possible moves list
+        let top_score = move_scores[0]
+        push(cell_scores, [top_score[0], cell, top_score[1]])
+
+    sort(cell_scores, 0, true)
+
+    let ind = random_integer(0, 3)
+    // let ind = random(0, 3)
+    let next_move = cell_scores[ind]
+    // debug_print(cell_scores)
+    assert(next_move != nil)
+
+    return {
+        move: next_move[1],
+        attack_dir: next_move[2],
+        draw: draw_move,
+    }
+
+
+def set_cell_contains(cell, thing):
+    if thing.contained_by != nil:
+        thing.contained_by.contains = nil
+    cell.contains = thing
+    thing.contained_by = cell
+    thing.pos = pix_coord(cell)
+
+def populate_into_empty_cell(grid, total_things, fn, min_coord, max_coord):
+    let made_things = 0
+    let target_cell = nil
+    while made_things < total_things:
+        target_cell = random_cell_in(grid, min_coord,  max_coord)
+        if target_cell.contains == nil:
+            set_cell_contains(target_cell, fn())
+            made_things += 1
+    return target_cell
+
+def populate_grid(grid):
+    // 6-10 buildings
+    populate_into_empty_cell(
+        grid,
+        8,
+        make_building,
+        xy(1, 1),
+        grid.size - xy(2,2)
+    )
+
+    // 1 enemy to start for debugging
+    let last_column = clone(grid.size - xy(1, 1))
+    debug_print("last column: " + last_column)
+    let cell = populate_into_empty_cell(
+        grid,
+        1,
+        // test_spritesSprite["Monster"][0],
+        make_monster,
+        xy(last_column.x, 1),
+        xy(last_column.x, grid.size.y-2)
+    )
+    cell.contains.intent = nil
+    // cell.contains.intent = generate_next_move(cell.contains)
+
+def make_containable(thing):
+    assert(thing.contained_by == nil)
+    thing.contained_by = nil
+    return thing
+
+def path_estimator(first_cell, second_cell, graph_obj):
+    return magnitude(first_cell.index_xy - second_cell.index_xy)
+
+def edge_cost(fst, snd, graph_obj):
+    return 1
+
+def neighbor_cells(cell, graph_obj):
+    let result = []
+    for ind in cell.neighbors:
+        let candidate = grid_cell_xy(cell.grid, ind)
+        if (
+                candidate.contains == nil
+                or (
+                    graph_obj != nil
+                    and candidate.contains == graph_obj.move_through_ok
+                )
+        ):
+            push(result, candidate)
+    return result
+
+def hash_cell(cell):
+    return grid_coord_flat(cell.grid, cell.index_xy)
+
+def cells_wthin_move_range(cell_start, move_distance, move_through_kind):
+    let movable_cells = []
+    for cell in GRID.cells:
+        let path = (
+            find_path(
+                // from
+                cell,
+                // to
+                cell_start,
+                path_estimator,
+                edge_cost,
+                neighbor_cells,
+                hash_cell,
+                {move_through_ok: move_through_kind},
+            )
+        )
+        let path_num = size(path) - 1
+
+        if cell.contains == nil and path_num < move_distance:
+            push(movable_cells, cell)
+
+    return movable_cells
+
+
+def make_monster():
+    let result = make_entity(
+        make_containable(
+            {
+                name: "TestMonster" + size(ENEMIES),
+                kind: "monster",
+                sprite: test_spritesSprite["Monster"][0],
+                intent: {},
+            }
+        )
+    )
+
+    push(ENEMIES, result)
+
+    return result
+
+def make_building():
+    return make_entity(
+        make_containable(
+            {
+                kind: "building",
+                sprite: test_spritesSprite["Building"][0]
+            }
+        )
+    )
+
+populate_grid(GRID)
+
+def draw_grid(grid):
+    //border... doesn't work
+    // @TODO: put all the boxes in coordinate systems
+    //        then redo the math for the bounding
+    //        box of everything
+
+    // draw_rect(
+    //     xy(CELL_SIZE_PX,CELL_SIZE_PX)/2,
+    //     BOARD_SIZE_PX,
+    //     nil,
+    //     rgb(1,1,1),
+    //     nil,
+    //     -9
+    // )
+
+    debug_watch(BOARD_SIZE_PX)
+    for cell in GRID.cells:
+        let pos = pix_coord(cell)
+        if cell.contains:
+            draw_entity(cell.contains,)
+
+            if cell.contains.intent:
+                cell.contains.intent.draw(cell.contains)
+
+        draw_rect(
+            pos,
+            xy(CELL_SIZE_PX, CELL_SIZE_PX),
+            nil,
+            ACTIVE_COLOR,
+            nil,
+            -9
+        )
+        if DEBUG_DRAW_CELL_COORD:
+            draw_text(
+                smallfont,
+                cell.index_xy.x+","+cell.index_xy.y,
+                pos,
+                rgb(0,0,1),
+                nil,
+                nil,
+                "center",
+                "center"
+            )
+
+def transition_command(text, banner_color, end_function):
+    // state for the transition
+    let in_progress = false
+    let need_to_start = true
+
+    def wrapped_end():
+        in_progress = false
+        if end_function:
+            end_function()
+
+        debug_print("done")
+
+    def is_transitioning(ent):
+        if need_to_start:
+            debug_print("start")
+            start_transition(text, banner_color, wrapped_end)
+            need_to_start = false
+            in_progress = true
+
+        if not in_progress:
+            ent.done = true
+
+
+    return {
+        name: "TRANSITION: " + text,
+        update: is_transitioning,
+        undo: "foo"
+    }
+
+def player_input_test():
+    if not TAKING_INPUT:
+        return
+
+    for input in inputs:
+        if joy[input[1]]:
+            input[3]()
+
+def lock_input():
+    TAKING_INPUT = false
+def unlock_input():
+    TAKING_INPUT = true
+
+def lock_input_cmd():
+    return command_fn_immediate(lock_input, "lock_input")
+
+def unlock_input_cmd():
+    return command_fn_immediate(unlock_input, "unlock_input")
+
+def push_end_blocking_command(cmd):
+    push_end_command(lock_input_cmd())
+    push_end_command(cmd)
+    push_end_command(unlock_input_cmd())
+    
+def end_turn():
+    debug_print("ending turn")
+    push_end_command(lock_input_cmd())
+    push_end_command(
+        transition_command(
+            "their turn",
+            ACTIVE_ENEMY_COLOR,
+            enemy_move_and_pick
+        )
+    )
+    push_end_command(
+        transition_command("your turn", ACTIVE_COLOR)
+    )
+    push_end_command(unlock_input_cmd())
+
+let inputs = [
+    ["(b)", "bb", "end turn", end_turn],
+]
+
+def draw_menu():
+    const root = xy(0, 3*SCREEN_SIZE.y/8)
+    let input_string = []
+    for input in inputs:
+        push(input_string, replace_prompt(input[0] + ": " + input[2]))
+
+    let text_color = ACTIVE_COLOR
+    if not TAKING_INPUT:
+        text_color = DONE_COLOR
+
+    draw_text(
+        font,
+        join(
+            input_string,
+            "\n"
+        ),
+        root,
+        text_color,
+        nil,
+        nil,
+        "center",
+        "center"
+    )
+
+    let command_names = ["CMD QUEUE:"]
+    for cmd in COMMAND_QUEUE:
+        push(command_names, cmd.name)
+
+    draw_text(
+        font,
+        join(command_names, "\n"),
+        -SCREEN_SIZE/2,
+        DONE_COLOR,
+        nil,
+        nil,
+        "left",
+        "top",
+    )
+
+    let undo_names = ["UNDO QUEUE:"]
+    for cmd in UNDO_QUEUE:
+        push(undo_names, cmd.name)
+
+    draw_text(
+        font,
+        join(undo_names, "\n"),
+        xy(SCREEN_SIZE.x,-SCREEN_SIZE.y)/2,
+        DONE_COLOR,
+        nil,
+        nil,
+        "right",
+        "top",
+    )
+
+def move_thing_to_cell(thing, cell):
+    set_cell_contains(cell, thing)
+
+def enemy_move_and_pick():
+    for en in ENEMIES:
+        debug_print("Pick a move for: " + en.name)
+        en.intent = generate_next_move(en)
+        
+        // move the thing
+        move_thing_to_cell(en, en.intent.move)
+
+    debug_print("move and pick")
+
+
+enter
+────────────────────────────────────────────────────────────────────────
+// pass
+TAKING_INPUT = false
+ACTIONS_REMAINING = 0
+CURRENT_ENEMY = 0
+
+// actual start
+end_turn()
+
+frame
+────────────────────────────────────────────────────────────────────────
+set_transform(SCREEN_SIZE/2)
+player_input_test()
+update_command_test()
+update_orbital_things()
+update_camera()
+update_command_queue()
+draw_grid(GRID)
+draw_menu()

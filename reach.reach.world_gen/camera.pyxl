@@ -1,0 +1,15 @@
+def perspective_zoom(cs_z):
+    const clip_z = 6.5
+    return clip_z / (clip_z - cs_z)
+
+const CAMERA = make_entity(
+    {
+        pos: xy(0, 0),
+        angle: 0,
+        z: 10,
+        zoom: perspective_zoom,
+        target: xy(0, 0),
+    }
+)
+
+

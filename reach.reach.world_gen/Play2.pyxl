@@ -1,0 +1,36 @@
+init
+────────────────────────────────────────────────────────────────────────
+let first = true
+
+enter
+────────────────────────────────────────────────────────────────────────
+start_transition("YOUR TURN", ACTIVE_COLOR, player_start_turn)
+if size(PLAYER_LEADERS) > 0:
+    CAMERA.target = clone(PLAYER_LEADERS[0].location.pos)
+
+
+frame
+────────────────────────────────────────────────────────────────────────
+if PLAYER_INPUT_LOCK_TIMER == mode_frames:
+    unlock_player_input()
+
+if PLAYER_ALLOWED_INPUT:
+    player_input()
+
+reset_transform()
+entity_update_children(WORLD)
+
+set_transform(SCREEN_SIZE/2)
+
+update_orbital_things()
+update_camera()
+update_menu()
+
+draw_stars(CAMERA, STARMAP, CONNECTIONS)
+draw_ui()
+
+// @TODO: just for testing
+if first and MAP_TO_LOAD != "STARMAP_DATA":
+    for en in clone(ENEMIES):
+        en.intent = ENEMY_BRAINS[en.kind](en)
+    first = false

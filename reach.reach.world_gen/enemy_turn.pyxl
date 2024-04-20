@@ -1,0 +1,72 @@
+init
+────────────────────────────────────────────────────────────────────────
+const ENEMY_LIST = [
+    "enemy 1",
+    "other enemy"
+]
+let CURRENT_ENEMY = -1
+let CURRENT_ENEMY_MOVE = nil
+
+def next_move():
+    def run_once(action):
+        next_enemy_move()
+        action.done = true
+    return {
+        name: "next move",
+        update: run_once,
+    }
+
+def next_enemy_move():
+    debug_print("current enemy: " + CURRENT_ENEMY)
+    if CURRENT_ENEMY >= size(ENEMIES):
+        debug_print("turn over")
+        end_turn(command_test)
+
+    let en = ENEMIES[CURRENT_ENEMY]
+
+    push(COMMAND_QUEUE, command_move_camera_to(clone(en.pos)))
+    if en.intent:
+        push(COMMAND_QUEUE, en.intent)
+    push(COMMAND_QUEUE, generate_intent_command(en))
+    push(COMMAND_QUEUE, next_move())
+    CURRENT_ENEMY += 1
+
+const MOVES = [
+    "coconut",
+    "blueberry"
+]
+
+def random_item_in_list(l):
+    return l[random_integer(0, size(l)-1)]
+
+def generate_intent_command(en):
+    def make_intent(action):
+        en.intent = ENEMY_BRAINS[en.kind](en)
+        action.done = true
+        // @TODO: eventually some animation would be nice for this
+
+    return {
+        name: "generate intent for: " + en.name,
+        update: make_intent,
+    }
+
+
+enter()
+────────────────────────────────────────────────────────────────────────
+CURRENT_TURN = "enemy"
+CURRENT_ENEMY = 0
+TAKING_INPUT = false
+start_transition("THEIR TURN", ACTIVE_ENEMY_COLOR, next_enemy_move)
+
+frame
+────────────────────────────────────────────────────────────────────────
+set_transform(SCREEN_SIZE/2)
+draw_command_test(false, turn_count, 0, CURRENT_ENEMY)
+
+update_command_test()
+update_orbital_things()
+update_camera()
+draw_stars(CAMERA, STARMAP, CONNECTIONS)
+
+if TAKING_INPUT:
+    next_enemy_move()

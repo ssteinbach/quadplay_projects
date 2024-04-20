@@ -1,0 +1,13 @@
+// just a mode that renders the palette sprite as a utility
+for i < 30:
+    draw_corner_rect(xy(12*i, 0), xy(12*(i+1), 30), palColor(i))
+    draw_text(
+        font,
+        unparse(i),
+        xy(12*i, 30),
+        palColor(i),
+        nil,
+        nil,
+        "left",
+        "top"
+    )

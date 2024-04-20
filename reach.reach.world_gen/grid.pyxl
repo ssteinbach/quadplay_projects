@@ -1,0 +1,78 @@
+
+// library for working with 2d grids (2d arrays)
+
+// @{ random functions
+def random_cell_coords_xy_in(grid, min_coord default xy(0,0), max_coord):
+    if max_coord == nil:
+        max_coord = grid.size - xy(1,1)
+    return xy(
+        random_integer(min_coord.x, max_coord.x),
+        random_integer(min_coord.y, max_coord.y),
+    )
+
+def random_cell_in(grid, min_coord, max_coord):
+    let coords_xy = random_cell_coords_xy_in(grid, min_coord, max_coord)
+    debug_print(coords_xy)
+
+    let result = grid_cell_xy(grid, coords_xy)
+
+    // debug code
+    assert(
+        result != nil,
+        "target cell was nil, coordinates: " + coords_xy.x + ", " + coords_xy.y
+    )
+
+    return result
+// @}
+
+// @{ coordinates and cells
+def grid_coord_xy(grid, index_flat):
+    return xy(
+        grid.size.x mod index_flat,
+        floor(index_flat/grid.size.y)
+    )
+
+// returns nil if the index_xy is not within the bounds of the grid
+def grid_cell_xy(grid, index_xy):
+    if (
+            index_xy.x < 0 
+            or index_xy.y < 0
+            or index_xy.x >= grid.size.x
+            or index_xy.y >= grid.size.y
+    ):
+        return nil
+
+    return grid.cells[grid_coord_flat(grid, index_xy)]
+
+def grid_coord_flat(grid, index_xy):
+    return index_xy.y + index_xy.x*grid.size.y
+
+def flat_size(grid):
+    return grid.size.x * grid.size.y
+// @}
+
+// grid constructor
+def make_grid(grid_size, make_cell):
+    let grid = {
+        // xy dimensions of the grid
+        size: grid_size,
+        
+        // cells are in a flat list
+        cells: [],
+    }
+
+    for ix < grid_size.x:
+        for iy < grid_size.y:
+            let coord = xy(ix, iy)
+            push(
+                grid.cells,
+                make_cell(
+                    coord,
+                    grid_coord_flat(grid, coord),
+                    grid
+                )
+            )
+
+    debug_print("done making grid of size:" + unparse(grid_size))
+
+    return grid

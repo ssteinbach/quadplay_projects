@@ -1,0 +1,16 @@
+const STARMAP = reset_starmap()
+const Z_RANGE = [-4, 15]
+const CONNECTIONS = reset_starmap_connections(STARMAP)
+const WORLD = make_entity(
+    {
+        name: "WORLD",
+        pos: xy(0,0),
+        angle:0,
+        size:xy(1000,1000),
+        scale:xy(1,1)
+    }, 
+
+    // child entities
+    STARMAP,
+    CONNECTIONS 
+)

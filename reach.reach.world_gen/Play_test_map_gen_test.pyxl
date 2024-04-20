@@ -1,0 +1,169 @@
+init
+────────────────────────────────────────────────────────────────────────
+let LAYER_INDEX = 0
+
+// starting to build a static palette
+const PALETTE = []
+for i < paletteSprite.size.x:
+    PALETTE[i] = get_sprite_pixel_color(paletteSprite[0][0], xy(i, 0))
+
+def pix_coord(cell):
+    return (
+        -BOARD_SIZE_PX/2 + xy(
+            cell.index_xy.x * (CELL_SIZE_PX + GUTTER_SIZE),
+            cell.index_xy.y * (CELL_SIZE_PX + GUTTER_SIZE)
+        )
+    )
+const CELL_SIZE_PX = 16
+// const BOARD_SIZE = xy(8,8)
+const BOARD_SIZE = xy(MAP_GEN_TEST_DATA.spec.grid.dimensions)
+const GUTTER_SIZE = 0
+const BOARD_SIZE_PX = (
+    BOARD_SIZE * (CELL_SIZE_PX + GUTTER_SIZE) + 1*xy(GUTTER_SIZE,GUTTER_SIZE)
+)
+def neighbors(grid_size, index_xy):
+    let result = []
+    for inc in [xy(-1, 0), xy(1, 0), xy(0, 1), xy(0, -1)]:
+        let candidate = index_xy + inc
+        // in bounds
+        if (
+                candidate.x >= 0 and candidate.x < grid_size.x
+                and candidate.y >= 0 and candidate.y < grid_size.y
+        ):
+            push(result, candidate)
+    return result
+
+def make_cell(index_xy, index_flat, grid):
+    return {
+        index_xy: index_xy,
+        index_flat: index_flat,
+        neighbors: neighbors(grid.size, index_xy),
+        contains: nil,
+        grid: grid,
+    }
+
+const GRID_TEST = make_grid(
+    xy(MAP_GEN_TEST_DATA.spec.grid.dimensions),
+    make_cell
+)
+
+def _read_layers(packed_grid):
+    let result = {}
+    for layer at layername in packed_grid:
+        let layer_grid = []
+        for line in split(layer, "\n"):
+            let row = []
+            for character in line:
+                push(row, character)
+            push(layer_grid, row)
+        result[layername] = layer_grid
+
+    return result
+
+const LAYERS = _read_layers(MAP_GEN_TEST_DATA.grid)
+const LAYER_KEYS = keys(LAYERS)
+
+def draw_grid(grid):
+    //border... doesn't work
+    // @TODO: put all the boxes in coordinate systems
+    //        then redo the math for the bounding
+    //        box of everything
+
+    // draw_rect(
+    //     xy(CELL_SIZE_PX,CELL_SIZE_PX)/2,
+    //     BOARD_SIZE_PX,
+    //     nil,
+    //     rgb(1,1,1),
+    //     nil,
+    //     -9
+    // )
+
+    debug_watch(BOARD_SIZE_PX)
+    for cell in grid.cells:
+        let pos = pix_coord(cell)
+        if cell.contains:
+            draw_entity(cell.contains,)
+
+            if cell.contains.intent:
+                cell.contains.intent.draw(cell.contains)
+
+        const layer = (LAYERS[LAYER_KEYS[LAYER_INDEX]])
+        const c_xy = cell.index_xy.y
+        const l_x = layer[c_xy] 
+
+        assert(l_x)
+
+        const l_xy = parse(l_x[cell.index_xy.x])
+
+        if l_xy != 0:
+            debug_watch(l_xy)
+            debug_watch(l_xy/9)
+
+        draw_rect(
+            pos,
+            xy(CELL_SIZE_PX, CELL_SIZE_PX),
+            perceptual_lerp_color(PALETTE[13], PALETTE[12], l_xy/9),
+            nil,
+            nil,
+            0
+        )
+        draw_text(
+            smallfont,
+            l_xy,
+            pos,
+            rgba(0),
+            nil,
+            nil,
+            "center",
+            "center"
+        )
+
+        if DEBUG_DRAW_CELL_COORD:
+            draw_text(
+                smallfont,
+                cell.index_xy.x+","+cell.index_xy.y,
+                pos,
+                rgb(0,0,1),
+                nil,
+                nil,
+                "center",
+                "center"
+            )
+enter
+────────────────────────────────────────────────────────────────────────
+CAMERA.target = xy(0, 0)
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+reset_transform()
+
+set_transform(SCREEN_SIZE/2)
+set_camera(CAMERA)
+
+draw_grid(GRID_TEST)
+
+let root = xy(0, 0)
+draw_rect(root + xy(0.75, 0.75), xy(6,6), rgb(1.0,0,0), nil, 0, 0)
+
+if gamepad_array[0].aa:
+    CAM_Z = toggle(CAM_Z)
+if gamepad_array[0].y != 0 or gamepad_array[0].x != 0:
+    CAMERA.target += abs(CAMERA.z)*gamepad_array[0].xy
+update_camera()
+
+// cycle layers
+if gamepad_array[0].bb:
+    LAYER_INDEX = loop(LAYER_INDEX - 1, 0, size(LAYERS))
+if gamepad_array[0].cc:
+    LAYER_INDEX = loop(LAYER_INDEX + 1, 0, size(LAYERS))
+
+debug_watch(xy(MAP_GEN_TEST_DATA.spec.grid.dimensions))
+debug_watch(LAYERS)
+
+reset_transform()
+preserving_transform:
+    set_camera()
+    draw_corner_rect(xy(0, 0), xy(SCREEN_SIZE.x, 10), rgb(0,0,0), nil, 50)
+    draw_text(smallfont, "layer: " + LAYER_KEYS[LAYER_INDEX], xy(1, 1), rgb(1,1,1), nil, nil, "left","top", 52)
+    draw_text(smallfont, "WORLD GEN VIS / REACH", xy(SCREEN_SIZE.x, 1) - xy(1, 0), rgb(1,1,1), nil, nil, "right","top", 52)

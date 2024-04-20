@@ -1,0 +1,95 @@
+{
+    "assets": {
+        "beakerSprite": "beaker.sprite.json",
+        "big_font": "quad://fonts/deja-15.font.json",
+        "bigfont": "quad://fonts/deja-15.font.json",
+        "blipSound": "quad://sounds/blip-17.sound.json",
+        "distanceSprite": "distance.sprite.json",
+        "font": "quad://fonts/deja-7.font.json",
+        "greenplanetSprite": "greenplanet.sprite.json",
+        "hammerSprite": "hammer.sprite.json",
+        "monsterSprite": "monster.sprite.json",
+        "paletteSprite": "ufo50_palette_256sq.sprite.json",
+        "question_markSprite": "question_mark.sprite.json",
+        "relaySprite": "relay.sprite.json",
+        "smallfont": "quad://fonts/deja-5.font.json",
+        "space_stationSprite": "space_station.sprite.json",
+        "spaceshipSprite": "spaceship.sprite.json",
+        "sparkleSprite": "sparkle.sprite.json",
+        "test_spritesSprite": "test_sprites.sprite.json",
+        "ufo50_palette_256sqSprite": "ufo50_palette_256sq.sprite.json",
+        "unknown_starSprite": "unknown_star.sprite.json"
+    },
+    "constants": {
+        "DEBUG_DRAW_CELL_COORD": {
+            "type": "boolean",
+            "value": false
+        },
+        "DRAW_PLAYER_DISTANCE": {
+            "type": "boolean",
+            "value": true
+        },
+        "GRUNT_TEST_DATA": {
+            "type": "raw",
+            "url": "grunt.starmap.yml"
+        },
+        "MAP_GEN_TEST_DATA": {
+            "type": "raw",
+            "url": "default.world.yml"
+        },
+        "MAP_TO_LOAD": {
+            "type": "string",
+            "value": "MISSILE_TEST_DATA"
+        },
+        "MISSILE_TEST_DATA": {
+            "type": "raw",
+            "url": "missile_test.yml"
+        },
+        "STARMAP_DATA": {
+            "type": "raw",
+            "url": "starmap2.yml"
+        },
+        "TEXT_COLOR": {
+            "type": "rgb",
+            "value": {
+                "b": {
+                    "type": "number",
+                    "value": 0.8
+                },
+                "g": {
+                    "type": "number",
+                    "value": 0.8
+                },
+                "r": {
+                    "type": "number",
+                    "value": 0.8
+                }
+            }
+        }
+    },
+    "copyright": "\u00a92019 Stephan Steinbach",
+    "developer": "Stephan Steinbach",
+    "license": "Available under the BSD License https://opensource.org/licenses/BSD-2-Clause",
+    "modes": [
+        "Play",
+        "Play2",
+        "Play_test_map_gen_test",
+        "palette_mode",
+        "command_test",
+        "enemy_turn",
+        "enemy_turn_reach",
+        "aitest",
+        "command_test_two"
+    ],
+    "packages": [],
+    "scripts": [
+        "starmap.pyxl",
+        "command_test_lib.pyxl",
+        "turn_transition_lib.pyxl",
+        "camera.pyxl",
+        "constants.pyxl",
+        "grid.pyxl"
+    ],
+    "start_mode": "Play_test_map_gen_test",
+    "title": "Reach"
+}

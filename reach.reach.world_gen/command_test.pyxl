@@ -1,0 +1,17 @@
+enter
+────────────────────────────────────────────────────────────────────────
+TAKING_INPUT = false
+ACTIONS_REMAINING = 0
+start_transition("YOUR TURN", ACTIVE_COLOR, start_player_turn)
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+set_transform(SCREEN_SIZE/2)
+entity_update_children(WORLD)
+
+draw_command_test(turn_count)
+update_command_test()
+update_orbital_things()
+update_camera()
+draw_stars(CAMERA, STARMAP, CONNECTIONS)

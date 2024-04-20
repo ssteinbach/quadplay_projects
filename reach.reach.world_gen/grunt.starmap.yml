@@ -1,0 +1,83 @@
+connections:
+- - m
+  - p
+- - p
+  - star
+- - m
+  - star2
+- - star
+  - star2
+- - star
+  - star3
+- - star2
+  - star4
+- - star3
+  - star4
+starmap:
+  m:
+    grid_coords:
+    - 1
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -1.0
+    - -4.0
+    size: 1
+  p:
+    grid_coords:
+    - 0
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    player_occupies: 1
+    pos:
+    - -3.0
+    - -4.0
+    size: 1
+  star:
+    grid_coords:
+    - 0
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -3.0
+    - -2.0
+    size: 1
+  star2:
+    grid_coords:
+    - 1
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -1.0
+    - -2.0
+    size: 1
+  star3:
+    grid_coords:
+    - 0
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -3.0
+    - 0.0
+    size: 1
+  star4:
+    grid_coords:
+    - 1
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -1.0
+    - 0.0
+    size: 1

@@ -1,0 +1,39 @@
+{
+    "aseprite_json": "test_sprites.json",
+    "license": "None",
+    "names": {
+        "Building": {
+            "end": {
+                "x": 0,
+                "y": 1
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0
+            ],
+            "start": {
+                "x": 0,
+                "y": 1
+            }
+        },
+        "Monster": {
+            "end": {
+                "x": 0,
+                "y": 0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0
+            ],
+            "start": {
+                "x": 0,
+                "y": 0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 12,
+        "y": 12
+    },
+    "url": "test_sprites.png"
+}

@@ -1,0 +1,1758 @@
+connections:
+- - DO Cephei
+  - Gl 682
+- - Gl 570
+  - Gl 682
+- - DO Cephei
+  - Hip 15689
+- - DO Cephei
+  - Gl 729
+- - Hip 15689
+  - NN 3379
+- - Hip 15689
+  - Sirius
+- - BD+15 2620
+  - NN 3379
+- - Gl 280 B
+  - NN 3379
+- - BD+15 2620
+  - GQ Andromedae
+- - BD+15 2620
+  - Gl 725
+- - GQ Andromedae
+  - V577 Monocerotis B
+- - GQ Andromedae
+  - Gl 752 B
+- - V577 Monocerotis A
+  - V577 Monocerotis B
+- - 40 Eridani B
+  - V577 Monocerotis B
+- - UV Ceti B
+  - V577 Monocerotis A
+- - Gl 725 B
+  - V577 Monocerotis A
+- - UV Ceti A
+  - UV Ceti B
+- - Epsilon Indi
+  - UV Ceti B
+- - Gl 702 B
+  - UV Ceti A
+- - Gl 570
+  - Gl 729
+- - Gl 570
+  - Gl 783 B
+- - Gl 729
+  - Sirius
+- - Gl 644 C
+  - Gl 729
+- - Gl 280 B
+  - Sirius
+- - Gl 644 B
+  - Sirius
+- - Gl 280 B
+  - Gl 725
+- - DX Cancri
+  - Gl 280 B
+- - Gl 725
+  - Gl 752 B
+- - Gl 725
+  - Kapteyn's Star
+- - 40 Eridani B
+  - Gl 752 B
+- - GJ 1245 B
+  - Gl 752 B
+- - 40 Eridani B
+  - Gl 725 B
+- - 40 Eridani B
+  - Lacaille 9352
+- - Epsilon Indi
+  - Gl 725 B
+- - Gl 725 B
+  - V1581 Cygni
+- - Epsilon Indi
+  - Gl 702 B
+- - BD-21 1377
+  - Epsilon Indi
+- - 70 Ophiuchi
+  - Gl 702 B
+- - Gl 644 C
+  - Gl 783 B
+- - Gl 244 B
+  - Gl 783 B
+- - Gl 644 B
+  - Gl 644 C
+- - Gl 644 C
+  - Lalande 21185
+- - DX Cancri
+  - Gl 644 B
+- - Gl 644 B
+  - NN 3323
+- - DX Cancri
+  - Kapteyn's Star
+- - BD-03 1123
+  - DX Cancri
+- - GJ 1245 B
+  - Kapteyn's Star
+- - DY Eridani
+  - Kapteyn's Star
+- - GJ 1245 B
+  - Lacaille 9352
+- - 36 Ophiuchi
+  - GJ 1245 B
+- - Lacaille 9352
+  - V1581 Cygni
+- - Lacaille 8760
+  - Lacaille 9352
+- - BD-21 1377
+  - V1581 Cygni
+- - 18 Epsilon Eridani
+  - V1581 Cygni
+- - 70 Ophiuchi
+  - BD-21 1377
+- - BD-21 1377
+  - Gl 1
+- - 70 Ophiuchi
+  - Rigel Kentaurus B
+- - Gl 244 B
+  - Lalande 21185
+- - Gl 244 B
+  - Gl 674
+- - Lalande 21185
+  - NN 3323
+- - Lalande 21185
+  - Rigel Kentaurus A
+- - BD-03 1123
+  - NN 3323
+- - Gl 832
+  - NN 3323
+- - BD-03 1123
+  - DY Eridani
+- - BD-03 1123
+  - Procyon
+- - 36 Ophiuchi
+  - DY Eridani
+- - DY Eridani
+  - EZ Aquarii
+- - 36 Ophiuchi
+  - Lacaille 8760
+- - 36 Ophiuchi
+  - Gl 300
+- - 18 Epsilon Eridani
+  - Lacaille 8760
+- - Altair
+  - Lacaille 8760
+- - 18 Epsilon Eridani
+  - Gl 1
+- - 18 Epsilon Eridani
+  - FL Virginis A
+- - Gl 1
+  - Rigel Kentaurus B
+- - FL Virginis B
+  - Gl 1
+- - Hip 114110
+  - Rigel Kentaurus B
+- - Gl 674
+  - Rigel Kentaurus A
+- - Gl 674
+  - Sol
+- - Gl 832
+  - Rigel Kentaurus A
+- - Gl 588
+  - Rigel Kentaurus A
+- - Gl 832
+  - Procyon
+- - Gl 832
+  - NN 3522
+- - EZ Aquarii
+  - Procyon
+- - NN 3622
+  - Procyon
+- - EZ Aquarii
+  - Gl 300
+- - EV Lacertae
+  - EZ Aquarii
+- - Altair
+  - Gl 300
+- - 82 Eridani
+  - Gl 300
+- - Altair
+  - FL Virginis A
+- - Altair
+  - V1054 Ophiuchi
+- - FL Virginis A
+  - FL Virginis B
+- - FL Virginis A
+  - Gl 563.2
+- - FL Virginis B
+  - Hip 114110
+- - FL Virginis B
+  - Proxima Centauri
+- - 24 Eta Cassiopeiae
+  - Hip 114110
+- - Gl 588
+  - Sol
+- - Gl 693
+  - Sol
+- - Gl 588
+  - NN 3522
+- - BD-11 3759
+  - Gl 588
+- - NN 3522
+  - NN 3622
+- - 52 Tau Ceti
+  - NN 3522
+- - EV Lacertae
+  - NN 3622
+- - BD-12 4523
+  - NN 3622
+- - 82 Eridani
+  - EV Lacertae
+- - EV Lacertae
+  - Gl 563.2B
+- - 82 Eridani
+  - V1054 Ophiuchi
+- - 82 Eridani
+  - Gl 251
+- - Gl 563.2
+  - V1054 Ophiuchi
+- - Kr ger 60
+  - V1054 Ophiuchi
+- - Gl 563.2
+  - Proxima Centauri
+- - Gl 563.2
+  - Gl 908
+- - 24 Eta Cassiopeiae
+  - Proxima Centauri
+- - Gl 83.1
+  - Proxima Centauri
+- - 24 Eta Cassiopeiae
+  - Gl 905
+- - BD-11 3759
+  - Gl 693
+- - Delta Pavonis
+  - Gl 693
+- - 52 Tau Ceti
+  - BD-11 3759
+- - BD-11 3759
+  - Gl 412
+- - 52 Tau Ceti
+  - BD-12 4523
+- - 52 Tau Ceti
+  - Gl 687
+- - BD-12 4523
+  - Gl 563.2B
+- - BD-12 4523
+  - Gl 783
+- - Gl 251
+  - Gl 563.2B
+- - Gl 440
+  - Gl 563.2B
+- - Gl 251
+  - Kr ger 60
+- - Gl 251
+  - Gl 664
+- - Gl 908
+  - Kr ger 60
+- - 61 Cygni A
+  - Kr ger 60
+- - Gl 83.1
+  - Gl 908
+- - Gl 213
+  - Gl 908
+- - Gl 83.1
+  - Gl 905
+- - 61 Cygni B
+  - Gl 83.1
+- - GJ 1005
+  - Gl 905
+- - Delta Pavonis
+  - Gl 412
+- - 61 Sigma Draconis
+  - Delta Pavonis
+- - Gl 412
+  - Gl 687
+- - Gl 412
+  - WX Ursae Majoris
+- - Gl 687
+  - Gl 783
+- - Gl 687
+  - Luyten's Star
+- - Gl 440
+  - Gl 783
+- - GJ 1002
+  - Gl 783
+- - Gl 440
+  - Gl 664
+- - 40 Omicron 2 Eridani
+  - Gl 440
+- - 61 Cygni A
+  - Gl 664
+- - Gl 664
+  - Hip 82725
+- - 61 Cygni A
+  - Gl 213
+- - 61 Cygni A
+  - Hip 85605
+- - 61 Cygni B
+  - Gl 213
+- - Gl 169.1B
+  - Gl 213
+- - 61 Cygni B
+  - GJ 1005
+- - 61 Cygni B
+  - GJ 1221
+- - GJ 1005
+  - IL Aquarii
+- - 61 Sigma Draconis
+  - WX Ursae Majoris
+- - 61 Sigma Draconis
+  - Van Maanen's Star
+- - Luyten's Star
+  - WX Ursae Majoris
+- - GJ 1116 B
+  - WX Ursae Majoris
+- - GJ 1002
+  - Luyten's Star
+- - GJ 1061
+  - Luyten's Star
+- - 40 Omicron 2 Eridani
+  - GJ 1002
+- - GJ 1002
+  - Gl 663 B
+- - 40 Omicron 2 Eridani
+  - Hip 82725
+- - 40 Omicron 2 Eridani
+  - Gl 752
+- - Hip 82725
+  - Hip 85605
+- - Gl 445
+  - Hip 82725
+- - Gl 169.1B
+  - Hip 85605
+- - Gl 754
+  - Hip 85605
+- - GJ 1221
+  - Gl 169.1B
+- - Gl 169.1B
+  - Gl 402
+- - GJ 1221
+  - IL Aquarii
+- - GJ 1221
+  - GX Andromedae
+- - Gl 406
+  - IL Aquarii
+- - GJ 1116 B
+  - Van Maanen's Star
+- - GJ 1061
+  - GJ 1116 B
+- - GJ 1061
+  - Gl 663 B
+- - Gl 663 B
+  - Gl 752
+- - Gl 445
+  - Gl 752
+- - Gl 445
+  - Gl 754
+- - Gl 402
+  - Gl 754
+- - GX Andromedae
+  - Gl 402
+- - GX Andromedae
+  - Gl 406
+starmap:
+  18 Epsilon Eridani:
+    grid_coords:
+    - 7
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - overseer
+    pos:
+    - 3.916293600199449
+    - -4.944050031832315
+    size: 0.22960503127702392
+  24 Eta Cassiopeiae:
+    grid_coords:
+    - 9
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - overseer
+    - beast
+    pos:
+    - 7.832344525530051
+    - -0.4952837954403293
+    size: 0.008480262463668842
+  36 Ophiuchi:
+    grid_coords:
+    - 5
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - imp
+    - imp
+    pos:
+    - -0.030149775544531687
+    - -4.286420070910088
+    size: 0.3460779190181549
+  40 Eridani B:
+    grid_coords:
+    - 6
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    pos:
+    - 2.660071386548654
+    - -7.659388867171858
+    size: 0.3033685109329176
+  40 Omicron 2 Eridani:
+    grid_coords:
+    - 4
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - imp
+    - imp
+    - beast
+    - beast
+    - overseer
+    - imp
+    - overseer
+    pos:
+    - -1.1498655957830535
+    - 5.91553851808249
+    size: 0.2771827661076983
+  52 Tau Ceti:
+    grid_coords:
+    - 2
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -5.2644378711300135
+    - 2.9475504723193833
+    size: 0.7040231423300713
+  61 Cygni A:
+    grid_coords:
+    - 6
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - grunt
+    - beast
+    pos:
+    - 1.680570470003976
+    - 3.5824305748222693
+    size: 0.8674198235869027
+  61 Cygni B:
+    grid_coords:
+    - 8
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - grunt
+    pos:
+    - 5.270691954790906
+    - 4.102340948138433
+    size: 0.1042749980146136
+  61 Sigma Draconis:
+    grid_coords:
+    - 0
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - beast
+    - beast
+    - grunt
+    - grunt
+    - imp
+    pos:
+    - -9.423767102549547
+    - 6.657011942938227
+    size: 0.3408974641165834
+  70 Ophiuchi:
+    grid_coords:
+    - 9
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    pos:
+    - 7.9182634638213365
+    - -6.461441045117158
+    size: 0.5479963094662489
+  82 Eridani:
+    grid_coords:
+    - 5
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    pos:
+    - 0.15169192557611333
+    - -0.3575083813097495
+    size: 0.6309478612713469
+  Altair:
+    grid_coords:
+    - 6
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 1.6440035327746518
+    - -2.052457971659442
+    size: 0.023634577631987064
+  BD+15 2620:
+    grid_coords:
+    - 4
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -1.475439835084116
+    - -10.995787893297779
+    size: 0.4453871940548014
+  BD-03 1123:
+    grid_coords:
+    - 3
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -4.1478186406237
+    - -4.887753404958519
+    size: 0.8700101551766398
+  BD-11 3759:
+    grid_coords:
+    - 1
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -7.075597749638364
+    - 2.1405611404903606
+    size: 0.17151709517771863
+  BD-12 4523:
+    grid_coords:
+    - 3
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - grunt
+    - overseer
+    - beast
+    - beast
+    pos:
+    - -3.982252507844219
+    - 1.7559376686872161
+    size: 0.34693088456262167
+  BD-21 1377:
+    grid_coords:
+    - 8
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - overseer
+    - imp
+    - overseer
+    - overseer
+    - imp
+    - grunt
+    - imp
+    - imp
+    pos:
+    - 6.027543326375274
+    - -5.095065223463461
+    size: 0.5777948078012031
+  DO Cephei:
+    grid_coords:
+    - 1
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - grunt
+    - imp
+    - overseer
+    pos:
+    - -8.489861948521156
+    - -10.009129825816117
+    size: 0.4494910647887381
+  DX Cancri:
+    grid_coords:
+    - 3
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - grunt
+    - grunt
+    pos:
+    - -4.213489810071548
+    - -6.020612959075484
+    size: 0.029574963966907064
+  DY Eridani:
+    grid_coords:
+    - 4
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    pos:
+    - -1.8600013322472395
+    - -4.600321159645714
+    size: 0.5047204674288633
+  Delta Pavonis:
+    grid_coords:
+    - 0
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -9.651089860552474
+    - 4.675402140307929
+    size: 0.9321874718936273
+  EV Lacertae:
+    grid_coords:
+    - 4
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -2.5536084395066583
+    - 0.2970128361985127
+    size: 0.3948980098582996
+  EZ Aquarii:
+    grid_coords:
+    - 4
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - imp
+    - overseer
+    - overseer
+    - overseer
+    - beast
+    pos:
+    - -2.680748950612305
+    - -1.9452392019039744
+    size: 0.16814494622242826
+  Epsilon Indi:
+    grid_coords:
+    - 8
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    pos:
+    - 6.0105676411592
+    - -7.821995484034897
+    size: 0.034525830151341586
+  FL Virginis A:
+    grid_coords:
+    - 7
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - imp
+    - overseer
+    - imp
+    - overseer
+    pos:
+    - 3.77311420952294
+    - -2.158162641581848
+    size: 0.18803930475131292
+  FL Virginis B:
+    grid_coords:
+    - 8
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 5.217523384890827
+    - -1.2003629992879596
+    size: 0.5101159809286764
+  GJ 1002:
+    grid_coords:
+    - 3
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -4.466552714036528
+    - 6.781536255710611
+    size: 0.5644468332401974
+  GJ 1005:
+    grid_coords:
+    - 9
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - overseer
+    - beast
+    - beast
+    - beast
+    - imp
+    - overseer
+    - beast
+    pos:
+    - 7.078275597193821
+    - 3.1463868376646973
+    size: 0.866168357366572
+  GJ 1061:
+    grid_coords:
+    - 2
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -6.493179727917747
+    - 7.954020191944536
+    size: 0.10012914395045203
+  GJ 1116 B:
+    grid_coords:
+    - 1
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - imp
+    - overseer
+    - imp
+    - beast
+    - imp
+    - grunt
+    pos:
+    - -7.059471926943579
+    - 8.818445456301422
+    size: 0.29402358494854774
+  GJ 1221:
+    grid_coords:
+    - 8
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - beast
+    pos:
+    - 6.9763169972120656
+    - 5.842027174860535
+    size: 0.1155581805922733
+  GJ 1245 B:
+    grid_coords:
+    - 5
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - grunt
+    - overseer
+    - grunt
+    - beast
+    - beast
+    - imp
+    - imp
+    - imp
+    pos:
+    - 0.18636746076011512
+    - -6.212800627244172
+    size: 0.17034919685568128
+  GQ Andromedae:
+    grid_coords:
+    - 5
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - grunt
+    - beast
+    - overseer
+    pos:
+    - 0.44308006468156513
+    - -10.542475557459095
+    size: 0.9452706955539223
+  GX Andromedae:
+    grid_coords:
+    - 8
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    pos:
+    - 6.959905771780154
+    - 8.08582639496943
+    size: 0.6881898080477126
+  Gl 1:
+    grid_coords:
+    - 8
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 5.354422517877166
+    - -3.8310782584431173
+    size: 0.8610088608533248
+  Gl 169.1B:
+    grid_coords:
+    - 7
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    pos:
+    - 4.770120140759322
+    - 5.08004707378033
+    size: 0.2396333648675093
+  Gl 213:
+    grid_coords:
+    - 7
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 4.207965057783422
+    - 4.90861491434438
+    size: 0.8872651047169627
+  Gl 244 B:
+    grid_coords:
+    - 0
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -9.085767437079546
+    - -4.988581741099214
+    size: 0.7836552326153898
+  Gl 251:
+    grid_coords:
+    - 5
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    pos:
+    - -0.6117627100296208
+    - 1.2088484456830306
+    size: 0.6659575282786826
+  Gl 280 B:
+    grid_coords:
+    - 3
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    pos:
+    - -4.628187468210564
+    - -7.0149131756478695
+    size: 0.8599465287952899
+  Gl 300:
+    grid_coords:
+    - 5
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -0.4541711263626398
+    - -1.5768201456294542
+    size: 0.4547016300456639
+  Gl 402:
+    grid_coords:
+    - 7
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 3.222724620253784
+    - 7.430386540072197
+    size: 0.6178068800115557
+  Gl 406:
+    grid_coords:
+    - 9
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - overseer
+    - imp
+    - grunt
+    pos:
+    - 8.323668857750699
+    - 7.5181719837072905
+    size: 0.5416022629129655
+  Gl 412:
+    grid_coords:
+    - 1
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -8.31230037041836
+    - 4.764786404932927
+    size: 0.6871101821536574
+  Gl 440:
+    grid_coords:
+    - 4
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - imp
+    - imp
+    - beast
+    - beast
+    - imp
+    - overseer
+    - grunt
+    pos:
+    - -1.1780244329838643
+    - 3.4259363899828483
+    size: 0.7591161827164402
+  Gl 445:
+    grid_coords:
+    - 5
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    pos:
+    - -0.10031093073980446
+    - 7.626561722137856
+    size: 0.06296479004764532
+  Gl 563.2:
+    grid_coords:
+    - 7
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 4.7510684884703185
+    - -0.38722675933350814
+    size: 0.8585144063565593
+  Gl 563.2B:
+    grid_coords:
+    - 4
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    pos:
+    - -2.588476485410591
+    - 2.3483060284937283
+    size: 0.4329501211003163
+  Gl 570:
+    grid_coords:
+    - 0
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -10.533831099484855
+    - -8.538266916918031
+    size: 0.2187810373376886
+  Gl 588:
+    grid_coords:
+    - 1
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - grunt
+    pos:
+    - -7.56232905447642
+    - -0.6795448147405907
+    size: 0.7046056278520025
+  Gl 644 B:
+    grid_coords:
+    - 2
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    pos:
+    - -5.983147023500036
+    - -5.443114769999708
+    size: 0.5209384176131452
+  Gl 644 C:
+    grid_coords:
+    - 1
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    pos:
+    - -7.651028338995346
+    - -6.25059395899672
+    size: 0.4389616300445631
+  Gl 663 B:
+    grid_coords:
+    - 3
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    pos:
+    - -3.6958996010211655
+    - 7.079240426827409
+    size: 0.010506151518672291
+  Gl 664:
+    grid_coords:
+    - 5
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 0.20041766026449914
+    - 4.68226439141171
+    size: 0.3681079994056491
+  Gl 674:
+    grid_coords:
+    - 0
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -10.489411919825388
+    - -1.316510335451808
+    size: 0.6731135254387071
+  Gl 682:
+    grid_coords:
+    - 0
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    - overseer
+    - grunt
+    - beast
+    - overseer
+    - imp
+    - overseer
+    - imp
+    - grunt
+    - imp
+    - beast
+    - imp
+    pos:
+    - -10.731271511775198
+    - -9.305132526125535
+    size: 0.763774618976614
+  Gl 687:
+    grid_coords:
+    - 2
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - overseer
+    - grunt
+    - imp
+    - imp
+    - grunt
+    - beast
+    pos:
+    - -6.031002554775012
+    - 4.9710164596515956
+    size: 0.23464043487103847
+  Gl 693:
+    grid_coords:
+    - 0
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -9.242564203582306
+    - 1.0758330611971612
+    size: 0.8194141106127972
+  Gl 702 B:
+    grid_coords:
+    - 9
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 7.4854799470861355
+    - -7.405191504891395
+    size: 0.4143139993007743
+  Gl 725:
+    grid_coords:
+    - 4
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - overseer
+    - overseer
+    - beast
+    - beast
+    - overseer
+    - overseer
+    - overseer
+    - grunt
+    - imp
+    - overseer
+    - beast
+    pos:
+    - -2.758220080388387
+    - -8.334609629279742
+    size: 0.7214844075832684
+  Gl 725 B:
+    grid_coords:
+    - 7
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    - beast
+    - imp
+    - beast
+    - beast
+    - imp
+    - grunt
+    pos:
+    - 4.175161212287119
+    - -7.235041998336285
+    size: 0.8461974184283128
+  Gl 729:
+    grid_coords:
+    - 1
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -8.080793068524533
+    - -8.420436770819029
+    size: 0.021489705265908876
+  Gl 752:
+    grid_coords:
+    - 4
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -1.0348327468990732
+    - 7.591099720097835
+    size: 0.5965706431884413
+  Gl 752 B:
+    grid_coords:
+    - 5
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - imp
+    pos:
+    - 0.4223835393905593
+    - -7.12711882640108
+    size: 0.4221069999614152
+  Gl 754:
+    grid_coords:
+    - 6
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    - imp
+    pos:
+    - 2.826784034331881
+    - 8.93962655367623
+    size: 0.9697965044964699
+  Gl 783:
+    grid_coords:
+    - 3
+    - 7
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - grunt
+    - grunt
+    - imp
+    - grunt
+    - imp
+    - overseer
+    - beast
+    - grunt
+    - beast
+    - imp
+    pos:
+    - -3.549069627517455
+    - 3.1693604608329684
+    size: 0.16969414179438758
+  Gl 783 B:
+    grid_coords:
+    - 0
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -10.653985196841898
+    - -5.902402477223694
+    size: 0.7030407620656315
+  Gl 83.1:
+    grid_coords:
+    - 8
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - grunt
+    pos:
+    - 5.401706022881519
+    - 1.655481410192535
+    size: 0.9870497179280261
+  Gl 832:
+    grid_coords:
+    - 2
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - beast
+    - imp
+    - grunt
+    - overseer
+    - grunt
+    - beast
+    - overseer
+    - beast
+    - beast
+    pos:
+    - -5.488826449495604
+    - -2.5008815486931546
+    size: 0.10948862729435938
+  Gl 905:
+    grid_coords:
+    - 9
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - imp
+    - overseer
+    - grunt
+    pos:
+    - 8.565400751458752
+    - 1.6781912957018674
+    size: 0.21302979638081376
+  Gl 908:
+    grid_coords:
+    - 7
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    pos:
+    - 4.74324301484711
+    - 2.7993565392695623
+    size: 0.018092983640471738
+  Hip 114110:
+    grid_coords:
+    - 9
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    - beast
+    - overseer
+    - overseer
+    - imp
+    - imp
+    pos:
+    - 7.418181985103541
+    - -1.788702719931967
+    size: 0.8170396683778869
+  Hip 15689:
+    grid_coords:
+    - 2
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    - beast
+    pos:
+    - -5.6968140545544745
+    - -9.422553297728975
+    size: 0.0938595867742349
+  Hip 82725:
+    grid_coords:
+    - 5
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 0.5740293271206576
+    - 6.655536313291459
+    size: 0.012381744486666624
+  Hip 85605:
+    grid_coords:
+    - 6
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - beast
+    - overseer
+    pos:
+    - 2.340823278047862
+    - 5.183366245233035
+    size: 0.1151024984279273
+  IL Aquarii:
+    grid_coords:
+    - 9
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - imp
+    - overseer
+    - imp
+    - beast
+    - overseer
+    - overseer
+    - overseer
+    - grunt
+    - grunt
+    - beast
+    - grunt
+    - beast
+    - grunt
+    - imp
+    - overseer
+    - overseer
+    pos:
+    - 7.334766874922663
+    - 5.482840570195686
+    size: 0.7440064165370084
+  Kapteyn's Star:
+    grid_coords:
+    - 4
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -2.913025419286945
+    - -5.5932358227923284
+    size: 0.9831877173096739
+  Kr ger 60:
+    grid_coords:
+    - 6
+    - 6
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 1.592145346166303
+    - 1.9995998444736032
+    size: 0.3253456548759963
+  Lacaille 8760:
+    grid_coords:
+    - 6
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 2.0769575914756886
+    - -3.75302109440499
+    size: 0.6124524647827256
+  Lacaille 9352:
+    grid_coords:
+    - 6
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    pos:
+    - 2.0044771168669664
+    - -5.035846724922932
+    size: 0.7705231398308006
+  Lalande 21185:
+    grid_coords:
+    - 1
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - grunt
+    pos:
+    - -7.359028176149036
+    - -3.2276408383479835
+    size: 0.7405034118331963
+  Luyten's Star:
+    grid_coords:
+    - 2
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    pos:
+    - -5.858436948801954
+    - 5.447428145497538
+    size: 0.08174326235239371
+  NN 3323:
+    grid_coords:
+    - 2
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -5.38172019825504
+    - -3.962643432953996
+    size: 0.561357864778379
+  NN 3379:
+    grid_coords:
+    - 3
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - beast
+    - grunt
+    - imp
+    - overseer
+    - grunt
+    - overseer
+    - grunt
+    - grunt
+    - grunt
+    - grunt
+    - imp
+    - beast
+    pos:
+    - -4.943305046955987
+    - -9.328469792160261
+    size: 0.43276706790505337
+  NN 3522:
+    grid_coords:
+    - 2
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - grunt
+    - imp
+    - grunt
+    - grunt
+    - grunt
+    - beast
+    - imp
+    pos:
+    - -5.643648409446105
+    - 0.08940432715780888
+    size: 0.22059974802267657
+  NN 3622:
+    grid_coords:
+    - 3
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - imp
+    - grunt
+    - overseer
+    - imp
+    - grunt
+    - beast
+    - overseer
+    - overseer
+    pos:
+    - -3.0488109643642334
+    - 0.595621715412302
+    size: 0.516599516949393
+  Procyon:
+    grid_coords:
+    - 3
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -3.750395831695047
+    - -2.31115427180701
+    size: 0.06951537853084733
+  Proxima Centauri:
+    grid_coords:
+    - 8
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    pos:
+    - 5.620727254706268
+    - 0.8785768642705649
+    size: 0.7438421186671211
+  Rigel Kentaurus A:
+    grid_coords:
+    - 1
+    - 4
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - overseer
+    pos:
+    - -8.833531724392204
+    - -2.966618739768881
+    size: 0.014559974924812313
+  Rigel Kentaurus B:
+    grid_coords:
+    - 9
+    - 3
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - imp
+    - overseer
+    - overseer
+    pos:
+    - 8.596877881154851
+    - -3.4058048747290073
+    size: 0.8164373705606909
+  Sirius:
+    grid_coords:
+    - 2
+    - 1
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - -5.324844048674854
+    - -7.887091354695134
+    size: 0.6422943629324456
+  Sol:
+    grid_coords:
+    - 0
+    - 5
+    infrastructure: Home System
+    neighbors: []
+    occupied_by: []
+    player_occupies: 1
+    pos:
+    - -10.958363782981426
+    - -0.9642709583444093
+    size: 0.146461740399346
+  UV Ceti A:
+    grid_coords:
+    - 9
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - beast
+    - imp
+    pos:
+    - 7.44338333254607
+    - -10.124224812698856
+    size: 0.49581224138185065
+  UV Ceti B:
+    grid_coords:
+    - 8
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - beast
+    - overseer
+    - overseer
+    pos:
+    - 5.4331987942612265
+    - -10.155766848834565
+    size: 0.029040787574867943
+  V1054 Ophiuchi:
+    grid_coords:
+    - 6
+    - 5
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - imp
+    - imp
+    pos:
+    - 1.1175702324129826
+    - -0.4027881007539733
+    size: 0.9679033101508892
+  V1581 Cygni:
+    grid_coords:
+    - 7
+    - 2
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    - imp
+    pos:
+    - 4.079234896899558
+    - -5.279420442158901
+    size: 0.23217612806301458
+  V577 Monocerotis A:
+    grid_coords:
+    - 7
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - grunt
+    - grunt
+    - overseer
+    - grunt
+    - beast
+    - imp
+    - overseer
+    - beast
+    - overseer
+    - beast
+    - grunt
+    - beast
+    - beast
+    - grunt
+    pos:
+    - 4.082824945586993
+    - -9.12170167444298
+    size: 0.38120423768821243
+  V577 Monocerotis B:
+    grid_coords:
+    - 6
+    - 0
+    infrastructure: null
+    neighbors: []
+    occupied_by: []
+    pos:
+    - 2.802854915222967
+    - -10.938820033932894
+    size: 0.0254458609934608
+  Van Maanen's Star:
+    grid_coords:
+    - 0
+    - 9
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - overseer
+    pos:
+    - -10.79433170802738
+    - 8.821528836558667
+    size: 0.3782772705442261
+  WX Ursae Majoris:
+    grid_coords:
+    - 1
+    - 8
+    infrastructure: null
+    neighbors: []
+    occupied_by:
+    - beast
+    - overseer
+    - grunt
+    - imp
+    - imp
+    pos:
+    - -7.769627934881926
+    - 6.56380720326551
+    size: 0.3780396288383874

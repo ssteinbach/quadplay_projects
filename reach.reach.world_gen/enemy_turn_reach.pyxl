@@ -1,0 +1,110 @@
+init
+────────────────────────────────────────────────────────────────────────
+let CURRENT_ENEMY = -1
+let CAM_ANIM_TIME = 0
+const PAN_TIME_FRAMES = 30
+
+const ENEMY_MOVE_QUEUE = []
+
+def current_enemy():
+    return ENEMIES[CURRENT_ENEMY]
+
+def move_camera_to(en):
+    CAMERA.target = en.pos
+
+def camera_move_to(en):
+    def mover():
+        CAMERA.target = en.pos
+    def check_done():
+        return magnitude(CAMERA.pos - CAMERA.target) < 3
+ 
+    return {
+        name: " move_camera_to " + en.name,
+        exec: move_camera_to,
+        over: check_done,
+    }
+
+def next_enemy_move():
+    assert(false, "next enemy move, shouldn't be hit")
+    CURRENT_ENEMY += 1
+    debug_print("ENEMY #" + CURRENT_ENEMY + " MOVE!!!")
+    if CURRENT_ENEMY >= size(ENEMIES):
+        debug_print("Current: " + CURRENT_ENEMY + " Total: " + size(ENEMIES))
+        debug_print("end of enemy list")
+        end_turn_reach(Play2)
+
+    let en = current_enemy()
+
+    assert(en != nil, "en is nil")
+
+    if en.intent == nil:
+        return
+
+    debug_print("pushing move for: " + en.name)
+    push(ENEMY_MOVE_QUEUE, clone(en.intent))
+    push(ENEMY_MOVE_QUEUE, camera_move_to(en))
+    en.intent = nil
+
+    CAMERA.target = clone(current_enemy().pos)
+    CAM_ANIM_TIME = mode_frames + PAN_TIME_FRAMES
+
+def update_current_enemy_move():
+    if size(ENEMY_MOVE_QUEUE) == 0:
+        debug_print("would go next enemy")
+        next_enemy_move()
+        return
+
+    let current_move = last_value(ENEMY_MOVE_QUEUE)
+
+    assert(current_move != nil, "current move is nil, something pushed nil onto the command stack")
+
+    if current_move.exec:
+        debug_print("execing intent")
+        current_move.exec(current_enemy(), current_move)
+        current_move.exec = nil
+
+    assert(
+        current_move.over != nil,
+        "current move: '" + current_move.name + "' has no over function"
+    )
+    if current_move.over():
+        debug_print("move done")
+        pop(ENEMY_MOVE_QUEUE)
+
+    // if CURRENT_ENEMY < 0:
+    //     return
+    //5
+    // if CAM_ANIM_TIME < mode_frames:
+    //     return
+    // else:
+    //     debug_print("TARGET: " + CAM_ANIM_TIME + " ACTUAL: " + mode_frames)
+    //
+    // let en = current_enemy()
+    // if en.intent:
+    //     en.intent.exec(en)
+    // en.intent = nil
+    // next_enemy_move()
+
+
+
+enter()
+────────────────────────────────────────────────────────────────────────
+remove_all(ENEMY_MOVE_QUEUE)
+CURRENT_ENEMY = -1
+TAKING_INPUT = false
+start_transition("THEIR TURN", ACTIVE_ENEMY_COLOR, next_enemy_move)
+
+frame
+────────────────────────────────────────────────────────────────────────
+entity_update_children(WORLD)
+set_transform(SCREEN_SIZE/2)
+
+if not TRANSITIONING:
+    update_current_enemy_move()
+
+update_orbital_things()
+update_camera()
+update_menu()
+
+draw_stars(CAMERA, STARMAP, CONNECTIONS)
+draw_ui()

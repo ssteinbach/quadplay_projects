@@ -1,0 +1,801 @@
+const R_THEIR_COLOR = rgb(1,0,0)
+const PLAYER_LEADERS = []
+
+def str_vec(vec):
+    return "(" + vec.x + ", " + vec.y + ")"
+
+// curry functions (return a new function with some of the arguments baked in)
+def curried(fn, ...args):
+    def curried_func(...other_args):
+        fn(...args, ...other_args)
+    return curried_func
+
+def add_to_orbit(planet, thing):
+    const orbital_count = size(planet.things_in_orbit)
+    debug_print(
+        "adding " + thing.name 
+        + " to " + planet.name 
+        + " at index: " + orbital_count
+        + " and pos: " + unparse(thing.pos_in_parent)
+    )
+    push(planet.things_in_orbit, thing)
+    entity_add_child(planet, thing)
+
+    // instead of the pos_in_parent, add a target position that gets updated
+    let index = 0
+    let len = size(planet.things_in_orbit)
+    for child in planet.things_in_orbit:
+        child.target_pos_in_parent = orbit_thing_pos(planet, index, len)
+        index += 1
+
+    // so that it slides everything on the planet over
+
+    false and todo("animate this value")
+
+
+// for handling when the player can or cannot provide input
+let PLAYER_ALLOWED_INPUT = true
+let PLAYER_INPUT_LOCK_TIMER = -1
+def lock_player_input(nframes):
+    PLAYER_ALLOWED_INPUT = false
+    PLAYER_TURN_UI_VISIBLE_SWITCH =0
+
+    // make sure that the lock timer has some tiem on it
+    PLAYER_INPUT_LOCK_TIMER = max(
+        mode_frames + nframes, PLAYER_INPUT_LOCK_TIMER
+    )
+def player_start_turn():
+    unlock_player_input()
+
+def unlock_player_input():
+    PLAYER_ALLOWED_INPUT = true
+    PLAYER_TURN_UI_VISIBLE_SWITCH = 1
+    PLAYER_INPUT_LOCK_TIMER = -1
+
+def not_implemented():
+    assert(false, "not yet implemented")
+
+let CAM_Z = 0
+
+
+def orbit_thing_pos(star, ind, total):
+    return xy(0, star.radius + 8) + ind*xy(6, 0) - (total-ind)*xy(6,0)/2
+
+
+def draw_orbital_thing(
+        thing,
+        bg_color,
+        dark_color,
+        label,
+        selected
+):
+    // true and todo("rewrite so that things can animate and know their position")
+    let root = clone(thing.pos)
+    if selected:
+        // draw_rect(root + xy(0.75, 0.75), xy(7,7), rgb(1,1,1), nil, 0, 0)
+        draw_rect(root + xy(0.75, 0.75), xy(7,7), rgb(1,0,0), nil, 0, 0)
+        // draw_rect(root, xy(7,7), rgb(1,1,1), nil, 0, 0)
+        draw_rect(root, xy(7,7), rgb(1,0,0), nil, 0, 0)
+    draw_rect(root + xy(0.75, 0.75), xy(6,6), rgb(0.0,0,0), nil, 0, 0)
+    draw_rect(root, xy(6,6), rgb(0,0,0), nil, 0, 0)
+    draw_rect(root + xy(0.75, 0.75), xy(5,5), dark_color, nil, 0, 0)
+    draw_rect(root, xy(5,5), bg_color, nil, 0, 0)
+    if CAM_Z  <= 0:
+        // draw_text(font, unparse(ind+1), root, rgb(0,0,0), rgb(0.4,0.0,0.0),nil,  "center", "center")
+        draw_text(font, label, root, bg_color, nil, rgb(0,0,0), "center", "center")
+
+    return root
+
+
+def draw_enemy(star, ind, total, en):
+    let root = draw_orbital_thing(
+        en, rgb(1,0,0), rgb(0.4, 0, 0), en.kind[0]
+    )
+
+    if en.intent != nil:
+        root += xy(0, 7)
+        draw_rect(root + xy(0.75, 0.75), xy(6,6), rgb(0.0,0,0), rgb(1,1,1), 0, 0)
+        draw_rect(root, xy(5,5), rgb(0.4, 0.4, 0.4), nil, 0, 0)
+        draw_text(
+            font,
+            "[" + en.intent.label + "]",
+            root,
+            rgb(1,1,1),
+            nil,
+            rgb(0,0,0),
+            "center",
+            "center"
+        )
+
+
+def en_look(en):
+    // find neighbor cells
+    return
+
+
+def path_to_nearest_player(en):
+    let dist = nil
+    let current_path = nil
+    let current_leader = nil
+    for leader in PLAYER_LEADERS:
+        let path = find_path(
+            en.location,
+            leader.location,
+            path_estimator,
+            edge_cost,
+            star_neighbors,
+            star_hash,
+            nil
+        )
+        if dist == nil or size(path) < dist:
+            current_path = clone(path)
+            dist = size(path)
+            current_leader = leader
+    return {
+        "path":current_path,
+        "distance":dist,
+        "player_object": current_leader,
+        "location": current_leader.location
+    }
+
+
+def update_enemy(en):
+    en.pos_in_parent = lerp(en.pos_in_parent, en.target_pos_in_parent, 0.1)
+
+
+def move(en, to_star):
+    fast_remove_value(en.location.things_in_orbit, en)
+    entity_remove_child(en.location, en)
+    en.location = to_star
+    add_to_orbit(to_star, en)
+
+
+def deal_damage_to(target_ent, amount):
+    target_ent.health -= amount
+    if target_ent.health > 0:
+        return
+
+    fast_remove_value(target_ent.location.things_in_orbit, target_ent)
+    fast_remove_value(ENEMIES, target_ent)
+
+
+def deal_damage_to_everything_at(target_loc, amount):
+    for thing in target_loc.things_in_orbit:
+        deal_damage_to(thing, amount)
+
+
+def explode(en):
+    let first = true
+    let start_frame = nil
+    const explode_duration = 60
+    let target_loc = clone(en.location)
+    let target_pos = nil
+
+    def splode(action):
+        if first:
+            start_frame = mode_frames
+            first = false
+            target_pos = clone(en.pos)
+            deal_damage_to(en, 999)
+
+        draw_disk(target_pos + 20*random_within_square(), 10, rgb(1,0,0))
+
+        if mode_frames - start_frame > explode_duration:
+            action.done = true
+            deal_damage_to_everything_at(target_loc, 1)
+
+    return {
+        name: (
+            "enemy: " + en.name 
+            + " explodes, causing damage at + " +  en.location.name
+        ),
+        update: splode,
+        label: "*",
+    }
+    
+def intent_launch_missile(en, at_star):
+    let launched = false
+    def missile_added(action):
+        if not launched:
+            launched = true
+
+            let missile = ent_from_name("missile")
+            add_to_orbit(en.location, missile)
+            missile.location = en.location
+            missile.path = find_path_in_starmap(en.location, at_star)
+            debug_print("making missile")
+
+        if (magnitude(en.target_pos_in_parent - en.pos_in_parent) < 3):
+            action.done = true
+
+    return {
+        name: "launch missile by " + en.name + " at: " + at_star.name,
+        label: "+m",
+        update: missile_added,
+    }
+
+def intent_move_to(en, path):
+    todo("move to")
+
+
+def move_command(en, at_star):
+    let once = false
+    def moved(action):
+        if not once:
+            debug_print("moving: YES!")
+            move(en, at_star)
+            once = true
+        CAMERA.target = clone(en.pos)
+        CAMERA.target = clone(en.pos_in_parent)
+        CAMERA.target = clone(en.target_pos_in_parent)
+        assert(CAMERA.target == xy(0, 0), "CAMERA.target is the origin")
+        if (magnitude(en.target_pos_in_parent - en.pos_in_parent) < 3):
+            action.done = true
+            debug_print("move command of [" + en.name+ "] done")
+
+    return {
+        name: "moving " + en.name + " to star: " + at_star.name,
+        update: moved,
+    }
+
+
+def make_composite_intent(name, intents, label):
+    // debug_print("making composite intent: " + name)
+    def update(action):
+        for intent in intents:
+            if not intent.done:
+                // debug_print("running intent: [" + intent.name + "]")
+                intent.update(intent)
+                return
+        // debug_print("composite [" + name + "] finished.")
+        action.done = true
+
+    return {
+        name: "[comp] " + name,
+        update: update,
+        label: label,
+    }
+
+
+def intent_move_and_explode(en, at_star):
+    return make_composite_intent(
+        "move and explode",
+        [
+            move_command(en, at_star),
+            command_move_camera_to(clone(en.pos)),
+            // explode(en, at_star),
+        ],
+        "←*",
+
+    )
+
+
+def enemy_brain_missile(en):
+    // check if the missile is at the target.  if it is, explode.
+    // otherwise, move to the target
+    // debug_print("en.path: " + en.path)
+
+    // XXX: remove this, just for testing
+    // return explode(en, en.location)
+
+    let nearest_player_info = path_to_nearest_player(en)
+    if en.path == nil:
+        debug_print("here")
+        debug_print(en.location.name)
+        debug_print(nearest_player_info["location"].name)
+        en.path = find_path_in_starmap(
+            en.location,
+            nearest_player_info["location"]
+        )
+    assert(en.path != nil, "en.path is nil!")
+    let path_steps = size(en.path)
+    let path_rest = slice(en.path, 1, path_steps)
+    if (path_steps < 2):
+        // on the target esquare
+        return explode(en, en.location)
+    else if (path_steps < 3):
+        // one away from the target
+        return intent_move_and_explode(en, path_rest[0])
+    else:
+        // more than one away
+        true and todo("missile - move")
+        path = pop(path)
+        // en.intent = intent_move_to(en.
+
+
+def enemy_brain_grunt(en):
+    // @TODO: does this need cooldowns?
+
+    // if a player is more than 2 squares away, plant
+    // if a player is 2 away, move one closer
+    // if a player is 1 away, fire
+    // if player is on the same square, fire and damage
+    let nearest_player_info = path_to_nearest_player(en)
+    let distance_to_nearest_player = nearest_player_info["distance"]
+
+    // on the same node as a player thing
+    if distance_to_nearest_player < 2:
+        return shoot_and_do_damage_immediately( en,
+            nearest_player_info["object"]
+        )
+    else if distance_to_nearest_player < 3:
+        return intent_launch_missile(en, nearest_player_info["location"])
+    else if distance_to_nearest_player < 4:
+        return intent_move_to(en, nearest_player_info["path"][1])
+    else:
+        return nil
+
+
+def enemy_brain_imp(en):
+    todo("enemy_brain_imp")
+    // debug_print("imp")
+    return
+def enemy_brain_overseer(en):
+    todo("enemy brain overseer")
+    // debug_print("overload")
+    return
+def enemy_brain_beast(en):
+    todo("enemy brain beast")
+    // debug_print("beast")
+    return
+
+
+const ENEMIES = []
+const ENEMY_BRAINS = {
+    "grunt":    enemy_brain_grunt,
+    "missile":  enemy_brain_missile,
+    "imp":      enemy_brain_imp,
+    "overseer": enemy_brain_overseer,
+    "beast":    enemy_brain_beast,
+}
+
+
+def make_enemy(enemy_name):
+    let result = make_entity(
+        {
+            name: enemy_name,
+            pos_in_parent: xy(0, 0),
+            size: xy(5,5),
+            shape: "rect",
+            draw: draw_enemy,
+            kind: enemy_name,
+            intent: nil,
+            update: update_enemy,
+       }
+    )
+    push(ENEMIES, result)
+    return result
+
+
+def enemy_turn_test():
+    for en in clone(ENEMIES):
+        // probably also need to check if enemy is still alive, etc
+        if en.intent:
+            en.intent.exec(en)
+        en.intent = nil
+
+    // generate a new intent
+    for en in clone(ENEMIES):
+        en.intent = ENEMY_BRAINS[en.kind](en)
+
+
+def ent_from_name(name):
+    return make_enemy(name)
+
+    assert(false, "got an invalid ent name: " + name)
+
+def reset_starmap_connections(stars):
+    // initialize connetion array
+    let result = []
+    for connection in MAP_YML_DATA["connections"]:
+        const start = connection[0]
+        const end = connection[1]
+
+        const start_planet = stars[start]
+        const end_planet = stars[end]
+
+        // note the planet connections on the entities
+        push(start_planet.connections_array, end_planet)
+        push(end_planet.connections_array, start_planet)
+
+        push(result, make_entity({start:start, end:end}))
+
+    return result
+
+
+
+const SPACING = 30
+const MAPS = {
+    "GRUNT_TEST_DATA": GRUNT_TEST_DATA,
+    "STARMAP_DATA": STARMAP_DATA,
+    "MISSILE_TEST_DATA": MISSILE_TEST_DATA,
+}
+const MAP_YML_DATA = MAPS[MAP_TO_LOAD]
+def reset_starmap():
+    let result = {}
+
+    for star in keys(MAP_YML_DATA["starmap"]):
+        let data = MAP_YML_DATA["starmap"][star]
+
+        result[star] =  make_entity(
+            {
+                name: star,
+                pos_in_parent: SPACING*xy(data["pos"]),
+                data: data,
+                radius: 5*data["size"],
+                shape: "disk",
+                color: rgb(1,1,1),
+                connections_array: [],
+                things_in_orbit: [],
+            }
+        )
+
+        for thing in clone(data["occupied_by"]):
+            let new_en = ent_from_name(thing)
+            add_to_orbit(result[star], new_en)
+            new_en.location = result[star]
+
+    reset_starmap_connections(result)
+
+    if find(keys(result), "Sol"):
+        make_leader("plato", "Sol", 5, 1, [], result)
+    else:
+        // test mode
+        make_leader("plato", "p", 5, 1, [], result)
+
+        for en in ENEMIES:
+            en.intent = ENEMY_BRAINS[en.kind](en)
+
+    return result
+
+
+// @{ A* code
+def path_estimator(first_star, second_star, graph_obj):
+    return magnitude(first_star.location - second_star.location)
+
+def edge_cost(fst, snd, graph_obj):
+    return 1
+
+def star_neighbors(star):
+    return star.connections_array
+
+def star_hash(star):
+    return hash(star.name)
+
+// convienence wrappers
+def find_path_in_starmap(from_star, to_star):
+    return find_path(
+        from_star,
+        to_star,
+        path_estimator,
+        edge_cost,
+        star_neighbors,
+        star_hash,
+        nil
+    )
+
+def distance_between(first_star, second_star):
+    return size(find_path_in_starmap(first_star, second_star)) - 1
+// @}
+
+def make_leader(name, location, health, actions_per_turn, equipment, starmap):
+    let planet = starmap[location]
+    assert(
+        planet != nil,
+        "couldn't make leader on " + location + "...an invalid planet!"
+    )
+    debug_print("planet: " + location)
+    let result = make_entity(
+        {
+            name: name,
+            location: planet,
+            max_health: health,
+            current_health: health,
+            actions_per_turn: actions_per_turn,
+            current_actions: actions_per_turn,
+            equipment: equipment,
+            draw: draw_leader,
+            index: size(PLAYER_LEADERS),
+            update: update_enemy,
+        }
+    )
+    add_to_orbit(planet, result)
+    push(PLAYER_LEADERS, result)
+    debug_print("planet: " + planet.things_in_orbit)
+    return result
+// make_leader("socrates", "82 Eridani", 5, 1, [])
+// make_leader("euclid", "V1054 Ophiuchi", 5, 1, [])
+// let l = make_leader("pythagoras", "V1054 Ophiuchi", 5, 1, [])
+
+def draw_leader(star, ind, total, leader):
+   draw_orbital_thing(
+       leader,
+       rgb(0,1,1), 
+       rgb(0,0.4, 0.4),  
+       leader.name[0],
+       CURRENT_LEADER == leader.index,
+   )
+
+
+def draw_stars(cam, stars, connections):
+    entity_update_children(WORLD)
+    preserving_transform:
+        set_camera(cam)
+
+        for star in values(stars):
+            draw_disk(star.pos, star.radius+4, rgb(0.2,0.2,0.2), nil, 0)
+            draw_disk(
+                star.pos+xy(0.75,0.75),
+                star.radius+4,
+                rgb(0.2,0.2,0.2),
+                nil,
+                0
+            )
+
+        for conn in values(connections):
+            draw_line(
+                stars[conn.start].pos,
+                stars[conn.end].pos, 
+                rgb(0.2,0.2,0.2),
+                0,
+                4
+            )
+            draw_line(
+                stars[conn.start].pos,
+                stars[conn.end].pos, 
+                rgb(1,1,1),
+                0,
+                2
+            )
+
+        for star in values(stars):
+            draw_disk(star.pos, star.radius+3, rgb(1,1,1), nil, 0)
+            draw_disk(star.pos+xy(0.75,0.75), star.radius+3, rgb(1,1,1), nil, 0)
+
+            // bg black disk
+            draw_disk(star.pos, star.radius+2, rgb(0,0,0), nil, 0)
+            draw_disk(star.pos+xy(0.75,0.75), star.radius+2, rgb(0,0,0), nil, 0)
+            // shadow disk
+            draw_disk(
+                star.pos+xy(0.75,0.75),
+                star.radius,
+                rgb(0.2,0.2,0.2),
+                nil,
+                0
+            )
+            // planet
+            draw_disk(star.pos, star.radius, star.color, nil, 0)
+
+            // label
+            let tfont = font
+            if CAM_Z > 0:
+                tfont = smallfont
+
+            draw_text(
+                tfont,
+                star.name,
+                star.pos + xy(0, -(star.radius + 3)),
+                rgb(1,1,1),
+                rgb(0.2, 0.2, 0.2),
+                rgb(0,0,0),
+                "center",
+                "center",
+                0
+            )
+
+            let ind=0
+            for thing in star.things_in_orbit:
+                thing.draw(star, ind, size(star.things_in_orbit), thing)
+                ind+=1
+
+            if DRAW_PLAYER_DISTANCE:
+                let goal_star = STARMAP["p"]
+                draw_text(
+                    tfont,
+                    distance_between(star, goal_star),
+                    // distance_to_player_from_star(star),
+                    star.pos + xy(0, -star.radius + 12),
+                    rgb(0,0,1),
+                    rgb(0.2,0.2,0.2),
+                    rgb(0,0,0),
+                    "center",
+                    "center"
+                )
+
+// @TODO: this file is a mess.  Why is this in the middle? also its 1k loc
+
+def toggle(current_z):
+    return loop(current_z+1, 2)
+
+def vec_str_sm(v):
+    return unparse(v.x) + ", " + unparse(v.y)
+
+// UI stuff
+let PLAYER_TURN_UI_VISIBLE_SWITCH = 0
+let PLAYER_TURN_UI_VISIBLE_AMOUNT = PLAYER_TURN_UI_VISIBLE_SWITCH
+let MENU_DRAWER_VISIBLE_SWITCH = 0
+const MENU_ORIGIN = [
+    xy(10, SCREEN_SIZE.y-46),
+    xy(10, SCREEN_SIZE.y-106)
+]
+let MENU_DRAWER_VISIBLE_AMOUNT = MENU_DRAWER_VISIBLE_SWITCH
+let FRAME_B_PRESSED=nil
+const HOLD_BUTTON_TIME=60
+const SHORT_PRESS_TIME=10
+
+// set the height of the tray menu
+// MENU_ORIGIN[1].y = SCREEN_SIZE.y-(24*size(PLAYER_LEADERS))
+MENU_ORIGIN[1].y = SCREEN_SIZE.y-90
+
+def draw_ui():
+    reset_transform()
+    let menu_origin_current = lerp(
+        MENU_ORIGIN[0],
+        MENU_ORIGIN[1],
+        MENU_DRAWER_VISIBLE_AMOUNT
+    )
+    let header_alpha = lerp(
+        1,
+        0, 
+        max(MENU_DRAWER_VISIBLE_AMOUNT, 1-PLAYER_TURN_UI_VISIBLE_AMOUNT)
+    )
+    let hold_amount = 0
+    let hold_progress=""
+    if FRAME_B_PRESSED != nil and mode_frames - FRAME_B_PRESSED > 8:
+        hold_amount = min(
+            1,
+            (mode_frames - FRAME_B_PRESSED) / HOLD_BUTTON_TIME
+        )
+        hold_progress = " " + floor(hold_amount*100) + "% "
+
+    let menu_color = lerp(
+        rgba(1,1,1,header_alpha),
+        rgba(1,0,0,header_alpha),
+        hold_amount
+    )
+    // @TODO: wire in the end of turn display + code
+    
+    draw_text(
+        font,
+        replace(
+            (
+                "R E A  C   H\nzoom: (a)\ncommands: (b) / end turn: hold (b)" + hold_progress + " \nleader: " 
+                + PLAYER_LEADERS[CURRENT_LEADER].name 
+                + " (e)/(f)"
+            ), 
+            gamepad_array[0].prompt
+        ),
+        // xy(10, SCREEN_SIZE.y-12), 
+        // @TODO: quadplay \n bug, so this should be 12 but needs to be more
+        menu_origin_current, 
+        menu_color,
+        rgba(0.2, 0.2, 0.2, header_alpha),
+        rgba(0,0,0, header_alpha),
+        "left",
+        "bottom",
+        100
+    )
+
+    let root_pos = menu_origin_current + xy(0, 36)
+    draw_corner_rect(
+        root_pos,
+        xy(90, 90),
+        rgb(1,1,1),
+        rgb(0,0,0),
+        100
+    )
+
+    if (PLAYER_TURN_UI_VISIBLE_SWITCH and MENU_DRAWER_VISIBLE_AMOUNT > 0.05):
+        root_pos += xy(5, 4)
+        let i = 0
+        for l in PLAYER_LEADERS:
+            let outline = nil
+            if i == CURRENT_LEADER:
+                outline = rgba(1, 0 , 0, 1-header_alpha)
+            draw_text(
+                font,
+                l.name,
+                root_pos,
+                rgba(0,0,0, 1-header_alpha),
+                nil,
+                outline,
+                "left",
+                "top",
+                100
+            )
+            root_pos += xy(0, 12)
+            i+=1
+
+
+let CURRENT_LEADER = 0
+
+// run at the end of the player turn end_turn
+def end_turn_reach(next_mode):
+    lock_player_input()
+    debug_print("end turn!")
+    debug_print("ENEMY LIST: " + size(ENEMIES))
+    set_mode(next_mode)
+
+    // start_transition("THEIR TURN", R_THEIR_COLOR, enemy_turn_test)
+
+// def player_turn_end():
+//     debug_print("end turn!")
+//     debug_print("ENEMY LIST: " + size(ENEMIES))
+//
+//     start_transition("THEIR TURN", R_THEIR_COLOR, enemy_turn_test)
+
+
+def player_input():
+    // assert(false, "should never be seen")
+    // input
+    if MENU_DRAWER_VISIBLE_SWITCH:
+        if gamepad_array[0].yy != 0 and CURRENT_LEADER < 0:
+            CURRENT_LEADER = 0
+        else:
+            CURRENT_LEADER = loop(
+                CURRENT_LEADER + gamepad_array[0].yy,
+                size(PLAYER_LEADERS)
+            )
+
+        if CURRENT_LEADER > -1:
+            CAMERA.target = clone(PLAYER_LEADERS[CURRENT_LEADER].location.pos)
+    else:
+        if gamepad_array[0].aa:
+            CAM_Z = toggle(CAM_Z)
+        if gamepad_array[0].y != 0 or gamepad_array[0].x != 0:
+            CAMERA.target += abs(CAMERA.z)*gamepad_array[0].xy
+
+    if gamepad_array[0].bb:
+        if not MENU_DRAWER_VISIBLE_SWITCH:
+            FRAME_B_PRESSED = mode_frames
+        else:
+            MENU_DRAWER_VISIBLE_SWITCH = toggle(MENU_DRAWER_VISIBLE_SWITCH)
+
+    if FRAME_B_PRESSED and (mode_frames - FRAME_B_PRESSED > HOLD_BUTTON_TIME):
+        debug_print("ending turn manually")
+        debug_print("gamepad_array[0].bb:" + gamepad_array[0].bb)
+        delay(curried(end_turn_reach, enemy_turn_reach), 0)
+        FRAME_B_PRESSED = nil
+
+    if gamepad_array[0].released_b:
+        if mode_frames - FRAME_B_PRESSED < SHORT_PRESS_TIME:
+            MENU_DRAWER_VISIBLE_SWITCH = toggle(MENU_DRAWER_VISIBLE_SWITCH)
+            debug_print("toggling!")
+        else:
+            debug_print("not toggling: " + mode_frames - FRAME_B_PRESSED)
+
+        FRAME_B_PRESSED = nil
+
+    if gamepad_array[0].ee:
+        CURRENT_LEADER = loop(CURRENT_LEADER - 1, size(PLAYER_LEADERS))
+    if gamepad_array[0].ff:
+        CURRENT_LEADER = loop(CURRENT_LEADER + 1, size(PLAYER_LEADERS))
+
+
+def update_orbital_things():
+    for planet at key in STARMAP:
+        planet = STARMAP[key]
+        for thing in planet.things_in_orbit:
+            if thing.update:
+                thing.update(thing)
+
+
+// @TODO: this should be in its own module
+def update_camera():
+    // @TODO: this animation sucks -- better would be something that is always slower for the lower end of the z values and faster for the larger ones
+    CAMERA.z = lerp(CAMERA.z, Z_RANGE[CAM_Z], 0.1)
+    CAMERA.pos = lerp(CAMERA.pos, CAMERA.target, 0.1)
+    debug_watch(CAMERA.pos)
+    debug_watch(CAMERA.target)
+
+def update_menu():
+    MENU_DRAWER_VISIBLE_AMOUNT = lerp(
+        MENU_DRAWER_VISIBLE_AMOUNT,
+        MENU_DRAWER_VISIBLE_SWITCH,
+        0.1
+    )
+    PLAYER_TURN_UI_VISIBLE_AMOUNT = lerp(
+        PLAYER_TURN_UI_VISIBLE_AMOUNT,
+        PLAYER_TURN_UI_VISIBLE_SWITCH,
+        0.1
+    )

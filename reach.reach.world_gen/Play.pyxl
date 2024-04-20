@@ -1,0 +1,591 @@
+// next goal: 
+// - make relays change the distance_to_sol of travel
+// - add stuff in an "interact" menu (Uplift/Build Forge world
+// - new mode - event mode for when you go to a new planet / conflict mode
+// - change circle color while moving like side ui
+// - add an 'active' z-depth so that 'active' stuff (like the current planet) gets drawn above
+// - prevent moving diagonally (move along path)
+// - some kind of way to extend the reach (maybe a relay you can build?)
+// - flash the "travel" button red when you press it but can't travel
+///////////////////////////////////////////////////////////////////////////////
+
+
+set_background(rgb(5%, 0%, 0%))
+draw_text(font, "REACH", SCREEN_SIZE / 2, TEXT_COLOR)
+
+// Handle Cursor movement (arrow keys)
+///////////////////////////////////////
+let new_pos = cursor_at
+let name_of_planet_ship_is_at = ""
+
+// make sure the player isn't already doing something
+if player_entity.action == nil:
+    new_pos = cursor_at + xy(joy.xx, joy.yy)
+
+// lock cursor to grid
+new_pos = max(new_pos, xy(0,0))
+new_pos = min(new_pos,grid_dimensions - xy(1,1))
+
+// figure out if new location is a valid planet
+let other_action = false
+if not equivalent(new_pos, cursor_at):
+    const new_planet = planet_from_coords(new_pos)
+    if new_planet.draw:
+        cursor_at = new_pos
+else:
+    other_action = true
+const cursor_planet = planet_from_coords(cursor_at)
+
+// figure out if the current planet is a viable move
+/////////////////////////////////////////////////////
+const planet_distance = cursor_planet.distance_to_sol
+const can_not_move = (
+    equivalent(player_at, cursor_at)
+    or planet_distance > reach_amount
+)
+
+// Trigger Non-moving the cursor actions (actions with abxy)
+////////////////////////////////////////////////////////////
+if other_action:
+    // for this mode, and for now, these are fixed verbs
+    if joy.aa and not can_not_move:
+        move_piece_to_planet(player_entity, cursor_planet)
+    if (
+            joy.bb and cursor_planet.infrastructure == nil 
+            and cursor_planet.visited
+            // the relays cost 1 
+            and production_used < production_amount
+    ):
+        build_on_planet("Relay", cursor_planet)
+
+// bg stars
+for pos, col, depth, star_size, nStar in star in star_array:
+    const cam_offset = (cam_pos/depth - pos)
+    const star_offset = xy(
+        loop(cam_offset.x, SCREEN_SIZE.x),
+        loop(cam_offset.y, SCREEN_SIZE.y)
+    )
+
+    // add some twinkle
+    const random_off = (1-abs(noise(2, game_frames/400 + nStar*10))/1.5)
+    draw_corner_rect(
+        star_offset-cam_pos,
+        star_size,
+        col*random_off
+    )
+
+cam_pos = lerp(cam_pos, cam_target, 0.05)
+
+// draw the connections between stars
+for conn in connectionArray:
+    const start_planet = planetMap[conn["start"]]
+    const end_planet = planetMap[conn["end"]]
+    let edge_color = palColor(21)
+    if (
+            start_planet.distance_to_sol > reach_amount
+            or end_planet.distance_to_sol > reach_amount
+    ):
+        edge_color = palColor(1)
+
+    if not start_planet.visited and not end_planet.visited:
+        continue
+
+    const start_pos = start_planet.pos
+    const end_pos = end_planet.pos
+    draw_line(start_pos, end_pos, edge_color, -3, 5)
+
+    // draw border
+    if (
+            start_planet.infrastructure != nil
+            and end_planet.infrastructure != nil
+    ):
+        // compute a vector along the line
+        let dir_vec = end_pos - start_pos
+        const edge_len = magnitude(dir_vec)
+        dir_vec = dir_vec / edge_len
+
+        // compute a vector perpendicular to the line w/ length 1
+        const perp_vec = perp_vec_2d(dir_vec)
+
+        const pixel_length = 5
+        const num = floor(edge_len / pixel_length)
+        for i < num:
+            if i mod 2 == 0:
+                // top and bottom
+                for mult in [-1, 1]:
+                    let root = start_pos + pixel_length*i*dir_vec
+                    let start = (
+                        root + mult*3*start_planet.sprite.size.x*perp_vec
+                    )
+                    let end = start + pixel_length*dir_vec
+                    draw_line(start, end, palColor(12))
+
+
+
+// Figure out if the UI is locked
+/////////////////////////////////
+const ui_locked = (player_entity.action != nil)
+const shadow_color = palColor(5)
+let outline_color = palColor(22)
+if ui_locked:
+    outline_color = palColor(1)
+const ui_text_color = palColor(0)
+
+
+// Draw planets and UI associated with the cursor
+for p_entity in values(planetMap):
+    // planets that are flagged as invisible aren't drawn
+    if not p_entity.draw:
+        continue
+
+    draw_entity(p_entity)
+
+    // draw borders
+    if p_entity.infrastructure != nil:
+        let connected_planets_in_civ = []
+        for other_planet in p_entity.connections_array:
+            if other_planet.infrastructure != nil:
+                push(connected_planets_in_civ, other_planet)
+
+        const num = 40
+        for i < num:
+            if i mod 2 == 0:
+                const radius = 3*p_entity.sprite.size.x 
+                const start = xy(
+                    radius * cos(2 * pi * i/num),
+                    radius * sin(2 * pi * i/num),
+                ) + p_entity.pos
+                const end = xy(
+                    radius * cos(2 * pi * (i+1)/num),
+                    radius * sin(2 * pi * (i+1)/num),
+                ) + p_entity.pos
+                let clean = true
+                let dash = make_entity(
+                    {
+                        pos:start,
+                        size:(start-end)/2,
+                    }
+                )
+                for other_planet in connected_planets_in_civ:
+                    let dir = other_planet.pos - p_entity.pos
+                    let half_dir = dir/2
+                    let edge_ent = make_entity(
+                        {
+                            pos:(half_dir + p_entity.pos),
+                            size:xy(magnitude(dir), 2*radius),
+                            angle:-atan((half_dir).y, (half_dir).x)
+                        }
+                    )
+                    if overlaps(dash,  edge_ent):
+                        clean = false
+                        break
+
+                if clean:
+                    draw_line(start, end, palColor(12))
+
+
+    let distance_to_sol = 0
+    if p_entity.name != "Sol":
+        let path_to_sol = find_path(
+            p_entity.name,
+            "Sol",
+            distanceBetweenStars,
+            edgeCost,
+            getStarNeighbors,
+            nodeToID,
+            planetMap,
+        )
+
+        distance_to_sol = distance_of_path(path_to_sol)
+
+    p_entity.distance_to_sol = distance_to_sol
+
+    if p_entity.infrastructure == "Relay":
+        draw_orbital_thing("Relay", p_entity.pos)
+
+
+    // draw any stations
+    if (
+            p_entity.infrastructure == "Home System" 
+            or p_entity.infrastructure == "Station"
+    ):
+        let space_station_position = (
+            p_entity.pos - xy(15, 15) + xy(0, 3*sin(game_frames/60))
+        )
+
+        draw_sprite(
+            {
+                sprite:space_stationSprite[0][0],
+                pos:space_station_position,
+                z:2
+            }
+        )
+
+        for i<6:
+            const coord = smootherstep(0, 1, 0.5+sin(2*pi*(game_frames + i*6*10)/(6*60))/2)
+            let target_pos = p_entity.pos + xy(0, 2*(i-3))
+
+            let offset = lerp(space_station_position, target_pos, coord)
+
+            draw_corner_rect(offset,  xy(2, 1), palColor(1), nil, 3)
+
+
+        // @TODO: This orbit function is probably useful
+        // for i < 1:
+        //     // @TODO: come up with a nice way to vary these per satellite
+        //     
+        //     let a = 15
+        //     let b = 15
+        //     let spd = 0.5
+        //     let size = xy(2,2)
+        //     let rot = pi
+        //     let phase = 2*pi*i/10 
+        //
+        //     let sat_theta = (((spd*game_frames+phase)mod 64)/64)*2*pi
+        //     let x0 = a * cos(sat_theta)
+        //     let y0 = b * sin(sat_theta)
+        //     let cr = cos(rot)
+        //     let sr = sin(rot)
+        //     let z0 = 1 // whatever the planet is
+        //     let xr = z0*cr-x0*sr
+        //     let zr = x0*cr+x0*sr
+        //     size *= 2^(zr/a)
+        //     draw_corner_rect(
+        //         p_entity.pos + xy(xr, y0),
+        //         p_entity.pos +xy(xr, y0)+ size,
+        //         palColor(1),
+        //         nil,
+        //         zr
+        //     )
+        //
+
+    const cursor_is_at_this_star = (
+        p_entity.grid_coords.x == cursor_at.x 
+        and p_entity.grid_coords.y == cursor_at.y
+    )
+    // pick a text/outline color based on if the cursor is at this start or not
+    // (Highlight the cursor planet text to match the UI)
+    let text_color = p_entity.text_color
+    let text_outline_color = p_entity.text_outline
+    let reachable = can_reach(p_entity.name)
+    if not reachable:
+        text_color = palColor(1)
+    if cursor_is_at_this_star:
+        text_color = p_entity.text_outline
+        text_outline_color = palColor(22)
+        if not reachable:
+            text_outline_color = palColor(25)
+    draw_text(
+        p_entity.font,
+        p_entity.name,
+        p_entity.pos +xy(0, p_entity.sprite.size.y*p_entity.scale/2),
+        text_color,
+        p_entity.text_shadow,
+        text_outline_color,//outline
+        "center", // x_align
+        "top",// y_align 
+        2  // z
+    )
+
+    if distance_to_sol > reach_amount:
+        text_color = palColor(1)
+        text_outline_color = nil
+    // distance label
+    draw_text(
+        p_entity.font,
+        "Dist: " + unparse(distance_to_sol),
+        p_entity.pos +xy(0, p_entity.sprite.size.y*p_entity.scale/2+12),
+        text_color,
+        nil,
+        text_outline_color,//outline
+        "center", // x_align
+        "top",// y_align 
+        2  // z
+    )
+
+    if not p_entity.visited:
+        draw_sprite(
+            question_markSprite[0][0],
+            p_entity.pos
+        )
+
+    // circle the active star
+    if cursor_is_at_this_star:
+        name_of_planet_ship_is_at = p_entity.name
+        for 12 < i < 15:
+            // @TODO: animate in/out when changing planets
+            draw_disk(
+                p_entity.pos,
+                (i/10) * p_entity.sprite.size.x,
+                nil,
+                outline_color,
+                1,
+            )
+            cam_target = -p_entity.pos + SCREEN_SIZE/2
+
+        // draw arrows to next planets
+        for other_planet in p_entity.connections_array:
+            if not other_planet.draw:
+                continue
+
+            const delta_coords = other_planet.grid_coords - p_entity.grid_coords
+            const delta_pos = direction(other_planet.pos - p_entity.pos)
+
+            // push the icon out a little bit
+            const direction_icon_pos = (
+                p_entity.pos + delta_pos * (p_entity.sprite.size.x) * 2.3
+            )
+
+            let text = ""
+            if delta_coords.x > 0: text = "→"
+            if delta_coords.x < 0: text = "←"
+            if delta_coords.y > 0: text = "↓"
+            if delta_coords.y < 0: text = "↑"
+
+            draw_text(
+                big_font,
+                text,
+                direction_icon_pos,
+                p_entity.text_color,
+                p_entity.text_shadow,
+                p_entity.text_outline,
+                "center",
+                "middle",
+                10
+            )
+
+
+// Draw UI Action Menu on the left side
+/////////////////////////////////////////////
+
+// star label
+let text_root = xy(10, SCREEN_SIZE.y/2) - cam_pos
+const header_text = "SYSTEM: " + name_of_planet_ship_is_at
+const header_text_width = text_width(font, header_text)
+draw_text(
+    font,
+    header_text, 
+    text_root, 
+    ui_text_color,
+    shadow_color,
+    outline_color,
+    "left",
+    "top",
+    3 // layer
+)
+
+// separator line
+const line_root = text_root + xy( 0, 12)
+draw_line(
+    line_root,
+    line_root + xy(header_text_width, 0),
+    outline_color,
+    3
+)
+
+// XXX - not sure if I like this
+// @{ line to circle 
+const indicator_root = line_root + xy(header_text_width, 0)
+let line_target = clone(cursor_planet.pos)
+const target_dir = direction(cursor_planet.pos - indicator_root)
+line_target += -(target_dir * cursor_planet.sprite.size.x)*1.3
+draw_line(
+    indicator_root,
+    line_target,
+    outline_color,
+    -1 // layer
+)
+// @}
+
+// infrastructure on planet
+text_root += xy(0, 16)
+let infra_text = cursor_planet.infrastructure
+if infra_text == nil:
+    infra_text = "None"
+draw_text(
+    font,
+    "[" + infra_text + "]", 
+    text_root, 
+    ui_text_color,
+    shadow_color,
+    outline_color,
+    "left",
+    "top",
+    3 // layer
+)
+
+// actions list
+let text_color = palColor(0)
+let action_outline_color = outline_color
+
+if can_not_move:
+    text_color = palColor(1)
+    
+    // @TODO: Even better would be to highlight the reason why in red as well
+    if joy.a and travel_progress == 0:
+        text_color = palColor(15)
+    action_outline_color = nil
+
+text_root += xy(0, 16)
+let travel_progress_text = ""
+if travel_progress > 0:
+    travel_progress_text = " [" + unparse(travel_progress) + "%]"
+draw_text(
+    font,
+    replace(
+        "(a): travel" + travel_progress_text,
+        gamepad_array[0].prompt
+    ),
+    text_root, 
+    text_color,
+    palColor(5),
+    action_outline_color,
+    "left",
+    "top",
+    3
+)
+
+text_color = palColor(0)
+action_outline_color = outline_color
+
+const can_not_build = (
+    not cursor_planet.visited 
+    or cursor_planet.infrastructure != nil
+    or production_used >= production_amount
+)
+if can_not_build:
+    text_color = palColor(1)
+    action_outline_color = nil
+
+text_root += xy(0, 16)
+draw_text(
+    font,
+    replace(
+        "(b): Interact",
+        gamepad_array[0].prompt
+    ),
+    text_root, 
+    text_color,
+    palColor(5),
+    action_outline_color,
+    "left",
+    "top",
+    3
+)
+
+draw_entity(player_entity)
+player_entity.offset = xy(0, 4*cos(pi*mode_frames/90))
+set_transform(cam_pos)
+
+preserving_transform:
+    reset_transform()
+
+    // top UI (empire wide info)
+    let header_text = " R E A C H "
+    let header_width = text_width(font, header_text)
+    const text_height = 3
+    draw_text(
+        font,
+        header_text,
+        xy(0,text_height),
+        palColor(0),
+        palColor(1),
+        nil,
+        "left",
+        "top",
+        3
+    )
+
+    // vertical separator
+    draw_line(
+        xy(header_width, 0),
+        xy(header_width, 16),
+        palColor(22),
+        3
+    )
+
+    header_width += 12
+
+    // reach status
+    draw_sprite(
+        {
+            sprite:distanceSprite[0][0],
+            pos:xy(header_width, 9),
+            z:3,
+        }
+    )
+
+    header_width += 12
+    let val = planet_from_coords(player_at).distance_to_sol
+    let prod_text = unparse(val) + " / " + unparse(reach_amount)
+
+    draw_text(
+        font,
+        prod_text,
+        xy(header_width, text_height),
+        palColor(0),
+        palColor(1),
+        nil,
+        "left",
+        "top",
+        3,
+    )
+
+    header_width += text_width(font, prod_text)
+
+
+    // production status
+    draw_sprite(
+        {
+            sprite:hammerSprite[0][0],
+            pos:xy(header_width + 12, 9),
+            z:3,
+        }
+    )
+
+    prod_text = unparse(production_used) + " / " + unparse(production_amount)
+    draw_text(
+        font,
+        prod_text,
+        xy(header_width + 16 + 4, text_height),
+        palColor(0),
+        palColor(1),
+        nil,
+        "left",
+        "top",
+        3,
+    )
+
+    header_width += text_width(font, prod_text) + 16 + 6
+
+    // // research status
+    // draw_sprite(
+    //     {
+    //         sprite:beakerSprite[0][0],
+    //         pos:xy(header_width + 12, 8),
+    //         z: 3,
+    //     }
+    // )
+
+    // bottom line
+    draw_line(
+        xy(0, 17),
+        xy(SCREEN_SIZE.x, 17),
+        palColor(22),
+        3
+    )
+
+    // debug bottom text
+    draw_text(
+        font,
+        // unparse(planetMap["Gl 588"].distance_to_sol),
+        unparse(edgeCost("Sol", "Gl 588", planetMap)),
+        xy(0, SCREEN_SIZE.y),
+        palColor(0),
+        nil,
+        nil,
+        "left",
+        "bottom",
+        3,
+    )
+
