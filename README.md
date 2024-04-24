@@ -44,6 +44,6 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|reach.world_gen|
 |description||
-|Deployed on||
+|Deployed on|04/19/2024|
 |link|[play reach.world_gen](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/btw_deploy_test/reach.reach.world_gen/reach.game.json)|
 

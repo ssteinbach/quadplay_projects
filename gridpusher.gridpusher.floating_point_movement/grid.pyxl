@@ -32,6 +32,24 @@ def grid_coord_xy(grid, index_flat):
         floor(index_flat/grid.size.y)
     )
 
+// returns the grid cell of a given world space position
+def grid_coord_xy_from_wpos(grid, pos):
+    const grid_space_pos = (
+        pos - (
+            grid.center_px 
+            - grid.size_px/2 
+            + grid.cell_size_px/2
+        )
+    )
+    return xy(
+        round(grid_space_pos.x / CELL_SIZE_PX.x),
+        round(grid_space_pos.y / CELL_SIZE_PX.y),
+    )
+
+def grid_coord_flat_from_wpos(grid, pos):
+    const xy_coord = grid_coord_xy_from_wpos(grid, pos)
+    return grid_coord_flat(grid, xy_coord)
+
 def neighbors_of(grid, cell):
     let neighbors = []
 
@@ -68,6 +86,10 @@ def grid_cell_xy(grid, index_xy):
         return nil
 
     return grid.cells[grid_coord_flat(grid, index_xy)]
+
+def grid_cell_world_xy(grid, pos):
+    const index_xy = grid_coord_xy_from_wpos(grid, pos)
+    return grid_cell_xy(grid, index_xy)
 
 def grid_coord_flat(grid, index_xy):
     return index_xy.y + index_xy.x*grid.size.y
@@ -148,12 +170,14 @@ def make_grid(
         make_cell,
         // size of each cell in pixels
         cell_size_px,
+        center_px,
 ):
     let grid = {
         // xy dimensions of the grid (rows and columns, not pixels)
         size: grid_size_xy,
-        cell_size: cell_size_px,
+        cell_size_px: cell_size_px,
         size_px: grid_size_xy * cell_size_px,
+        center_px: center_px,
         
         // cells are in a flat list
         cells: [],

@@ -31,8 +31,23 @@
 - [x] music mixing test
 - [x] fixed up deployment system
 - [ ] floating point movement with gridded rocks test
-    - [ ] grab the accelerators and find a profile that works thematically for
+    - [x] grab the accelerators and find a profile that works thematically for
           this project
+    - [~] maybe zelda style acceleration curves?
+    - [x] populate the blocks as things you can run into (maybe promote them
+          to entities?  I forget how to do blockers...)
+    - [x] zelda style push: press against block for a half second or so, then
+          it moves over and triggers a push
+    - [x] connect sprite up to running
+    - [x] trigger callback functions
+    - [ ] better overlap system that keeps the player sprite from overlapping
+    - [ ] undo button works again
+    - [ ] puller should work from anywhere (using new player system)
+    - [ ] door sprite update and is passable when key is picked up
+    - [ ] block sliding animation
+    - [ ] minit is another one to look at as a reference, also has some block
+          pushing
+    - [ ] could also try zelda style pull, but I don't think we need to for now
 - [ ] "lighting" system
 - [ ] function that walks across the grid in a given direction and finds the
       first thing

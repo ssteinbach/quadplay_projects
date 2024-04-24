@@ -108,6 +108,24 @@
             "quantum": 0.01,
             "type": "number",
             "value": "100.00"
+        },
+        "DEBUG_DRAW_PLAYER_CELL": {
+            "type": "boolean",
+            "value": false,
+            "description": "draw the cell the player is on top of "
+        },
+        "PUSH_TIME": {
+            "type": "number",
+            "value": "10.00",
+            "description": "time to press on a block before executing a push, in frames",
+            "min": 0,
+            "max": 100,
+            "format": "0.00",
+            "quantum": 0.01
+        },
+        "DEBUG_DRAW_MOVEMENT_CELLS": {
+            "type": "boolean",
+            "value": true
         }
     },
     "cooperative": false,
