@@ -29,7 +29,8 @@ def main():
         if os.path.isdir(d) and not d.endswith(".git")
     ]
     git_remote = subprocess.check_output(
-        ["git", "remote", "-v"]
+        ["git", "remote", "-v"],
+        cwd=target_dir,
     ).decode("utf-8")
     m = re.match(r".*:(?P<username>.*)/(?P<reponame>.*)\.git", git_remote)
     username = m.group("username")
