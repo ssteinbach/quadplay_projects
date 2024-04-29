@@ -14,7 +14,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|-----|-----|-----|-----|
 |branch|gridpusher.floating_point_movement|main.discrete|gridpusher.discrete_mix_test|gridpusher.float_music_mix_test|gridpusher.main|
 |description|test of gridpusher prototype with 2d zelda style movement||discrete version of stem mixer|Floating point music mixing test - move aroudn the circles and hear stems fade in and out|main development branch for gridpusher|
-|Deployed on|04/24/2024|04/12/2024|04/01/2024|04/01/2024|03/31/2024|
+|Deployed on|04/28/2024|04/12/2024|04/01/2024|04/01/2024|03/31/2024|
 |link|[play gridpusher.floating_point_movement](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.floating_point_movement/gridpusher.game.json)|[play main.discrete](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.main.discrete/gridpusher.game.json)|[play gridpusher.discrete_mix_test](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.discrete_mix_test/gridpusher.game.json)|[play gridpusher.float_music_mix_test](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.float_music_mix_test/gridpusher.game.json)|[play gridpusher.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.main/gridpusher.game.json)|
 
 
