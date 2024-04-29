@@ -40,10 +40,12 @@
           it moves over and triggers a push
     - [x] connect sprite up to running
     - [x] trigger callback functions
+    - [x] puller should work from anywhere (using new player system)
+    - [x] door sprite update and is passable when key is picked up
+    - [x] undo button works again
+        - [x] undo shouldn't undo going to the next level
+    - [x] shouldn't be able to pull into the cell the player is on
     - [ ] better overlap system that keeps the player sprite from overlapping
-    - [ ] undo button works again
-    - [ ] puller should work from anywhere (using new player system)
-    - [ ] door sprite update and is passable when key is picked up
     - [ ] block sliding animation
     - [ ] minit is another one to look at as a reference, also has some block
           pushing

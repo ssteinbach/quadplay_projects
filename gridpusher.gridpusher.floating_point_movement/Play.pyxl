@@ -39,6 +39,25 @@ const PLAYER = make_entity(
     }
 )
 
+def asciify_level(game_grid):
+    const play_cell_coord = grid_coord_xy_from_wpos(game_grid, PLAYER.pos)
+    debug_watch(play_cell_coord)
+    let result = "\n"
+    for y < game_grid.size.y:
+        for x < game_grid.size.x:
+            if x == play_cell_coord.x and y == play_cell_coord.y:
+                result += "P"
+                continue
+            const coord = xy(x,y)
+            const c = grid_cell_xy(game_grid, coord)
+            if c.occupied_by:
+                result += c.occupied_by.ascii
+            else: 
+                result += "."
+        result += "\n"
+
+    return result
+
 def make_cell(coord, flatcoord, game_grid, cell_size_px):
     return {
         occupied_by: nil,
@@ -92,6 +111,10 @@ def activate_blue_key(cell):
     GAME_GRID.player_has_blue_key = true
     physics_remove_entity(PHYSICS, cell.occupied_by)
     cell.occupied_by = nil
+    for cell in GAME_GRID.cells:
+        if cell.occupied_by and cell.occupied_by.name == "blue_door":
+            cell.occupied_by.sprite = blue_door_sprite["open"][0]
+            physics_remove_entity(PHYSICS, cell.occupied_by)
 
 def activate_grabber(cell):
     GAME_GRID.player_has_grabber = true
@@ -105,19 +128,11 @@ def add_blue_key(game_grid, cell):
         pos: cell.pos,
     }
 
-def sprite_blue_door_fn(cell, level):
-    if level.player_has_blue_key:
-        cell.occupied_by.pushes = nil
-        return blue_door_sprite["open"][0]
-
-    cell.occupied_by.pushes = 0
-    return blue_door_sprite["closed"][0]
-
 def add_blue_door(game_grid, cell):
     return {
         "sprite": blue_door_sprite["closed"][0],
-        "frame": nil,
         pos: cell.pos,
+        name: "blue_door",
     }
 
 def add_grabber(game_grid, cell):
@@ -130,7 +145,7 @@ def add_grabber(game_grid, cell):
 let LAST_FOUND = []
 def player_fn_pull(game_grid):
     remove_all(LAST_FOUND)
-    const player_pos = clone(grid_cell_world_xy(GAME_GRID, PLAYER.pos))
+    const player_pos = clone(grid_coord_xy_from_wpos(GAME_GRID, PLAYER.pos))
 
     for dir in [
         xy(-1, 0),
@@ -155,6 +170,10 @@ def player_fn_pull(game_grid):
         if (
                 from_cell.occupied_by.pushes != nil
                 and to_cell.occupied_by == nil
+                and (
+                    to_cell.coord.x != player_pos.x
+                    or to_cell.coord.y != player_pos.y
+                )
         ):
             move_object(from_cell, to_cell)
             for i < 6:
@@ -189,11 +208,14 @@ def grid_size_of(lvl):
     // assert it has a level defined
     assert(size(lines) != 0 and size(lines) != nil)
 
-    // assert that the lines have stuff
+    // assert that the lines have stuff_to_hash
     assert(size(lines[0]) != 0 and size(lines[0]) != nil)
     return xy(size(lines[0]), size(lines))
 
 def load_level(levels, l_num):
+    remove_all(UNDOSTACK)
+    LAST_UNDO_HASH = nil
+
     const lvl = LEVELS.levels[[levels[l_num]]]
     physics_remove_all(PHYSICS)
     physics_add_entity(PHYSICS, PLAYER)
@@ -225,6 +247,7 @@ def load_level(levels, l_num):
                 debug_print("adding " + char + " at: ", coord)
                 let cell = grid_cell_xy(result, coord)
                 const ent = make_entity(fn(result, cell))
+                ent.ascii = char
 
                 // pushes will be handled outside of simulation, just using sim
                 // for movement and collision
@@ -239,11 +262,6 @@ def load_level(levels, l_num):
         and result.current_cell != nil
     )
 
-    let c = grid_cell_xy(result, result.current_cell)
-    c.occupied_by = "player"
-    result.camera_position = c.pos
-    
-
     // initialize visibility system
     for cell in result.cells:
         // let the goal be visible
@@ -253,6 +271,8 @@ def load_level(levels, l_num):
         // all cells start invisible
         cell.visibility = false
 
+    result.camera_position = PLAYER.pos
+    const c = grid_cell_world_xy(result, PLAYER.pos)
     c.visibility = true
 
     result.movement_tiles = make_movement_grid(result)
@@ -261,9 +281,6 @@ def load_level(levels, l_num):
 
 def make_movement_grid(game_grid):
     const g_size = game_grid.size
-
-    debug_print("GRID SIZE:"+ g_size)
-    debug_print("GRID CELL SIZE:"+ unparse(game_grid.cell_size_px))
 
     let result = make_grid(
         g_size*2,
@@ -308,9 +325,6 @@ def to_game_coord(from_move_coord):
         floor(from_move_coord.y/2),
     )
 
-// load the level
-let CURRENT_LEVEL = 0
-GAME_GRID = load_level(LEVELS.level_order, CURRENT_LEVEL) 
 
 def update_visibility(level):
     // check visibility to the player
@@ -447,7 +461,6 @@ def push_thing_in(new_cell_loc, movedir):
             // @feature PUSH LIMIT -- this is part of the push limit code
             // new_cell.occupied_by.pushes -= 1
             move_object(new_cell, cell_past_push)
-            GAME_GRID.movement_tiles = make_movement_grid(GAME_GRID)
 
 def update_player_pos_discrete(input, grid):
     const movedir = xy(input.xx, input.yy)
@@ -488,6 +501,21 @@ def update_player_pos_discrete(input, grid):
 
 
 let UNDOSTACK = []
+let LAST_UNDO_HASH = nil
+def grid_hash(game_grid):
+    return hash(unparse(asciify_level(game_grid)))
+
+def push_undo(game_grid):
+    LAST_UNDO_HASH = grid_hash(game_grid)
+    push(UNDOSTACK, deep_clone(game_grid))
+    if size(UNDOSTACK) > UNDOSTACK_SIZE_LIMIT:
+        pop_front(UNDOSTACK)
+    debug_print("pushed to undostack, size: " + size(UNDOSTACK))
+
+// load the level
+let CURRENT_LEVEL = 0
+GAME_GRID = load_level(LEVELS.level_order, CURRENT_LEVEL) 
+
 update_visibility(GAME_GRID)
 
 enter
@@ -566,38 +594,42 @@ GAME_GRID.camera_position = lerp(
 // camera-anchored game board
 set_camera(GAME_GRID.camera_position)
 
+// @TODO: remove this
 debug_watch(GAME_GRID.current_cell)
 debug_watch(size(UNDOSTACK))
-let pos = []
-for u in UNDOSTACK:
-    push(pos, u.current_cell)
-debug_watch(pos)
-
 
 let sprite = astronaut.idle[0]
 
 update_player_pos(joy, GAME_GRID)
 physics_simulate(PHYSICS)
 const contacts = physics_entity_contacts(PHYSICS, PLAYER)
-debug_watch(contacts)
-handle_player_collision(PLAYER, contacts)
 
-if joy.xx or joy.yy:
-    flip.x = joy.x
-    const last_game_state = deep_clone(GAME_GRID)
-    if (
-            GAME_GRID.current_cell.x != last_game_state.current_cell.x
-            or GAME_GRID.current_cell.y != last_game_state.current_cell.y
-    ):
-        push(UNDOSTACK, last_game_state)
-        update_visibility(GAME_GRID)
-    debug_print(size(UNDOSTACK))
-    if size(UNDOSTACK) > UNDOSTACK_SIZE_LIMIT:
-        pop_front(UNDOSTACK)
-else if joy.aa:
+handle_player_collision(PLAYER, contacts)
+update_visibility(GAME_GRID)
+GAME_GRID.player_cell = grid_coord_xy_from_wpos(GAME_GRID, PLAYER.pos)
+GAME_GRID.current_hash = grid_hash(GAME_GRID)
+
+if GAME_GRID.current_hash != LAST_UNDO_HASH:
+    push_undo(GAME_GRID)
+
+// update the movement grid
+GAME_GRID.movement_tiles = make_movement_grid(GAME_GRID)
+
+if joy.aa:
     if size(UNDOSTACK) > 0:
         debug_print("Undo")
-        GAME_GRID = pop(UNDOSTACK)
+        physics_remove_all(PHYSICS)
+        physics_add_entity(PHYSICS, PLAYER)
+
+        if size(UNDOSTACK) > 1:
+            pop(UNDOSTACK)
+        GAME_GRID = deep_clone(UNDOSTACK[size(UNDOSTACK) - 1])
+        LAST_UNDO_HASH = GAME_GRID.current_hash
+        PLAYER.pos = grid_cell_xy(GAME_GRID, GAME_GRID.player_cell).pos
+        for cell in GAME_GRID.cells:
+            if cell.occupied_by:
+                physics_remove_entity(PHYSICS, cell.occupied_by)
+                physics_add_entity(PHYSICS, cell.occupied_by)
     debug_print(size(UNDOSTACK))
 else if joy.bb and GAME_GRID.player_has_grabber:
     player_fn_pull(GAME_GRID)
@@ -626,27 +658,6 @@ for c in GAME_GRID.cells:
     if c.occupied_by:
         if c.occupied_by != "player":
             draw_entity(c.occupied_by)
-
-        // let spr = sprite
-        // let spr_old = sprite
-        // if c.occupied_by.sprite_fn:
-        //     spr = c.occupied_by.sprite_fn(c, GAME_GRID)
-        // else if c.occupied_by.draw != nil:
-        //     spr = ASSETS[c.occupied_by.draw]
-        // else if:
-        //
-        // // let frame = 0
-        // // if c.occupied_by.frame != nil:
-        // //     frame = c.occupied_by.frame
-        // //     spr = spr[frame][0]
-        // //     if c.occupied_by.sprite_fn:
-        // //         debug_print("set frame", frame)
-        //
-        // if not c.follow_input_dir:
-        //     flip = xy(0, 0)
-        //
-        // draw_sprite(spr, c.pos, 0, flip)
-        // draw_sprite(blue_door_sprite.closed[0], c.pos, 0, flip)
     else:
         if DEBUG_DRAW_CELL_NUMBERS:
             draw_text(
@@ -689,7 +700,7 @@ if DEBUG_DRAW_MOVEMENT_CELLS:
 
 draw_player(PLAYER)
 
-debug_watch(LAST_FOUND)
+debug_watch(asciify_level(GAME_GRID))
 
 // for thing in LAST_FOUND:
 //     draw_disk(grid_cell_xy(GAME_GRID, thing).pos, 5, rgb(1,0,0))

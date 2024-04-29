@@ -125,7 +125,7 @@
         },
         "DEBUG_DRAW_MOVEMENT_CELLS": {
             "type": "boolean",
-            "value": true
+            "value": false
         }
     },
     "cooperative": false,

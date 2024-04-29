@@ -199,6 +199,4 @@ def make_grid(
                 )
             )
 
-    debug_print("done making grid of size:" + unparse(grid_size_xy))
-
     return grid
