@@ -89,7 +89,7 @@ def main():
         #        blob? or into a file
         try:
             with open(os.path.join(d, "description.md"), 'r') as fi:
-                game_data["description"] = fi.read().strip()
+                game_data["description"] = fi.read().strip().replace('\n','<br>')
         except FileNotFoundError:
             game_data["description"] = "No description on branch."
         DATA["games"].setdefault(game_data["name"], []).append(game_data)
