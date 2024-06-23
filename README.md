@@ -43,8 +43,8 @@ This repo contains a number of prototypes in various stages of completion.
 |label|[![snipsnap.splitsnap.main](snipsnap.splitsnap.main/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/snipsnap.splitsnap.main/snipsnap.game.json)|
 |-|-----|
 |branch|splitsnap.main|
-|description||
-|Deployed on||
+|description|color matching action puzzle game|
+|Deployed on|06/22/2024|
 |link|[play splitsnap.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/snipsnap.splitsnap.main/snipsnap.game.json)|
 
 
