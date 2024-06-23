@@ -54,7 +54,11 @@ def main():
             fo.write(desc)
 
     print("\n\n")
-    print("complete.  check `git status` to see what has changed")
+    print(
+        "complete.  check `git status` to see what has changed, `git commit` \n"
+        " to commit all the changes, and then `python update_readme.py` to \n"
+        "update the README.md with the descriptions."
+    )
 
 
 if __name__ == "__main__":

@@ -108,11 +108,7 @@ def main():
         for build in builds:
             dirname = build["dirname"]
 
-            fname = (
-                "preview"
-                if os.path.exists(os.path.join(dirname, "preview.png"))
-                else "label128"
-            )
+            fname = "label128"
 
             label += (
                 f'[![{dirname}]({dirname}/{fname}.png)]({build["url"]})|'
