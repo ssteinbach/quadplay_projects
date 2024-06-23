@@ -49,15 +49,17 @@ def main():
             print(f"no description for branch: {b}")
             continue
 
+        desc = desc.replace("\n", "<br>")
+
         print(f"description: {desc}")
         with open(os.path.join(d, "description.md"), 'w') as fo:
             fo.write(desc)
 
     print("\n\n")
     print(
-        "complete.  check `git status` to see what has changed, `git commit` \n"
-        " to commit all the changes, and then `python update_readme.py` to \n"
-        "update the README.md with the descriptions."
+        "complete.  check `git status` to see what has changed, `git commit`"
+        " to commit all the changes, and then `python update_readme.py` to"
+        " update the README.md with the descriptions."
     )
 
 
