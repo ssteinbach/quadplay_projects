@@ -2,6 +2,8 @@ import os
 import subprocess
 import re
 
+__doc__ = """Update the deployment README.md"""
+
 # @TODO:
 # - fetch the human readable game name out of the game.json
 # - read a description out of the game.json
