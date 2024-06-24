@@ -7,6 +7,8 @@ This repo contains a number of prototypes in various stages of completion.
 ## Contents
 
 
+[test snipsnap link](snipsnap.splitsnap.main_html/index.html)
+
 
 ### gridpusher
 
