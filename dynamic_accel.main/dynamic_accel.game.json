@@ -1,0 +1,28 @@
+{
+    "assets": {
+        "font": "quad://fonts/deja-7.font.json"
+    },
+    "constants": {},
+    "copyright": "©2019 Stephan Steinbach",
+    "developer": "Stephan Steinbach",
+    "license": "CC0/Public Domain",
+    "start_mode": "Play",
+    "modes": [
+        "Play"
+    ],
+    "version": 1.0,
+    "packages": [],
+    "scripts": [
+        "accel_lib.pyxl",
+        "demo.pyxl"
+    ],
+    "title": "Dynamic Acceleration Library Demo",
+    "screenshot_tag": "Acceleration Library Demo",
+    "description": "",
+    "cooperative": false,
+    "competitive": false,
+    "highscores": false,
+    "achievements": false,
+    "min_players": 1,
+    "max_players": 1
+}
