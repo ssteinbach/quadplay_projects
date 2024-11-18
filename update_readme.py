@@ -48,10 +48,18 @@ def main():
         game_data = {}
         dirname = os.path.basename(d)
 
-        # should only be one game.json
-        game_data["jsonpath"] = next(
+        game_json_files = [
             t for t in os.listdir(d) if t.endswith(".game.json")
-        )
+        ]
+        if len(game_json_files) != 1:
+            print(
+                f"Warning: Should only have one game.json in {d}, found: "
+                f"{len(game_json_files)}"
+            )
+            continue
+
+        # should only be one game.json
+        game_data["jsonpath"] = game_json_files[0]
         game_data["url"] = URL_TEMPLATE.format(
             gh_user=username,
             reponame=reponame,
