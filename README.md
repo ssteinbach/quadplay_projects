@@ -20,12 +20,12 @@ This repo contains a number of prototypes in various stages of completion.
 
 ### dynamic_accel
 
-|label|[![dynamic_accel.main](dynamic_accel.main/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.main/dynamic_accel.game.json)|[![dynamic_accel.dynamic_accel.main](dynamic_accel.dynamic_accel.main/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.dynamic_accel.main/dynamic_accel.game.json)|
+|label|[![dynamic_accel.dynamic_accel.main](dynamic_accel.dynamic_accel.main/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.dynamic_accel.main/dynamic_accel.game.json)|[![dynamic_accel.main](dynamic_accel.main/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.main/dynamic_accel.game.json)|
 |-|-----|-----|
-|branch|main|dynamic_accel.main|
-|description||tool for exploring different acceleration models|
-|Deployed on|11/18/2024||
-|link|[play main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.main/dynamic_accel.game.json)|[play dynamic_accel.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.dynamic_accel.main/dynamic_accel.game.json)|
+|branch|dynamic_accel.main|main|
+|description|tool for exploring different acceleration models||
+|Deployed on|11/18/2024|11/18/2024|
+|link|[play dynamic_accel.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.dynamic_accel.main/dynamic_accel.game.json)|[play main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.main/dynamic_accel.game.json)|
 
 
 ### doom_fire
