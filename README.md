@@ -28,6 +28,16 @@ This repo contains a number of prototypes in various stages of completion.
 |link|[play dynamic_accel.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.dynamic_accel.main/dynamic_accel.game.json)|
 
 
+### dog_test
+
+|label|[![dog_test.dog_test.DEPLOY](dog_test.dog_test.DEPLOY/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dog_test.dog_test.DEPLOY/dog_test.game.json)|[![dog_test.dog_test.main](dog_test.dog_test.main/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dog_test.dog_test.main/dog_test.game.json)|
+|-|-----|-----|
+|branch|dog_test.DEPLOY|dog_test.main|
+|description||simple animated character test|
+|Deployed on|11/20/2024||
+|link|[play dog_test.DEPLOY](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dog_test.dog_test.DEPLOY/dog_test.game.json)|[play dog_test.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dog_test.dog_test.main/dog_test.game.json)|
+
+
 ### doom_fire
 
 |label|[![doom_fire.doom_fire.main](doom_fire.doom_fire.main/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/doom_fire.doom_fire.main/doom_fire.game.json)|
@@ -56,16 +66,6 @@ This repo contains a number of prototypes in various stages of completion.
 |description|color matching action puzzle game|
 |Deployed on|06/23/2024|
 |link|[play splitsnap.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/snipsnap.splitsnap.main/snipsnap.game.json)|
-
-
-### dog_test
-
-|label|[![dog_test.dog_test.DEPLOY](dog_test.dog_test.DEPLOY/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dog_test.dog_test.DEPLOY/dog_test.game.json)|
-|-|-----|
-|branch|dog_test.DEPLOY|
-|description||
-|Deployed on||
-|link|[play dog_test.DEPLOY](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dog_test.dog_test.DEPLOY/dog_test.game.json)|
 
 
 ### reach
