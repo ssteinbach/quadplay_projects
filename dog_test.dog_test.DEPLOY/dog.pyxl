@@ -1,0 +1,98 @@
+init
+────────────────────────────────────────────────────────────────────────
+// inject the dog profile
+ACCELERATION_PROFILES["dog"] = {
+    max_velocity: 5,
+    num_frames_attack: 0,
+    num_frames_release: 60,
+}
+
+let character = make_entity(
+    {
+        pos: SCREEN_SIZE/2,
+        accel: make_accelerator_from_profile("dog"),
+    }
+)
+
+let frame = 0
+let dir = 1
+let animation = "idle"
+let show_controls = 1
+def up(y):
+    return y.y < 0
+def down(y):
+    return y.y > 0
+def left(y):
+    return y.x < 0
+def right(y):
+    return y.x > 0
+const CONTROL_FADE_TIME = 30
+const CONTROL_FADE = 1/CONTROL_FADE_TIME
+const BGCOLOR = rgb(#98d9fc)
+const INACTIVECOLOR = rgb(#f6369b)
+const ACTIVECOLOR = rgb(1,1,1)
+const CONTROLS = [
+    {key: "[^]", pos: xy(40, SCREEN_SIZE.y-32), fn: up},
+    {key: "[<]", pos: xy(30, SCREEN_SIZE.y-20), fn: left},
+    {key: "[v]", pos: xy(40, SCREEN_SIZE.y-20), fn: down},
+    {key: "[>]", pos: xy(50, SCREEN_SIZE.y-20), fn: right},
+]
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+set_background(BGCOLOR)
+
+debug_watch(right(joy.xy))
+
+// dir = joy.xy
+
+
+character.pos += joy.xy
+
+character.pos.x = loop(character.pos.x, SCREEN_SIZE.x)
+character.pos.y = loop(character.pos.y, SCREEN_SIZE.y)
+
+if joy.x != 0 or joy.y != 0:
+    dir = sign(joy.x)
+    animation = "run"
+    frame += 0.4
+else if animation == "run":
+    animation = "tumble"
+    frame = 0
+else if animation == "tumble" and frame > size(dog_sprite.tumble):
+    animation = "idle"
+else:
+    frame += 0.4
+
+draw_sprite(
+    {
+        pos:character.pos,
+        sprite: array_value(dog_sprite[animation], frame, "loop"),
+        scale: xy(dir, 1),
+    }
+)
+
+if (joy.dx != 0 and joy.x == 0) or (joy.dy != 0 and joy.y):
+    show_controls -= CONTROL_FADE
+
+if show_controls < 1 and show_controls > 0:
+    show_controls -= CONTROL_FADE
+
+let interp = smootherstep(0, 1, show_controls)
+debug_watch(interp)
+
+if interp > 0:
+    for keymap in CONTROLS:
+        let color = INACTIVECOLOR
+        if keymap.fn(joy.xy):
+            color = ACTIVECOLOR
+        draw_text(
+            {
+                font:font,
+                text:replace(keymap.key, joy.prompt),
+                pos:keymap.pos,
+                color: BGCOLOR,
+                outline: lerp(BGCOLOR, color, interp),
+            }
+        )
