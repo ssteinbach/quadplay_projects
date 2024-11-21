@@ -1,1 +1,0 @@
-simple animated character test
