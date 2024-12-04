@@ -74,7 +74,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|scooper.main|
 |description||
-|Deployed on||
+|Deployed on|12/03/2024|
 |link|[play scooper.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/scooper.scooper.main/scooper.game.json)|
 
 
