@@ -1,0 +1,108 @@
+{
+    "aseprite_json": "images/Player_red.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "drop off": {
+            "end": {
+                "x": 2.0,
+                "y": 4.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                8.4,
+                10.799999999999999,
+                12.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 4.0
+            }
+        },
+        "idle": {
+            "end": {
+                "x": 3.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6,
+                6.6,
+                6.6,
+                6.6
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        "pickup": {
+            "end": {
+                "x": 1.0,
+                "y": 3.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                12.0,
+                24.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 3.0
+            }
+        },
+        "run": {
+            "end": {
+                "x": 1.0,
+                "y": 2.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                5.279999999999999,
+                5.279999999999999
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 2.0
+            }
+        },
+        "stinky": {
+            "end": {
+                "x": 4.0,
+                "y": 5.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0,
+                6.0,
+                6.0,
+                6.0,
+                24.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 5.0
+            }
+        },
+        "walk": {
+            "end": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                8.4,
+                8.4
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 1.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 32,
+        "y": 32
+    },
+    "url": "Player_red.png"
+}

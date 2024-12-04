@@ -1,0 +1,11 @@
+{
+    "aseprite_json": "images/bin.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {},
+    "sprite_size": {
+        "x": 32,
+        "y": 32
+    },
+    "url": "bin.png"
+}

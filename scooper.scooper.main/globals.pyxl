@@ -1,0 +1,177 @@
+// Scripts, variables, and constants here are visible to all modes
+
+const PLAYERS = [true, false, false, false]
+
+set_random_seed()
+
+let BGM = nil
+
+for val at key in GAME_DATA.accel_profiles:
+    ACCELERATION_PROFILES[key] = deep_clone(val)
+
+def random_from_list(list):
+    const len = size(list)
+    return list[random_integer(0, len-1)]
+
+def promote_variables(on_object):
+    if on_object.vars_to_xy != nil:
+        for varname in on_object.vars_to_xy:
+            on_object[varname] = xy(on_object[varname])
+
+    if on_object.vars_to_rgb != nil:
+        for varname in on_object.vars_to_rgb:
+            on_object[varname] = rgb(on_object[varname])
+
+    if on_object.vars_to_asset != nil:
+        for varname in on_object.vars_to_asset:
+            on_object[varname] = ASSETS[on_object[varname]]
+
+    if on_object.vars_to_accel != nil:
+        for varname in on_object.vars_to_accel:
+            on_object[varname] = make_accelerator_from_profile(
+                on_object[varname]
+            )
+
+    if on_object.pick_sprite_backup != nil:
+        on_object["sprite_backup"] = ASSETS[
+            random_from_list(on_object.pick_sprite_backup)
+        ]
+
+    return on_object
+
+def make_player(index):
+    let result = deep_clone(GAME_DATA.player)
+
+    result = promote_variables(result)
+
+    return result
+
+def make_bin():
+    let result = deep_clone(GAME_DATA.bin)
+
+    result = promote_variables(result)
+
+    result.sprite = result.sprite_backup.bounce[3]
+
+    return result
+
+def random_within_arena(space):
+    return random_within_region({pos: xy(0,0), size:xy(space)})
+
+def make_poop(pos):
+    let result = deep_clone(GAME_DATA.poop)
+    result = promote_variables(result)
+    result.pos_w = clone(pos)
+    result = anim_entity_make(
+        result,
+        result.sprite_backup.loop,
+        anim_entity_PLAY_MODES.LOOP,
+    )
+    return result
+
+def make_dog(space):
+    let result = deep_clone(GAME_DATA.dog)
+
+    result = promote_variables(result)
+
+    // place the dog inside the playfield random
+    result.pos_w = random_within_region({pos: xy(0,0), size:space})
+    result = anim_entity_make(
+        result,
+        result.sprite_backup.idle,
+        anim_entity_PLAY_MODES.LOOP,
+    ) 
+
+    return result
+
+def update_player(player, GAME_STATE):
+    let x_vel = accelerator_update(player.x_accel, joy.x)
+    debug_watch(player.x_accel)
+    debug_watch(x_vel)
+    let y_vel = accelerator_update(player.y_accel, joy.y)
+    debug_watch(y_vel)
+    debug_watch(player.y_accel)
+    
+    player.pos_w.x += x_vel
+    player.pos_w.y += y_vel
+
+    if joy.x < 0:
+        player.flip = true
+    if joy.x > 0:
+        player.flip = false
+
+    let closest_poop = nil
+    let closest_dist = nil
+    for poop at index in GAME_STATE.poops:
+        const d = magnitude(player.pos_w - poop.pos_w)
+        if (
+                (closest_poop == nil or d < closest_dist) 
+                and d < GAME_STATE.pickup_distance
+                and player.current_held_poops < player.max_held_poops
+        ):
+            closest_poop = index
+            closest_dist = d
+
+    player.closest_poop = closest_poop
+
+    if (
+            closest_poop != nil
+            and joy.aa > 0 and player.current_held_poops < player.max_held_poops
+    ):
+        // pick up poops
+        player.current_held_poops += 1
+        fast_remove_key(GAME_STATE.poops, player.closest_poop)
+        player.closest_poop = nil
+
+    for bin at index in GAME_STATE.bins:
+        if (
+                joy.aa > 0 
+                and player.current_held_poops > 0
+                and magnitude(player.pos_w - bin.pos_w) < GAME_STATE.pickup_distance
+        ):
+            // put poop in bin
+            GAME_STATE.score += player.current_held_poops
+            player.current_held_poops = 0
+            cam_add_shake(10)
+            GAME_STATE.bins[index] = anim_entity_make(
+                bin,
+                bin.sprite_backup.bounce,
+                anim_entity_PLAY_MODES.ONCE,
+            )
+
+    if (
+            (
+                abs(player.x_accel.current_velocity) > 0.1 
+                or abs(player.y_accel.current_velocity) > 0.1
+            )
+            and player.state != "run"
+    ):
+        player = anim_entity_make(
+            player,
+            player.sprite_backup.run,
+            anim_entity_PLAY_MODES.LOOP
+        )
+        player.state = "run"
+    else if (
+        abs(player.x_accel.current_velocity) < 0.1 
+        and abs(player.y_accel.current_velocity) < 0.1
+        and player.state != "idle"
+    ):
+        player = anim_entity_make(
+            player,
+            player.sprite_backup.idle,
+            anim_entity_PLAY_MODES.LOOP
+        )
+        player.state = "idle"
+
+    const max_off = GAME_STATE.arena.size_px/2
+    player.pos_w = clamp(player.pos_w, -max_off + xy(10,0), max_off - xy(10, 10 ))
+
+    return player
+
+
+def pick_random_duration(rnd_spec):
+    const base = rnd_spec[0]
+    const offset = random_integer(0, rnd_spec[1])
+
+    return base + offset

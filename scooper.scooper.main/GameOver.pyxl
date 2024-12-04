@@ -1,0 +1,113 @@
+GameOver
+════════════════════════════════════════════════════════════════════════
+// Put local state for the mode here.  Declare variables with let,
+// constants with const, and functions with def.
+
+let transition_start = nil
+let score = -1
+
+enter(in_score)
+────────────────────────────────────────────────────────────────────────
+// This event runs when the mode is entered via set_mode() or
+//  push_mode().
+transition_start = nil
+score = in_score
+
+if BGM:
+    stop_audio(BGM)
+    BGM = nil
+
+frame
+────────────────────────────────────────────────────────────────────────
+// This event runs 60 times per second. Game logic, simulation,
+// user input, and drawing all go here.
+
+let root = xy(SCREEN_SIZE.x/2, 75)
+
+draw_text(
+    bigfont,
+    "GAME\nOVER",
+    root + xy(4,4),
+    rgb(0.4,0.4,0.4),
+    nil,
+    "center",
+    "middle", 
+)
+
+let next = draw_text(
+    bigfont,
+    "GAME\nOVER",
+    root,
+    TEXT_COLOR,
+    nil,
+    "center",
+    "middle", 
+)
+
+let pos = xy(next.pos.x, next.pos.y + next.size.y/2) + xy(0, 10)
+
+draw_text(
+    font,
+    "your score: ",
+    pos,
+    TEXT_COLOR,
+)
+draw_text(
+    bigfont,
+    score,
+    pos + xy(0, 20) + xy(3,3),
+    rgb(0.4,0.4,0.4),
+)
+draw_text(
+    bigfont,
+    score,
+    pos + xy(0, 20),
+    TEXT_COLOR,
+    nil,
+    rgb(0,0,0)
+)
+
+
+if (mode_frames mod 60 < 30):
+
+    pos = pos + xy(0, 50)
+    draw_text(
+        font,
+        replace("PRESS (a) TO PLAY AGAIN", joy.prompt),
+        pos + xy(2,2),
+        rgb(0.4,0.4,0.4),
+        nil,
+        nil,
+        "center",
+        "bottom", 
+    )
+    draw_text(
+        font,
+        replace("PRESS (a) TO PLAY AGAIN", joy.prompt),
+        pos,
+        TEXT_COLOR,
+        nil,
+        nil,
+        "center",
+        "bottom", 
+    )
+
+if joy.aa:
+    transition_start = mode_frames
+
+if transition_start != nil:
+    draw_corner_rect(
+        xy(0,0),
+        SCREEN_SIZE,
+        rgba(0,0,0,lerp(0,1, (mode_frames - transition_start) / 30 ))
+    )
+
+    if mode_frames - transition_start > 30:
+        set_mode(Play)
+
+
+leave
+────────────────────────────────────────────────────────────────────────
+// This event runs just before leaving for another mode by
+// set_mode() or pop_mode().
+

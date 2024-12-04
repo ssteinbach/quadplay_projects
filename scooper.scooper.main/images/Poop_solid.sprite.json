@@ -1,0 +1,26 @@
+{
+    "aseprite_json": "images/Poop_solid.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "loop": {
+            "end": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 32,
+        "y": 32
+    },
+    "url": "Poop_solid.png"
+}

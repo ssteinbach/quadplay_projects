@@ -1,0 +1,11 @@
+{
+    "aseprite_json": "images/Stink.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {},
+    "sprite_size": {
+        "x": 128,
+        "y": 128
+    },
+    "url": "Stink.png"
+}

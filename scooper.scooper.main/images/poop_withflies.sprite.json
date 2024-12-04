@@ -1,0 +1,28 @@
+{
+    "aseprite_json": "images/poop_withflies.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "loop": {
+            "end": {
+                "x": 2.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0,
+                6.0,
+                6.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 32,
+        "y": 32
+    },
+    "url": "poop_withflies.png"
+}

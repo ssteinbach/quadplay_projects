@@ -1,0 +1,359 @@
+Play
+════════════════════════════════════════════════════════════════════════
+
+def clone_game_state():
+    let result = deep_clone(GAME_DATA.game_state)
+    for value at key in result:
+        result[key] = deep_clone(value)
+
+    CAMERA = make_default_camera()
+
+    return result
+
+let GAME_STATE = clone_game_state()
+
+def make_dog_idle(dog):
+    dog.current_state = "idle"
+    dog = anim_entity_make(
+        dog,
+        dog.sprite_backup.idle,
+        anim_entity_PLAY_MODES.LOOP
+    )
+    dog.state_until = mode_frames + pick_random_duration(
+        dog.idle_duration
+    )
+    return dog
+
+def make_dog_walk(dog):
+    dog = anim_entity_make(
+        dog,
+        dog.sprite_backup.walk,
+        anim_entity_PLAY_MODES.LOOP,
+    )
+    dog.target = random_within_arena(GAME_DATA.arena.size_px)
+    if dog.target.x < dog.pos_w.x:
+        dog.flip = true
+    else:
+        dog.flip = false
+    dog.current_state = "walk"
+    return dog
+
+def make_dog_poop(dog):
+    dog.current_state = "poop"
+    dog = anim_entity_make(
+        dog,
+        dog.sprite_backup.pooping,
+        anim_entity_PLAY_MODES.LOOP,
+    )
+    dog.state_until = mode_frames + pick_random_duration(
+        dog.poop_duration
+    )
+    return dog
+
+def draw_player(player):
+    if player.closest_poop != nil:
+        const poop = GAME_STATE.poops[player.closest_poop]
+        draw_disk(poop.pos_w, 16, rgba(0,0.4,0,0.5), nil, 0)
+        draw_disk(poop.pos_w, 14, rgba(0,0.8,0,0.5), nil, 0)
+        draw_text(
+            font,
+            replace("(a)", joy.prompt),
+            poop.pos_w + xy(0, 18),
+            rgb(0,0.8,0),
+            nil,
+            rgb(0,0.4,0),
+        )
+        player.closest_poop = nil
+
+    const scale = if (player.flip) then -1 else 1
+
+    draw_sprite(
+        player.sprite,
+        player.pos_w,
+        0,
+        player.scale*xy(scale,1), 
+        1
+    )
+
+    // left hand
+    if player.current_held_poops > 0:
+        const off = if player.flip > 0 then xy(1, 4) else xy(-6, 4)
+        draw_corner_rect(
+            player.pos_w + off, 
+            // size
+            xy(5, lerp(6, 7, 0.5 + sin(mode_frames/5))),
+            rgb(0,0.8,0),
+        )
+    if player.current_held_poops > 1:
+        let off = if player.flip > 0 then xy(-8, 4) else xy(5, 4)
+        draw_corner_rect(
+            player.pos_w + off,
+            // size
+            xy(3, lerp(6, 7, 0.5 + sin(pi/3 + mode_frames/5))),
+            rgb(0,0.8,0),
+        )
+
+
+def draw_arena():
+    draw_sprite(
+        BG_master_sprite,
+        xy(0,0)
+    )
+
+    for poop in GAME_STATE.poops:
+        draw_sprite(
+            poop.sprite,
+            poop.pos_w,
+            0,
+            xy(1,1,),
+            1,
+            3,
+        )
+
+    for bin in GAME_STATE.bins:
+        const player = GAME_STATE.players[0]
+        if (
+                magnitude(bin.pos_w - player.pos_w) < GAME_STATE.pickup_distance
+                and player.current_held_poops > 0
+        ):
+            draw_disk(bin.pos_w, 32, rgba(0,0.4,0,0.5), nil, 0)
+            draw_disk(bin.pos_w, 30, rgba(0,0.8,0,0.5), nil, 0)
+            draw_text(
+                font,
+                replace("(a)", joy.prompt),
+                bin.pos_w + xy(0, 28),
+                rgb(0,0.8,0),
+                nil,
+                rgb(0,0.4,0),
+            )
+
+        draw_sprite(
+            bin.sprite,
+            bin.pos_w,
+            0,
+            bin.scale * xy(1,1),
+        )
+
+    debug_watch(GAME_STATE.poops)
+
+    for dog in GAME_STATE.dogs:
+        const scale = if dog.flip then xy(-1, 1) else xy(1, 1)
+        draw_sprite(
+            dog.sprite,
+            dog.pos_w,
+            0,
+            scale,
+            1,
+            1,
+        )
+
+        if DEBUG_DRAW_DOG_STATE:
+            draw_text(
+                font,
+                dog.current_state + " " + dog.state_until,
+                dog.pos_w + xy(0, 16),
+                TEXT_COLOR,
+                nil,
+                nil,
+                "center",
+                "top",
+                10,
+            )
+
+            if dog.current_state == "walk":
+                draw_line(
+                    dog.pos_w,
+                    dog.target,
+                    rgb(1,0,0),
+                    10
+                )
+                draw_disk(
+                    dog.target,
+                    5,
+                    rgb(1,0,0),
+                    nil,
+                    5,
+                )
+
+
+def update_arena(GAME_STATE, arena):
+    debug_watch(arena.next_dog_f)
+    if arena.next_dog_f == nil or arena.next_dog_f <= mode_frames:
+        arena.next_dog_f = mode_frames + pick_random_duration(
+            GAME_STATE.dog_spawn_dur_rnd_f
+        )
+        push(GAME_STATE.dogs, make_dog(GAME_STATE.arena.size_px))
+
+    if mode_frames mod 60 == 0:
+        GAME_STATE.stink_amount += size(GAME_STATE.poops)
+
+    if GAME_STATE.stink_amount >= GAME_STATE.max_stink:
+        GAME_STATE.lock_input = true
+        GAME_STATE.fade_target = GAME_STATE.fade_out_duration_f + mode_frames
+        GAME_STATE.fade_start = mode_frames
+        for player at index in GAME_STATE.players:
+            GAME_STATE.players[index] = anim_entity_make(
+                player,
+                player.sprite_backup.stinky,
+                anim_entity_PLAY_MODES.ONCE
+            )
+
+    update_dogs()
+
+    if GAME_STATE.stink_amount > 65 and GAME_STATE.panic == false:
+        if BGM:
+            stop_audio(BGM)
+        BGM = play_sound(panic_snd, true, 2)
+        GAME_STATE.panic = true
+    else if GAME_STATE.stink_amount < 65 and GAME_STATE.panic == true:
+        GAME_STATE.panic = false
+        if BGM:
+            stop_audio(BGM)
+        BGM = play_sound(chill_snd, true, 2)
+
+
+def update_dogs():
+    for dog at index in GAME_STATE.dogs:
+        if dog.current_state == nil:
+            GAME_STATE.dogs[index] = make_dog_idle(dog)
+            continue
+        if dog.current_state == "idle":
+            if dog.state_until == nil or dog.state_until <= mode_frames:
+                if random() < dog.poop_chance:
+                    GAME_STATE.dogs[index] = make_dog_poop(dog)
+                else:
+                    GAME_STATE.dogs[index] = make_dog_walk(dog)
+        else if dog.current_state == "walk":
+            dog.pos_w = dog.pos_w + dog.speed * direction(dog.target - dog.pos_w)
+            if magnitude(dog.target - dog.pos_w) < 2:
+                GAME_STATE.dogs[index] = make_dog_idle(dog)
+        else if dog.current_state == "poop":
+            if dog.state_until == nil or dog.state_until <= mode_frames:
+                push(GAME_STATE.poops, make_poop(dog.pos_w))
+                // add poop to state
+                GAME_STATE.dogs[index] = make_dog_walk(dog)
+        else:
+            // assert(false)
+
+def draw_hud():
+    draw_text(
+        bigfont,
+        GAME_STATE.score,
+        xy(5, 5),
+        TEXT_COLOR,
+        rgb(0,0,0),
+        rgb(0.2,0.2,0.2),
+        "left",
+        "top",
+    )
+
+def draw_stink(in_amount):
+
+    const amount = lerp(in_amount, in_amount+size(GAME_STATE.poops), (mode_frames mod 30)/30)
+    const intensity = amount/GAME_STATE.max_stink
+
+    const NUM = 5
+
+    const radius = 10
+    const target= SCREEN_SIZE/2
+    const max_centering = lerp(-0.2, 0.3, intensity)
+    const NUM_RINGS = 3
+
+    let phase = 0
+    const speed = (mode_frames mod 100) / 100
+
+    // upper border
+    for ring < 3:
+        for x < NUM:
+            const ratio = x/NUM
+            
+            for xform in [
+                    [xy(ratio*SCREEN_SIZE.x, 0), 0],
+                    [xy(ratio*SCREEN_SIZE.x, SCREEN_SIZE.y), pi],
+                    [xy(0, ratio*SCREEN_SIZE.y), pi/2],
+                    [xy(SCREEN_SIZE.x, ratio*SCREEN_SIZE.y), -pi/2],
+            ]:
+                let pos = lerp(
+                    xform[0],
+                    target,
+                    lerp(-0.5, max_centering, ring/NUM_RINGS)
+                )
+                let offset = xy(
+                    radius * cos(phase + speed),
+                    radius * sin(phase + speed)
+                )
+                draw_sprite(Stink_sprite, pos + offset, xform[1], xy(1,1), intensity)
+                phase += pi/10
+
+
+
+
+enter
+────────────────────────────────────────────────────────────────────────
+
+if BGM != nil:
+    stop_audio(BGM)
+BGM = play_sound(chill_snd, true, 2)
+
+// configure game state
+GAME_STATE = clone_game_state()
+GAME_STATE.arena = deep_clone(GAME_DATA.arena)
+GAME_STATE.arena = promote_variables(GAME_STATE.arena)
+
+push(GAME_STATE.players, make_player(0))
+push(GAME_STATE.bins, make_bin())
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+debug_watch(GAME_STATE)
+debug_watch(GAME_STATE.players[0])
+debug_watch(CAMERA)
+debug_watch(GAME_STATE.arena)
+debug_watch(ACCELERATION_PROFILES)
+
+
+preserving_transform:
+    if (GAME_STATE.lock_input == false):
+        update_arena(GAME_STATE, GAME_STATE.arena)
+        GAME_STATE.players[0] = update_player(GAME_STATE.players[0], GAME_STATE)
+
+    // animate the camera
+    const cam_off = GAME_STATE.arena.camera_size_px/2
+    const o = GAME_STATE.players[0].pos_w - SCREEN_SIZE/2
+    cam_update_frame(
+        o,
+        -SCREEN_SIZE/2 -cam_off,
+        -SCREEN_SIZE/2 + cam_off,
+    )
+    set_camera(CAMERA)
+
+    draw_arena()
+    draw_player(GAME_STATE.players[0])
+
+
+preserving_transform:
+    draw_stink(GAME_STATE.stink_amount)
+    set_camera(SCREEN_SIZE/2)
+
+
+// screen space drawing
+draw_hud()
+if (GAME_STATE.fade_target):
+    const alpha = lerp(
+        1,
+        0,
+        (GAME_STATE.fade_target - mode_frames)/GAME_STATE.fade_out_duration_f 
+    )
+    draw_corner_rect(
+        xy(0,0),
+        SCREEN_SIZE,
+        rgba( 0,0,0, alpha),
+        nil,
+        100
+    )
+
+    if mode_frames >= GAME_STATE.fade_target:
+        set_mode(GameOver, GAME_STATE.score)
+
+debug_watch(BGM)

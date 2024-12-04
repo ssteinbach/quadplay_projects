@@ -1,0 +1,29 @@
+{
+    "aseprite_json": "images/PoopBin_Anim.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "bounce": {
+            "end": {
+                "x": 3.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                7.199999999999999,
+                2.88,
+                14.399999999999999,
+                1.44
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 50,
+        "y": 50
+    },
+    "url": "PoopBin_Anim.png"
+}

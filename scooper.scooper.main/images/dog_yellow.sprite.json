@@ -1,0 +1,76 @@
+{
+    "aseprite_json": "images/dog_yellow.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "hiding poop": {
+            "end": {
+                "x": 2.0,
+                "y": 2.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                9.0,
+                9.0,
+                9.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 2.0
+            }
+        },
+        "idle": {
+            "end": {
+                "x": 3.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6,
+                6.6,
+                6.6,
+                6.6
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        "pooping": {
+            "end": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.6,
+                6.6
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 1.0
+            }
+        },
+        "walk": {
+            "end": {
+                "x": 2.0,
+                "y": 3.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                9.0,
+                9.0,
+                9.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 3.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 32,
+        "y": 32
+    },
+    "url": "dog_yellow.png"
+}

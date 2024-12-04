@@ -1,0 +1,81 @@
+{
+    "achievements": false,
+    "assets": {
+        "BG_master_sprite": "images/BG_master.sprite.json",
+        "Player_red_sprite": "images/Player_red.sprite.json",
+        "PoopBin_Anim_sprite": "images/PoopBin_Anim.sprite.json",
+        "PoopBin_sprite": "images/PoopBin.sprite.json",
+        "Poop_solid_sprite": "images/Poop_solid.sprite.json",
+        "Stink_sprite": "images/Stink.sprite.json",
+        "astronaut": "quad://sprites/kenney-alien-yellow-16x32.sprite.json",
+        "bigdog_2ndcolor_sprite": "images/bigdog_2ndcolor.sprite.json",
+        "bigdog_regular_sprite": "images/bigdog_regular.sprite.json",
+        "bigfont": "fonts/smw-21.font.json",
+        "bin_sprite": "images/bin.sprite.json",
+        "blip_sound": "quad://sounds/blip-04.sound.json",
+        "chill_snd": "sound/chill.sound.json",
+        "dog_brown_sprite": "images/dog_brown.sprite.json",
+        "dog_yellow_sprite": "images/dog_yellow.sprite.json",
+        "font": "quad://examples/word_game/smw-7.font.json",
+        "growth_sprite": "images/growth.sprite.json",
+        "panic_snd": "sound/panic.sound.json",
+        "poop_withflies_sprite": "images/poop_withflies.sprite.json",
+        "shapes": "quad://sprites/shapes-32x32.sprite.json"
+    },
+    "competitive": false,
+    "constants": {
+        "DEBUG_DRAW_DOG_STATE": {
+            "description": "draw the dog state info under the dog",
+            "type": "boolean",
+            "value": false
+        },
+        "GAME_DATA": {
+            "type": "raw",
+            "url": "GAME_DATA.yml"
+        },
+        "TEXT_COLOR": {
+            "type": "rgb",
+            "value": {
+                "b": {
+                    "type": "number",
+                    "value": 1
+                },
+                "g": {
+                    "type": "number",
+                    "value": 1
+                },
+                "r": {
+                    "type": "number",
+                    "value": 1
+                }
+            }
+        }
+    },
+    "cooperative": false,
+    "copyright": "\u00a92024 Stephan Steinbach & Keiko Furuyama",
+    "description": "They poop, you scoop!",
+    "developer": "Stephan Steinbach & Keiko Furuyama",
+    "docs": [],
+    "dual_dpad": false,
+    "highscores": false,
+    "license": "CC0/Public Domain (Replace with your own license)",
+    "max_players": 1,
+    "midi_sysex": false,
+    "min_players": 1,
+    "modes": [
+        "Play",
+        "Title",
+        "GameOver"
+    ],
+    "packages": [],
+    "screenshot_tag": "jam2",
+    "scripts": [
+        "quad://examples/dynamic_accel/accel_lib.pyxl",
+        "quad://examples/anim_entity_example/anim_entity.pyxl",
+        "globals.pyxl",
+        "camera_shake.pyxl"
+    ],
+    "start_mode": "Title",
+    "title": "POOPER SCOOPER",
+    "version": 0
+}

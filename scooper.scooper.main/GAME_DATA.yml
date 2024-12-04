@@ -1,0 +1,83 @@
+# prototypes
+player:
+  pos_w: [0, 0]
+  size_px: [32, 32]
+  scale: 1
+  index: null
+  color: [1,0, 0]
+  sprite_backup: "Player_red_sprite"
+  flip: false
+  closest_poop: nil
+  max_held_poops: 2
+  current_held_poops: 0
+  x_accel: "player_main"
+  y_accel: "player_main"
+
+  vars_to_xy: ["pos_w", "size_px"]
+  vars_to_rgb: ["color"]
+  vars_to_asset: ["sprite_backup"]
+  vars_to_accel: ["x_accel", "y_accel"]
+
+dog:
+  pos_w: [0, 0]
+  size_px: [32, 32]
+  next_poop_on_f: null
+  poop_rate_rnd_f: [30, 15]
+  pick_sprite_backup: [
+    "dog_brown_sprite",
+    "bigdog_regular_sprite",
+    "bigdog_2ndcolor_sprite",
+    "dog_yellow_sprite",
+  ]
+  poop_chance: 0.3
+  vars_to_xy: ["pos_w", "size_px"]
+  # idle_duration: [60, 240]
+  idle_duration: [10, 40]
+  poop_duration: [60, 120]
+  speed: 3
+
+poop:
+  pos_w: [0, 0]
+  size_px: [32, 32]
+  pick_sprite_backup: ["Poop_solid_sprite", "poop_withflies_sprite"]
+
+bin:
+  pos_w: [130, 0]
+  scale: 1
+  pick_sprite_backup: ["PoopBin_Anim_sprite"]
+  vars_to_xy: ["pos_w"]
+
+arena:
+  pos_w: [0, 0]
+  size_px: [300, 250]
+  camera_size_px: [200, 150]
+  outer_size_px: [600, 550]
+  color: [0.0, 0.4, 0.2]
+  outline_color: [0.6, 0, 0.2]
+  outer_color: [0.0, 0.2, 0.2]
+
+  vars_to_xy: ["pos_w", "size_px", "camera_size_px", "outer_size_px"]
+  vars_to_rgb: ["color", "outline_color", "outer_color"]
+
+accel_profiles:
+    player_main: 
+        max_velocity: 2
+        num_frames_attack: 6
+        num_frames_release: 3
+
+game_state:
+  players: []
+  dogs: []
+  poops: []
+  bins: []
+
+  stink_amount: 0
+  max_stink: 100
+  score: 0
+  #            base frames + max random (ie 15-25 frames between spawn)
+  dog_spawn_dur_rnd_f: [300, 150]
+  next_dog_f: -1
+  fade_out_duration_f: 60
+  lock_input: false
+  pickup_distance: 20
+  panic: false
