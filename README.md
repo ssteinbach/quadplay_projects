@@ -73,7 +73,7 @@ This repo contains a number of prototypes in various stages of completion.
 |label|[![scooper.scooper.main](scooper.scooper.main/label128.png)](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/scooper.scooper.main/scooper.game.json)|
 |-|-----|
 |branch|scooper.main|
-|description||
+|description|Jam 2 game about picking up dog poop|
 |Deployed on|12/03/2024|
 |link|[play scooper.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/scooper.scooper.main/scooper.game.json)|
 
