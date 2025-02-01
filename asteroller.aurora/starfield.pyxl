@@ -1,0 +1,33 @@
+/* Cosmetic parallax starfield */
+
+const starfield = []
+
+const STAR_COLOR = #FFF6
+const STAR_Z = 5
+
+local:
+    const rng = make_random()
+    for i < 200:
+        const s = rng(20%, 105%)³
+        // Positions are relative to view_rect
+        push(starfield, {
+            pos: (½ random_within_square(rng) + ½) * view_rect.size,
+            speed: max(0.05, s)})
+
+
+
+def starfield_update()
+& preserving_transform:
+    reset_camera()
+    set_transform(view_rect.corner)
+
+    for s < size(starfield):
+        const star = starfield[s]
+        star.pos.x -= star.speed
+        
+        if star.pos.x < 0:
+            // Wrap            
+            star.pos.x = view_rect.size.x
+            star.pos.y = random(0, view_rect.size.y)
+        
+        draw_line(star.pos, star.pos + xy(5 star.speed, 0), STAR_COLOR, STAR_Z)

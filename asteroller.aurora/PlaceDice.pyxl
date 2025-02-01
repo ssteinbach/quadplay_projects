@@ -1,0 +1,122 @@
+PlaceDice
+════════════════════════════════════════════════════════════════════════
+
+todo("Display explanations of systems and slots ")
+
+
+let selected_die
+
+def place_die_callback(args, cursor)
+& if cursor.gamepad.aa or touch.aa:
+    assert(selected_die, "selected_die must be specified when placing")
+    
+    // Move the die visually
+    dice_transfer(control_panel.placed_dice, selected_die, args.pos)
+    play_sound({sound: place_die_sound, pan: selected_die.pos})
+    
+    // Record it for gameplay purposes
+    args.system.die_array[args.index] = selected_die
+    
+    selected_die = ∅ 
+
+
+
+def draw_die_highlight(die):
+    // White underglow
+    draw_disk(die.pos, ½ die.size.x + 3, #FFF)
+    
+    // Glow based on die color
+    for i < 4:
+        draw_disk(die.pos, ½ die.size.x + i + 3, ∅, rgba(lerp(#FFF, die.bright_color, ⅙ (i + 2)), 80% - ¼ i), 20)
+
+
+
+def roll_callback(data, cursor)
+& if cursor.gamepad.aa or touch.aa:
+    push_mode(RollDice) because "Roll button"
+        
+
+
+def die_callback(free_die, cursor)
+& if cursor.gamepad.aa or touch.aa:
+    play_sound({sound: select_die_sound, pan: cursor.pos})
+    selected_die = free_die
+
+
+
+def end_turn():
+    set_mode(SimulatePlayer) because "No playable moves left"
+
+
+enter
+────────────────────────────────────────────────────────────────────────
+
+set_background(background_sprite[0][0])
+
+// Move the default cursor away from the roll button and slots, 
+// back to the center of the dice tray
+cursor.pos = xy(control_panel.reactor.dice.pos)
+
+if DEBUG_MOVE:
+    engine_activate({power: 3}, sign)
+else if DEBUG_WEAPON:
+    weapon_activate({power: 3}, sign)
+    
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+const placeable_dice_remaining = any_system_can_accept_any_die(control_panel.bay_array, control_panel.reactor.dice.die_array)
+
+if (not size(control_panel.reactor.dice.die_array) or
+    (not placeable_dice_remaining and
+     not control_panel.reactor.rolls_left)):
+    
+    // There are no moves available
+    const button_size = xy(UI_ROLL_BUTTON_WIDTH, control_panel.reactor.dice.size.y)
+    const button_pos = xy(control_panel.reactor.dice.pos.x + ½ (control_panel.reactor.dice.size.x + 3 button_size.x), control_panel.reactor.dice.pos.y)
+    const button_z = 400
+
+    draw_vertical_button(" ENGAGE", button_size, button_pos, button_z, end_turn)
+        
+
+else if control_panel.reactor.rolls_left < control_panel.reactor.rolls_max:
+
+    // Allow selecting PLAYABLE dice, even if a die is already selected. Allow
+    // traversing all dice to trigger help
+    for die in control_panel.reactor.dice.die_array:
+        const callback = if any_system_can_accept_die(control_panel.bay_array, die) then die_callback else ∅
+        cursor_register_target(cursor, die.pos, die.size, callback, die, "disk")
+    
+    if selected_die:
+        // Die placement
+        draw_instructions("Install the Energy Crystal", cursor.gamepad.prompt["(b)"] + " to Cancel")
+    else:
+        // Allow die selection
+        if placeable_dice_remaining:
+            draw_instructions("Select an Energy Crystal", if control_panel.reactor.rolls_left then "or Re-Charge" else ∅)            
+        else:
+            draw_instructions("Charge the Unusable Energy Crystals")
+        
+else:
+    // First time. No die selection allowed.
+    // Force a roll by not allowing die selection.
+    draw_instructions("Charge the Energy Crystals")
+
+
+universe_update()
+
+const charge_button_callback = if (control_panel.reactor.rolls_left > 0) and (size(control_panel.reactor.dice.die_array) > 0) then roll_callback else ∅
+if selected_die:
+    control_panel_update(place_die_callback, die_value(selected_die), charge_button_callback)
+    draw_die_highlight(selected_die)
+    if cursor.gamepad.bb:
+        selected_die = ∅
+else:
+    control_panel_update(∅, ∅, charge_button_callback)
+
+
+// Must call last
+cursor_update(cursor)
+
+

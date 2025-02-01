@@ -1,0 +1,93 @@
+SimulatePlayer
+════════════════════════════════════════════════════════════════════════
+
+/* The bay currently being processed */
+let bay_index = 0
+
+
+def clean_dice():
+    todo("Animate cleaning the dice for each system")
+    const die_array = control_panel.bay_array[bay_index].die_array
+    if not die_array: return
+
+    for die at d in die_array:
+        if die:
+            dice_transfer(control_panel.reactor.dice, die)
+            die_array[d] = ∅
+
+
+
+/* Called by the activate_callback or */
+def advance_to_next_bay()
+& while true:
+    
+    if bay_index ≥ 0:
+        clean_dice()
+    
+    // Move on to the next bay, iterating until done or
+    // a system is found
+    ++bay_index
+
+    if bay_index ≥ size(control_panel.bay_array):
+        
+        control_panel.reactor.rolls_left = control_panel.reactor.rolls_max
+        set_mode(SimulateUniverse) because "End of Player turn"
+
+    else:
+        // Wipe the appropriate stat if it is not represented
+        const actual_bay_type   = control_panel.bay_array[bay_index].bay_type
+        const expected_bay_type = BAY_TYPE_ARRAY[bay_index]
+        if (actual_bay_type ≠ expected_bay_type and
+            contains(["sensor", "shield", "dodge"], expected_bay_type)):
+            player_ship[actual_bay_type + "_power"] = 0
+        
+        const bay = control_panel.bay_array[bay_index]
+        if bay.bay_type ≠ "cargo" and bay.bay_type ≠ "blank":
+            bay.activate_callback(bay, advance_to_next_bay)
+            return
+
+
+
+def highlight_bay(b)
+& preserving_transform:    
+    set_transform(control_panel.rect.corner + xy(0, UI_BAY_HEIGHT * b))
+    const size = xy(UI_CONTROL_PANEL_WIDTH, UI_BAY_HEIGHT)
+    
+    draw_corner_rect(xy(0, 0), size,     ∅, #FFF)
+    draw_corner_rect(xy(1, 1), size - 2, ∅, #000)
+    draw_corner_rect(xy(2, 2), size - 4, ∅, #FFF)
+    
+    draw_sprite(shapes.arrow.x_flipped, xy(size.x + 32, ½ size.y), ∅, ∅, ∅, 100)
+    
+
+
+enter
+────────────────────────────────────────────────────────────────────────
+bay_index = -1
+
+// Start after a short delay
+delay(advance_to_next_bay(), 30)
+
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+assert(bay_index < size(control_panel.bay_array))
+
+universe_update()
+
+if bay_index ≥ 0:
+    const bay = control_panel.bay_array[bay_index]
+    draw_instructions("Running system: " + bay.name)
+    // Show the active bay
+    highlight_bay(bay_index)
+else:
+    draw_instructions("Running systems…")
+
+
+control_panel_update()
+
+    
+leave
+────────────────────────────────────────────────────────────────────────
+player_ship.sensor_power = max(1, player_ship.sensor_power)

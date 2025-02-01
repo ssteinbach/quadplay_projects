@@ -1,0 +1,6 @@
+{
+    "url": "cargo.png",
+    "license": "By Morgan McGuire 2025, released into the Public Domain/CC0",
+    "sprite_size": {"x": 26, "y": 26},
+    "region": {"corner": {"x": 0, "y": 0}, "size": {"x": 52, "y": 26}}
+}

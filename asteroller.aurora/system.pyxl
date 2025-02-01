@@ -1,0 +1,356 @@
+/*
+  Parts of the ship.
+  Each system has slots for energy dice to activate it.
+*/
+
+/* Size of a slot in a System for an Energy Crystal.
+  
+  Cheat the slot to be slightly smaller than the 
+  die to save UI space */
+const SLOT_SIZE = xy(1, 1) * (2 DIE_RADIUS - 1) - 2
+
+
+/*
+  Create a system for the ship, which contains a certain
+  number of slots that crew can fill.
+
+  - `activate_callback`: One of the callback functions from
+    `system_activate.pyxl`
+  
+  - `constraint_array`: Number of "none" constraints or
+    an array of constraints. Each constraint is relative
+    to the previously placed die or on the slot, which
+    are: "none", "even", "odd", a specific number,
+    "≤", "≥", ">", "<", "=", "≠".
+    See `constraint_satisfied()`.
+
+  - `operator`: Values are
+    - "max": power = highest value die
+    - "min": power = lowest value die
+    - "+": power = sum of pips 
+    - "#": power = number of dice
+    - "2×": 2x the single die value
+    - "3×": 3x the single die value
+    - "x²": the single die value squared
+    - "=": Forced for single-die with no other operator
+    - "1": Always 1 when active
+    
+  - `require_full`: Activate only when all slots are full
+*/
+def make_system(name, bay_type, activate_callback, sprite, constraint_array, operator default "+", require_full default false, badge_array default []):
+
+    if type(constraint_array) == "number":
+        // Make an array of the appropriate length
+        constraint_array = make_array(constraint_array, "none")
+    
+    if size(constraint_array) == 1 and operator ≠ "2×" and operator ≠ "3×" and operator ≠ "x²":
+        operator = "="
+    
+    const system = {
+        name:       name,
+        bay_type:   bay_type,
+            
+        sprite: sprite,
+        activate_callback: activate_callback,
+        
+        background_sprite: array_value(system_greeble_sprite[0], make_system.count, "loop"),
+        
+        operator: operator,
+        constraint_array: constraint_array,
+        require_full: require_full,
+        badge_array: badge_array,
+        
+        // Computed during drawing
+        power: 0,
+        
+        // The dice currently allocated to these slots, ∅ if empty.
+        // Must be in ship.placed_dice as well.
+        // The value is die_array.value_array[die_array.result_index]
+        die_array: make_array(size(constraint_array))
+    }
+    
+    // Sort badges
+    sort(badge_array, "id")
+    
+    ++make_system.count
+    return system
+
+make_system.count = 0
+
+
+
+/* Draw a single `system` in the control_panel panel, starting at `y` vertically.
+
+  `selected_die_value` and `place_die_callback` are ∅ if no die is selected or 
+  not in PlaceDice mode.
+*/
+def system_draw(system, y, selected_die_value default ∅, place_die_callback default ∅)
+& preserving_transform
+& with operator, constraint_array, die_array, require_full in system:
+        
+    set_transform(xy(0, y))
+    
+    // Compute a color for the background based on the sprite
+    let background = hsv(system.sprite.mean_color)
+    background.v = 75%
+    background.s = 12%
+    background = rgb(background)
+
+    // Shading on the background
+    const background_up = lerp(background, #fff, 40%)
+    const background_dn = 80% background
+
+    // Background
+    draw_sprite({sprite: system.background_sprite, pos: ½ xy(UI_CONTROL_PANEL_WIDTH, UI_BAY_HEIGHT), override_color: background, override_blend: "multiply", z: -1})
+    draw_line(xy(0, 0), xy(UI_CONTROL_PANEL_WIDTH, 0), background_up)
+    
+    // Icon
+    draw_sprite(system.sprite, xy(½ UI_SLOT_INDENT + 2, 1 + ½ UI_BAY_HEIGHT))
+    
+    // Name
+    draw_text({
+        font: small_font,
+        text: system.name,
+        pos: xy(6 + UI_SLOT_INDENT, UI_SYSTEM_NAME_Y),
+        color: UI_SYSTEM_NAME_COLOR,
+        outline: background_dn,
+        shadow: background,
+        x_align: "left",
+        z: 1})
+    
+    // Badges
+    for badge at i in system.badge_array:
+        draw_sprite({sprite: badge, pos: xy(UI_CONTROL_PANEL_WIDTH - 10 (i + 1) - 2, UI_SYSTEM_NAME_Y - 2)})
+                        
+    // Energy slots
+    let first_in_row = true
+    for constraint at i in constraint_array:
+        first_in_row = draw_slot(constraint, i, first_in_row, UI_SLOT_Y, system, selected_die_value, place_die_callback, background, background_up, background_dn)
+        
+    // Compute total power        
+    let total = 0
+    for die in die_array:
+        if die:
+            total = apply_operator(operator, total, die.value_array[die.result_index])
+    
+    // Even with negative modifiers, never let power go below zero                
+    total = max(total, 0)
+    const active = (total > 0) and (not require_full or last_value(die_array) ≠ ∅)
+    system.power = if active then total else 0
+
+    
+    if size(constraint_array) > 0:
+    
+        // Draw the wiring
+        const operator_pos = xy((¾ + SYSTEM_MAX_SLOTS) * (SLOT_SIZE.x + UI_SLOT_SPACING) + UI_SLOT_INDENT, UI_SLOT_Y)
+        const total_box_pos = xy((1.5 + SYSTEM_MAX_SLOTS) * (SLOT_SIZE.x + UI_SLOT_SPACING) + UI_SLOT_INDENT, UI_SLOT_Y)
+    
+        // The operator in a disk 
+        const operator_color = if active then UI_ACTIVE_WIRE_COLOR else UI_WIRE_COLOR
+    
+        draw_disk(operator_pos, ½ SLOT_SIZE.x, ∅, operator_color)
+        draw_text({
+            font: constraint_font,
+            text: operator,
+            pos: operator_pos,
+            color: operator_color})
+        
+        // Wire from operator to total box
+        draw_line(operator_pos + xy(½ SLOT_SIZE.x, 0), total_box_pos - xy(½ SLOT_SIZE.x, 0), operator_color)
+              
+        // Wires      
+        local:
+            // Long horizontal wire from slots to operator
+            const line_start = xy(½ (SLOT_SIZE.x + UI_SLOT_SPACING) + UI_SLOT_INDENT, UI_SLOT_Y + ½ SLOT_SIZE.y + UI_WIRE_HEIGHT)
+            const line_end = xy(operator_pos.x, line_start.y)
+            const charge_wire_color = if die_array[0] then UI_ACTIVE_WIRE_COLOR else UI_WIRE_COLOR
+            // Connect first slot to operator
+            draw_line(line_start, line_end, charge_wire_color)
+            // Connect horizontal wire up to operator
+            draw_line(line_end, operator_pos + xy(0, ½ SLOT_SIZE.y), charge_wire_color)
+        
+        const background_color = if active then UI_ACTIVE_BACKGROUND_COLOR else ∅
+        const color = if active then UI_ACTIVE_COLOR else UI_INACTIVE_COLOR
+        const outline = if active then UI_ACTIVE_OUTLINE_COLOR else ∅
+        
+        if require_full:
+            // Checkbox
+            const active_box_pos = operator_pos - 5/8 xy(SLOT_SIZE.x + UI_SLOT_SPACING, 0)
+            const active_box_size = xy(9, 9)
+            draw_rect(active_box_pos, active_box_size, background_color, if active then UI_ACTIVE_WIRE_COLOR else UI_WIRE_COLOR)
+            draw_text({
+                font: constraint_font, 
+                text: "✓",
+                pos: active_box_pos + xy(0, 1),
+                color: color,
+                outline: outline})
+    
+            const wire_color = if active then UI_ACTIVE_WIRE_COLOR else UI_WIRE_COLOR
+            // Wire from last slot to checkbox
+            draw_line(xy(UI_SLOT_INDENT + (size(constraint_array) - ½) * (SLOT_SIZE.x + UI_SLOT_SPACING), active_box_pos.y), active_box_pos - xy(½ active_box_size.x, 0), wire_color)
+            // Wire from checkbox to operator
+            draw_line(active_box_pos + xy(½ active_box_size.x, 0), operator_pos - xy(½ SLOT_SIZE.x, 0), wire_color)
+            
+        // The total box        
+        draw_sprite({
+            sprite: slot_outline_sprite,
+            pos: total_box_pos, 
+            override_color: if active then UI_ACTIVE_WIRE_COLOR else UI_WIRE_COLOR})
+
+        if background_color:
+            draw_sprite({
+                sprite: slot_center_sprite,
+                pos: total_box_pos, 
+                override_color: background_color})              
+    
+        // Total value
+        draw_text({
+            font: font,
+            text: total,
+            pos: total_box_pos,
+            color: color,
+            outline: outline})        
+            
+    
+
+/* Returns true if any system in `bay_array` can use any element of `die_array` in the next slot */
+def any_system_can_accept_any_die(bay_array, die_array):
+    for die in die_array:
+        if any_system_can_accept_die(bay_array, die):
+            return true
+    return false
+
+
+
+/* Returns true if any system in `bay_array` can use `new_die` in the next slot */
+def any_system_can_accept_die(bay_array, new_die):
+    for bay in bay_array:
+        if bay.bay_type ≠ "cargo" and bay.bay_type ≠ "blank" and system_can_accept_die(bay, new_die):
+            return true
+    return false
+
+
+
+/* Returns true if `system` can use `new_die` in the next slot */
+def system_can_accept_die(system, new_die):
+    const value = die_value(new_die)
+    
+    for constraint at i in system.constraint_array:
+        if not system.die_array[i]:
+            // i is the next available slot
+            if constraint_satisfied(constraint, die_value(system.die_array[i - 1]), value):
+                // Can place here
+                return true
+    
+    // Hit the end of the slots without finding a legal slot for the new_die
+    return false
+    
+    
+
+def draw_slot(constraint, i, first_in_row, y, system, selected_die_value, place_die_callback, background, background_up, background_dn):
+    const slot_pos = xy((i + ½) * (SLOT_SIZE.x + UI_SLOT_SPACING) + UI_SLOT_INDENT, y)
+    const die = system.die_array[i]
+    let can_place_here = false
+
+    // Empty slots are selectable in PlaceDie mode
+    if first_in_row and (die == ∅) and place_die_callback:
+        first_in_row = false
+        
+        // Potential slot…does it satisfy the constraint, including the previous element?
+        if constraint_satisfied(constraint, die_value(system.die_array[i - 1]), selected_die_value):
+            can_place_here = true
+            
+    cursor_register_target(cursor, slot_pos, SLOT_SIZE, if can_place_here then place_die_callback else ∅, {index: i, system: system, pos: transform_ws_to_ss(slot_pos)}, "disk")
+
+    // Inset shaded die slot
+    const slot_color = if can_place_here then lerp(#BBB, #DDD, oscillate(2 now())) else background_dn
+    draw_sprite({sprite: slot_halo_sprite, override_color: background, pos: slot_pos, z: 0})
+    draw_sprite({sprite: slot_se_sprite, override_color: background_up, pos: slot_pos, z: 1})
+    draw_sprite({sprite: slot_nw_sprite, override_color: background_dn, pos: slot_pos, z: 1})
+    draw_sprite({sprite: slot_center_sprite, override_color: slot_color, pos: slot_pos, z: 1})
+    draw_sprite({sprite: slot_outline_sprite, override_color: if die then UI_ACTIVE_WIRE_COLOR else UI_WIRE_COLOR, pos: slot_pos, z: 1})
+    
+    if constraint ≠ "none":
+        // Relational constraints are single-character strings
+        const is_relational = (type(constraint) == "string") and (size(constraint) == 1)
+    
+        const offset = if is_relational then -½ (SLOT_SIZE.x + UI_SLOT_SPACING) else 0
+        
+        if type(constraint) == "number":
+            draw_sprite({
+                sprite: pip_sprite[0][constraint - 1], 
+                pos: slot_pos + xy(0, 1),
+                override_color: UI_WIRE_COLOR,
+                z: 1})
+        else:
+            draw_text({
+                font: constraint_font, 
+                text: constraint,
+                pos:  slot_pos + xy(offset, 1),
+                color: UI_WIRE_COLOR,
+                z: 1})
+                
+    // Short vertical wire from slot
+    const wire_start = slot_pos + xy(0, ½ SLOT_SIZE.x)
+    draw_line(wire_start, wire_start + xy(0, UI_WIRE_HEIGHT - 1), if die then UI_ACTIVE_WIRE_COLOR else UI_WIRE_COLOR, 2)
+
+    return first_in_row
+
+
+
+/* Returns `true` if `constraint` is satisfied between `prev_value` 
+   (which may be ∅ for the first value) and `value` */
+def constraint_satisfied(constraint, prev_value, value):
+    if constraint == "none":
+        return true
+    else if constraint == "even":
+        return (value mod 2) == 0
+    else if constraint == "odd":
+        return (value mod 2) == 1
+    else if constraint == "≤":
+        return prev_value ≤ value
+    else if constraint == "≥":
+        return prev_value ≥ value  
+    else if constraint == "<":
+        return prev_value < value
+    else if constraint == ">":
+        return prev_value > value
+    else if constraint == "=":
+        return prev_value == value     
+    else if constraint == "≠":
+        return prev_value ≠ value
+    else if type(constraint) == "number":
+        return value == constraint
+    else:
+        assert(false, "Illegal constraint: '" + constraint + "'")
+        return false    
+    
+    
+/* Update the total system power based on the operator and the value */
+def apply_operator(operator, total, value):
+    assert(value > 0)
+    
+    if operator == "+" or operator == "=":
+        total += value
+    else if operator == "1":
+        total = 1
+    else if operator == "#":
+        ++total
+    else if operator == "max":
+        total = max(total, value)
+    else if operator == "min":
+        if total == 0:
+            total = value
+        else:
+            total = min(total, value)
+    else if operator == "2×":
+        total = 2 value
+    else if operator == "3×":
+        total = 3 value
+    else if operator == "x²": 
+        total = value²
+        
+    return total
+    
+
+

@@ -1,0 +1,34 @@
+def dodge_activate(dodge, advance_to_next_bay):
+    todo("Animate/sound for dodge stat change")
+    player_ship.dodge_power = dodge.power
+    delay(advance_to_next_bay, 60)
+    
+
+def dodge_draw(ship):
+    const DODGE_COLOR = rgb(GRID_COLOR)
+    
+    const center = ship.pos + ship.offset
+    for d < ship.dodge_power:
+        const Δd = ship.dodge_power - d
+        
+        // Blink fractional values during engine_activate() animation
+        const color = if Δd < 1 then lerp(#FFF, #000, oscillate(mode_frames / 10)) else DODGE_COLOR
+        
+        for i < 2:
+            // Direction of chevron
+            const sgn = 2 i - 1
+            
+            const args = {
+                sprite: shapes.barb.rotated_90,
+                pos: center + angle_to_xy(ship.angle + 90° sgn) * (57% + 11% d) ship.size.x,
+                angle: ship.angle,
+                scale: xy(80%, 30% sgn),
+                override_color: color,
+                z: ship.z + 1}
+            draw_sprite(args)
+
+            // Drop shadow
+            args.pos += xy(0, 1)
+            args.override_color = #000
+            args.z -= 0.5
+            draw_sprite(args)

@@ -1,0 +1,479 @@
+{
+    "title": "Asteroller",
+    "developer": "Casual Effects & Steinbach",
+    "copyright": "©2025 Morgan McGuire",
+    "license": "Open source under the MIT license https://opensource.org/licenses/MIT",
+    "packages": [],
+    "scripts": [
+        "quad://scripts/dice_lib.pyxl",
+        "quad://scripts/mat3x3_lib.pyxl",
+        "quad://scripts/cursor_lib.pyxl",
+        "grid_hex.pyxl",
+        "cargo.pyxl",
+        "system.pyxl",
+        "engine.pyxl",
+        "sensor.pyxl",
+        "weapon.pyxl",
+        "dodge.pyxl",
+        "shield.pyxl",
+        "control_panel.pyxl",
+        "asteroid.pyxl",
+        "ship.pyxl",
+        "universe.pyxl",
+        "starfield.pyxl",
+        "explosion.pyxl"
+    ],
+    "modes": [
+        "SimulatePlayer",
+        "PlaceDice",
+        "RollDice",
+        "SimulateUniverse",
+        "Event",
+        "Title"
+    ],
+    "start_mode": "Title",
+    "docs": [
+        {
+            "name": "design",
+            "url": "design.md.html"
+        }
+    ],
+    "assets": {
+        "font": "quad://fonts/weaver-10.font.json",
+        "dice_dice_sound": "quad://sounds/hit-10.sound.json",
+        "dice_wall_sound": "quad://sounds/hit-06.sound.json",
+        "dice_table_sound": "quad://sounds/hit-11.sound.json",
+        "shapes": "quad://sprites/shapes-32x32.sprite.json",
+        "blip_sound": "quad://sounds/blip-04.sound.json",
+        "space_sprite": "space.sprite.json",
+        "small_font": "quad://fonts/weaver-7.font.json",
+        "pip_sprite": "pip.sprite.json",
+        "select_die_sound": "quad://sounds/jump-08.sound.json",
+        "place_die_sound": "quad://sounds/blip-11.sound.json",
+        "constraint_font": "quad://fonts/novarese-narrow-7.font.json",
+        "part_icon_sprite": "part_icon.sprite.json",
+        "fog_sprite": "fog.sprite.json",
+        "sensor_sound": "quad://sounds/wild-00.sound.json",
+        "background_sprite": "background.sprite.json",
+        "system_greeble_sprite": "system_greeble.sprite.json",
+        "tray_gate_sprite": "tray_gate.sprite.json",
+        "slot_outline_sprite": "slot_outline.sprite.json",
+        "slot_center_sprite": "slot_center.sprite.json",
+        "slot_se_sprite": "slot_se.sprite.json",
+        "slot_nw_sprite": "slot_nw.sprite.json",
+        "slot_halo_sprite": "slot_halo.sprite.json",
+        "cargo_short_sprite": "cargo_short.sprite.json",
+        "cargo_long_sprite": "cargo_long.sprite.json",
+        "spaceship128_sprite": "quad://sprites/spaceship128.sprite.json",
+        "spaceship64_sprite": "quad://sprites/spaceship64.sprite.json",
+        "spaceship32_sprite": "quad://sprites/spaceship32.sprite.json",
+        "title_sprite": "title.sprite.json",
+        "large_font": "quad://fonts/octant-17.font.json",
+        "badge_sprite": "badge.sprite.json",
+        "asteroid_sprite": "asteroid.sprite.json",
+        "explosion_sprite": "quad://sprites/explosion-realistic-128x128.sprite.json",
+        "plume_sprite": "plume.sprite.json",
+        "laser_sprite": "laser.sprite.json"
+    },
+    "version": 0,
+    "min_players": 1,
+    "max_players": 1,
+    "cooperative": false,
+    "competitive": false,
+    "achievements": false,
+    "highscores": false,
+    "dual_dpad": false,
+    "midi_sysex": false,
+    "description": "A dice rolling space journey",
+    "constants": {
+        "GRID_COLOR": {
+            "type": "rgba",
+            "value": {
+                "r": {
+                    "type": "number",
+                    "value": "28%"
+                },
+                "g": {
+                    "type": "number",
+                    "value": "78%"
+                },
+                "b": {
+                    "type": "number",
+                    "value": "100%"
+                },
+                "a": {
+                    "type": "number",
+                    "value": "57%"
+                }
+            }
+        },
+        "DIE_RADIUS": {
+            "type": "number",
+            "value": "10",
+            "min": 1,
+            "max": 20,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_SYSTEM_NAME_COLOR": {
+            "type": "rgb",
+            "value": {
+                "r": {
+                    "type": "number",
+                    "value": "100%"
+                },
+                "g": {
+                    "type": "number",
+                    "value": "100%"
+                },
+                "b": {
+                    "type": "number",
+                    "value": "100%"
+                }
+            }
+        },
+        "UI_SLOT_SPACING": {
+            "type": "number",
+            "value": "11",
+            "min": 0,
+            "max": 25,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_INACTIVE_COLOR": {
+            "type": "rgb",
+            "value": {
+                "r": {
+                    "type": "number",
+                    "value": "35%"
+                },
+                "g": {
+                    "type": "number",
+                    "value": "35%"
+                },
+                "b": {
+                    "type": "number",
+                    "value": "35%"
+                }
+            }
+        },
+        "UI_SLOT_INDENT": {
+            "type": "number",
+            "value": "34",
+            "description": "Pixel indent on the left-most slot",
+            "min": 0,
+            "max": 100,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_ACTIVE_COLOR": {
+            "type": "rgb",
+            "value": {
+                "r": {
+                    "type": "number",
+                    "value": "100%"
+                },
+                "g": {
+                    "type": "number",
+                    "value": "100%"
+                },
+                "b": {
+                    "type": "number",
+                    "value": "100%"
+                }
+            }
+        },
+        "UI_ACTIVE_OUTLINE_COLOR": {
+            "type": "rgb",
+            "value": {
+                "r": {
+                    "type": "number",
+                    "value": "33%"
+                },
+                "g": {
+                    "type": "number",
+                    "value": "88%"
+                },
+                "b": {
+                    "type": "number",
+                    "value": "59%"
+                }
+            }
+        },
+        "UI_ACTIVE_BACKGROUND_COLOR": {
+            "type": "rgb",
+            "value": {
+                "r": {
+                    "type": "number",
+                    "value": "27%"
+                },
+                "g": {
+                    "type": "number",
+                    "value": "82%"
+                },
+                "b": {
+                    "type": "number",
+                    "value": "61%"
+                }
+            }
+        },
+        "UI_CONTROL_PANEL_WIDTH": {
+            "type": "number",
+            "value": "203",
+            "min": 50,
+            "max": 360,
+            "format": "0",
+            "quantum": 1
+        },
+        "SYSTEM_MAX_SLOTS": {
+            "type": "number",
+            "value": "4",
+            "min": 2,
+            "max": 10,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_ACTIVE_WIRE_COLOR": {
+            "type": "rgb",
+            "value": {
+                "r": {
+                    "type": "number",
+                    "value": "53%"
+                },
+                "g": {
+                    "type": "number",
+                    "value": "100%"
+                },
+                "b": {
+                    "type": "number",
+                    "value": "67%"
+                }
+            }
+        },
+        "UI_WIRE_HEIGHT": {
+            "type": "number",
+            "value": "3",
+            "min": 0,
+            "max": 20,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_WIRE_COLOR": {
+            "type": "rgb",
+            "value": {
+                "r": {
+                    "type": "number",
+                    "value": "30%"
+                },
+                "g": {
+                    "type": "number",
+                    "value": "30%"
+                },
+                "b": {
+                    "type": "number",
+                    "value": "30%"
+                }
+            }
+        },
+        "UI_ROLL_BUTTON_WIDTH": {
+            "type": "number",
+            "value": "24",
+            "min": 5,
+            "max": 100,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_DICE_TRAY_HEIGHT": {
+            "type": "number",
+            "value": "80",
+            "min": 10,
+            "max": 200,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_NUM_SYSTEMS": {
+            "type": "number",
+            "value": "7",
+            "min": 1,
+            "max": 10,
+            "format": "0",
+            "quantum": 1,
+            "description": "Manually hard-coded based on the graphical layout, depends on UI_DICE_TRAY_HEIGHT and the other UI_SLOT sizes as well as code."
+        },
+        "CARGO_HOLD_CAPACITY": {
+            "type": "number",
+            "value": "16",
+            "min": 1,
+            "max": 50,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_BAY_HEIGHT": {
+            "type": "number",
+            "value": "40",
+            "min": 10,
+            "max": 50,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_SLOT_Y": {
+            "type": "number",
+            "value": "22",
+            "min": 0,
+            "max": 64,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_SYSTEM_NAME_Y": {
+            "type": "number",
+            "value": "9",
+            "min": 0,
+            "max": 10,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_CARGO_WIDTH": {
+            "type": "number",
+            "value": "28",
+            "min": 0,
+            "max": 64,
+            "format": "0",
+            "quantum": 1
+        },
+        "UI_CARGO_INSET": {
+            "type": "number",
+            "value": "16",
+            "min": 0,
+            "max": 64,
+            "format": "0",
+            "quantum": 1
+        },
+        "CARGO_PER_BAY": {
+            "type": "number",
+            "value": "7",
+            "min": 1,
+            "max": 10,
+            "format": "0",
+            "quantum": 1
+        },
+        "GRID_HEX_WIDTH": {
+            "type": "number",
+            "value": "96",
+            "min": 0,
+            "max": 96,
+            "format": "0",
+            "quantum": 1
+        },
+        "Z_SHIP": {
+            "type": "number",
+            "value": "25.0",
+            "min": -10,
+            "max": 120,
+            "format": "0.0",
+            "quantum": 0.5
+        },
+        "Z_FOG": {
+            "type": "number",
+            "value": "50.0",
+            "min": -10,
+            "max": 120,
+            "format": "0.0",
+            "quantum": 0.5
+        },
+        "Z_GRID": {
+            "type": "number",
+            "value": "10.0",
+            "min": -10,
+            "max": 120,
+            "format": "0.0",
+            "quantum": 0.5
+        },
+        "FOG_OPACITY": {
+            "type": "number",
+            "value": "58%",
+            "min": 0,
+            "max": 1,
+            "format": "0%",
+            "quantum": 0.01
+        },
+        "BAY_TYPE_ARRAY": {
+            "type": "array",
+            "value": [
+                {
+                    "type": "string",
+                    "value": "shield"
+                },
+                {
+                    "type": "string",
+                    "value": "dodge"
+                },
+                {
+                    "type": "string",
+                    "value": "weapon"
+                },
+                {
+                    "type": "string",
+                    "value": "engine"
+                },
+                {
+                    "type": "string",
+                    "value": "weapon"
+                },
+                {
+                    "type": "string",
+                    "value": "reserve"
+                },
+                {
+                    "type": "string",
+                    "value": "sensor"
+                }
+            ],
+            "description": "Maps bay indices to system types in order. Non-unique mapping because weapons can be in two places strategically."
+        },
+        "DEBUG": {
+            "type": "boolean",
+            "value": false,
+            "description": "Set to true when debugging to generate a mid-level ship instead of the entry level oen"
+        },
+        "UI_BAY_WIDTH": {
+            "type": "reference",
+            "value": "UI_CONTROL_PANEL_WIDTH"
+        },
+        "DEBUG_GRID_SNAP": {
+            "type": "boolean",
+            "value": false
+        },
+        "DEBUG_MOVE": {
+            "type": "boolean",
+            "value": false,
+            "description": "Set to true when debugging movement to trigger immediate engine activation"
+        },
+        "ANIMATION_HALF_HEX_MOVE_FRAMES": {
+            "type": "number",
+            "value": "45",
+            "description": "Number of frames for a ship to fly half a hex width",
+            "min": 0,
+            "max": 360,
+            "format": "0",
+            "quantum": 1
+        },
+        "DEBUG_WEAPON": {
+            "type": "boolean",
+            "value": false
+        },
+        "LASER_SPEED": {
+            "type": "number",
+            "value": "3.0",
+            "description": "In pixels/frame",
+            "min": 1,
+            "max": 100,
+            "format": "0.0",
+            "quantum": 0.5
+        }
+    },
+    "screenshot_tag": "Asteroller",
+    "screen_size": {
+        "x": 640,
+        "y": 360
+    }
+}

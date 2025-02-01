@@ -1,0 +1,58 @@
+/* Implementation of Cargo Bays and Cargo */
+
+/* Maps cargo names to properties */
+const CARGO_TABLE = {
+    scrap:  {sprite: cargo_long_sprite[0][1]},
+    jalite: {sprite: cargo_short_sprite[1][0]},
+    kroson: {sprite: cargo_long_sprite[0][0]},
+    lyrium: {sprite: cargo_short_sprite[0][0]}}
+    // moline
+
+
+// Compute the width of each type of cargo from its sprite    
+for value in CARGO_TABLE:
+    value.num_slots = ⌈value.sprite.size.x / UI_CARGO_WIDTH⌉
+
+
+
+def make_cargo_bay(cargo_array default []):
+    return {
+        name: "Cargo Bay",
+        bay_type: "cargo",
+        cargo_array: clone(cargo_array)}
+
+
+
+def cargo_bay_draw(cargo_bay, y)
+& preserving_transform:
+    set_transform(xy(0, y))
+
+    // Allow cursor traversal to trigger help    
+    cursor_register_target(cursor, ½ xy(UI_BAY_WIDTH, UI_BAY_HEIGHT), xy(UI_BAY_WIDTH, UI_BAY_HEIGHT), ∅, ∅, "rect", ∅)
+
+    // Visualize cargo slots
+    for i < CARGO_PER_BAY:
+        draw_rect(xy(UI_CARGO_WIDTH * i + UI_CARGO_INSET, 21), xy(2, 1), #3)
+        draw_rect(xy(UI_CARGO_WIDTH * i + UI_CARGO_INSET, 20), xy(2, 2), #6)
+    
+    for cargo_type at i in cargo_bay.cargo_array:
+        if cargo_type:
+            const cargo = CARGO_TABLE[cargo_type]
+            const pos = xy(UI_CARGO_WIDTH * (i + ½ (cargo.num_slots - 1)) + UI_CARGO_INSET, ½ UI_BAY_HEIGHT)
+            
+            draw_sprite({
+                sprite: cargo.sprite, 
+                pos: pos + xy(6, 3), 
+                override_color: #000,
+                opacity: 25%,
+                z: -1})
+                
+            draw_sprite({
+                sprite: cargo.sprite, 
+                pos: pos + xy(3, 1), 
+                override_color: #000,
+                opacity: 20%,
+                z: -1})
+                
+            draw_sprite(cargo.sprite, pos)
+                

@@ -1,0 +1,16 @@
+def sensor_activate(sensor, advance_to_next_bay):
+    const start = player_ship.sensor_power
+    const end = sensor.power
+    const ANIMATE_FRAMES = 60 |start - end|
+    
+    def change(frames_left, total_frames):
+        player_ship.sensor_power = lerp(start, end, smoothstep(total_frames, 0, frames_left))
+
+    def snap():
+        player_ship.sensor_power = end
+        
+    sequence(
+        60, 
+        {callback: change, frames: ANIMATE_FRAMES, end_callback: snap},
+        30,
+        advance_to_next_bay)

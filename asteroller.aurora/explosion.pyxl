@@ -1,0 +1,37 @@
+/* Create explosions for `cosmetic_array`. */
+
+const EXPLODE_FRAMES = size(explosion_sprite) * size(explosion_sprite[0])
+
+
+/* Installs a `n` new explosions within the specified region (e.g., a ship) */
+def explode(region, n default 1):
+    // Random z-offsets keep explosion ordering stable (although iteration order is already stable)
+    for i < n:
+        push(cosmetic_array, make_explosion(random_within_region(region), (region.z default SHIP_Z) + random(0.1, 0.2), if i == 0 then 0 else ∅))
+
+
+
+/* Used by `explode()`. Make a new explosion at `pos`. Each explosion has a random phase offset
+   so that multiple ones created simultaneously are not in lockstep. */
+def make_explosion(pos, z default Z_SHIP + 1, initial_frame default random_integer(-10, 7)):
+    todo("Sound")
+    return {
+        pos: xy(pos),
+        frame: initial_frame,
+        scale: random(70%, 120%)²,
+        angle: random(0, 360°),
+        z: z,
+        update: explosion_update}
+
+
+
+/* The callback used by `explosion.update`. Returns `iterate` values. */
+def explosion_update(explosion):
+    if explosion.frame ≥ 0:
+        draw_sprite({
+            sprite: explosion_sprite[explosion.frame mod size(explosion_sprite)][⌊explosion.frame / size(explosion_sprite)⌋],
+            …explosion})
+        
+    ++explosion.frame
+    if explosion.frame ≥ EXPLODE_FRAMES:
+        return iterate.REMOVE

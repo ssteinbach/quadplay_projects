@@ -1,0 +1,19 @@
+RollDice
+════════════════════════════════════════════════════════════════════════
+
+
+enter
+────────────────────────────────────────────────────────────────────────
+
+dice_prepare_roll(control_panel.reactor.dice, true, universe_rng)    
+control_panel.reactor.rolls_left -= 1
+
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+if dice_roll_time(control_panel.reactor.dice) ≤ 0:
+    pop_mode() because "Roll complete"
+
+universe_update()
+control_panel_update()

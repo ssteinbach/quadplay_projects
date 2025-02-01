@@ -1,0 +1,82 @@
+Title
+════════════════════════════════════════════════════════════════════════
+
+const choice_array = [
+    "PLAY",
+    "HELP",
+    "QUIT"]
+    
+let choice_index = 0
+    
+
+def select(i):
+    choice_index = i
+    
+    
+
+def set_initial_ship():
+    let bay_array
+    if DEBUG:
+        bay_array = [
+            make_system("Quantum Shields", "shield", shield_activate, part_icon_sprite[1][1], make_array(2, 3), "#", ∅, [badge_sprite.die, badge_sprite.good_die, badge_sprite.charge]),
+            make_system("Dihedral Thrusters", "dodge", dodge_activate, part_icon_sprite[5][1], ["none", "="], "1", true, [badge_sprite.die, badge_sprite.die]),
+            make_system("Basic Torpedoes", "weapon", weapon_activate, part_icon_sprite[0][0], 1, "2×", ∅, [badge_sprite.good_die, badge_sprite.charge]),
+            make_system("Tachyon engine", "engine", engine_activate, part_icon_sprite[9][0], 3, "min", true, [badge_sprite.charge, badge_sprite.die]),
+            make_cargo_bay(["kroson", ∅, "kroson", ∅, "jalite", "lyrium", "lyrium"]),
+            make_cargo_bay(["scrap", ∅, "jalite"]),
+            make_system("Neural Sensors", "sensor", sensor_activate, part_icon_sprite[8][2], ["none", "≥"], "+", ∅, [badge_sprite.bad_die, badge_sprite.charge, badge_sprite.die]),
+        ]
+    else:
+        bay_array = [
+            make_system("Gamma Adapter", "blank", ∅, part_icon_sprite[0][2], 0, ∅, ∅, [badge_sprite.charge]),
+            make_system("Burst Conditioner", "blank", ∅, part_icon_sprite[0][2], 0, ∅, ∅, [badge_sprite.charge]),
+            make_system("Power Filter", "blank", ∅, part_icon_sprite[0][2], 0, ∅, ∅, [badge_sprite.die]),
+            make_system("Impulse Engine", "engine", engine_activate, part_icon_sprite[9][0], 1),
+            make_cargo_bay(),
+            make_system("Electron Pump", "blank", ∅, part_icon_sprite[0][2], 0, ∅, ∅, [badge_sprite.die]),
+            make_system("Radar Dish", "sensor", sensor_activate, part_icon_sprite[8][2], ["none", 1, 1], "+", ∅, [badge_sprite.die]),
+        ]
+    
+    for bay at b in bay_array:
+        control_panel_replace_bay(control_panel, b, bay)
+
+
+
+enter
+────────────────────────────────────────────────────────────────────────
+set_background(title_sprite)
+choice_index = 0
+cursor.pos = xy(0, 0)
+
+
+frame
+────────────────────────────────────────────────────────────────────────
+
+for choice at c in choice_array:
+    const bounds = draw_text({
+        font: large_font,
+        text: choice,
+        pos: xy(40, 50 + 32 c),
+        color: if c == choice_index then #FC2 else #fff,
+        outline: #000,
+        shadow: #000,
+        x_align: "left"})
+        
+    cursor_register_target(cursor, bounds.pos + xy(0, 2), xy(128, 32), ∅, c, ∅, select)
+        
+cursor_update(cursor)
+
+if any_button_press() or DEBUG:
+    const choice = choice_array[choice_index]
+    if choice == "PLAY" or DEBUG:
+        set_initial_ship()
+        set_mode(PlaceDice) because "Start"
+    else if choice == "HELP":
+        todo("Help")
+    else if choice == "QUIT":
+        quit_game()
+
+leave
+────────────────────────────────────────────────────────────────────────
+set_background(#000)
+

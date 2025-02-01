@@ -1,0 +1,64 @@
+
+def spawn_laser(pos, vel, frames):
+    return push(cosmetic_array, make_entity({
+        sprite: laser_sprite[0][0],
+        pos: xy(pos),
+        vel: xy(vel),
+        z: Z_SHIP - 0.1,
+        angle: xy_to_angle(vel),
+        frames: frames,
+        update: laser_update}))
+
+
+
+def laser_update(laser):
+    laser.pos += laser.vel
+    draw_entity(laser)
+    --laser.frames
+    
+    if laser.frames < 0:
+        explode(laser, 1)
+        return iterate.REMOVE
+    
+    
+
+def weapon_activate(weapon, advance_to_next_bay):
+    // Pause before
+    const animation = [60]
+    
+    todo("Sort the hazards by distance")
+    
+    // Fire sequentially at everything in sensor range
+    for hazard in hazard_array:
+        const distance = XY_DISTANCE(hazard.pos, player_ship.pos)
+        if player_ship.sensor_power * GRID_HEX_WIDTH * 1.05 ≥ distance:
+            
+            const frames = ⌈distance / LASER_SPEED⌉
+            
+            // Schedule an attack on this object
+            def spawn_projectiles():
+                // Offset access for multiple shots
+                const axis = perp(direction(hazard.pos - player_ship.pos))
+                
+                for i < weapon.power:
+                    const k = if weapon.power == 1 then 0 else (i / (weapon.power - 1) - ½)
+                    const dir = direction(hazard.pos + k * axis * 50% GRID_HEX_WIDTH - player_ship.pos)
+                    todo("Sound")
+                    spawn_laser(
+                        player_ship.pos - 10 |k| * dir,
+                        LASER_SPEED * dir,
+                        frames)
+            
+            def damage_hazard():
+                // Blow up the hazard
+                hazard.take_damage(hazard, weapon.power)
+            
+            push(animation, {
+                    begin_callback: spawn_projectiles,
+                    frames: frames, // wait for the hit
+                    end_callback: damage_hazard}, 
+                60) // wait between shots
+            
+            
+    // Submit the animation
+    sequence(…animation, advance_to_next_bay)

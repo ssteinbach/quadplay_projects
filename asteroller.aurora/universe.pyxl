@@ -1,0 +1,134 @@
+/* The 2D play space.
+
+Everything is stored in world-space pixels. The grid is implemented
+by snapping movement at the end of turns.
+*/
+
+/* Viewport region for looking at the universe */
+const view_rect = {
+    corner: xy(UI_CONTROL_PANEL_WIDTH, 0),
+    size: xy(SCREEN_SIZE.x - UI_CONTROL_PANEL_WIDTH, SCREEN_SIZE.y)}
+
+
+/* For the universe. Objects that exist in the world but cannot be interacted with,
+   such as explosions. The control panel has its own cosmetics */
+const cosmetic_array = []
+
+const hazard_array = []
+
+if DEBUG:
+    push(hazard_array,
+        make_asteroid_field(to_pixels(st(2, 0))),
+        make_asteroid_field(to_pixels(st(3, 0))),
+        make_asteroid_field(to_pixels(st(2, -1))),
+        make_asteroid_field(to_pixels(st(1, -1))),
+        make_entity({
+            hazard_type: "ship",
+            name: "enemy00",
+            pos: to_pixels(st(1, 2)),
+            shape: "disk",
+            angle: 120°,
+            evasion: 0,
+            tilt: 0°,
+            sprite: spaceship64_sprite[0][1],
+            shield_power: 1,
+            sensor_power: 7,
+            dodge_power: 0,
+            update: ship_draw,
+            take_damage: enemy_ship_take_damage,
+            z: Z_SHIP,
+            id: 1}))
+
+
+let camera = {
+    pos: xy(player_ship.pos),
+    zoom: 125%}
+
+
+/* Draws everything in the view_rect and updates the animation state of objects. */
+def universe_update()
+& preserving_transform:
+    
+    // Choose zoom based on sensor range.
+    // Note that the range may not be an integer during
+    // the simulation phase.
+    const sensor_range = 105% player_ship.sensor_power
+    camera.zoom = clamp(½ min(view_rect.size.y, view_rect.size.x) / (sensor_range * GRID_HEX_WIDTH), 50%, 200%)
+    camera.pos = player_ship.pos
+    
+    // Put the origin in the middle of the screen
+    set_transform(½ view_rect.size + view_rect.corner)
+    
+    //camera.pos = player_ship.pos + xy(½ CELL_SIZE.x * sensor_range, 0)
+    // Use the ship camera
+    set_camera(camera)
+            
+    set_clip(view_rect)
+    draw_grid()
+        
+    // Sensor fog of war
+    const SENSOR_PERIOD = 4
+
+    // Fog        
+    let d = pow(loop(game_frames / 60, 0, SENSOR_PERIOD), 0.9)
+    const pulse = loop(game_frames / 60 + 2.8, 0, SENSOR_PERIOD) / SENSOR_PERIOD
+    const fog_scale = (1.1 - 0.1 pulse) * 2 * xy(1, 1) / camera.zoom
+    
+    fog_scale.y = fog_scale.x * view_rect.size.y / view_rect.size.x
+    const fog_ss_size = fog_scale * fog_sprite[0][0].size * camera.zoom
+
+    draw_sprite({
+        sprite: fog_sprite[0][0], 
+        pos: camera.pos, 
+        scale: fog_scale,
+        opacity: FOG_OPACITY,
+        z: Z_FOG})
+    
+    // Sensor visualization pulse
+    if game_frames mod (60 SENSOR_PERIOD) == 0:
+        play_sound({sound: sensor_sound, volume: 5%, speed: 75%, pitch: 75%})
+
+    // Make approx linear velocity for the sensor pulse
+    for i < 3:
+        draw_disk(player_ship.pos, d * sensor_range * GRID_HEX_WIDTH, ∅, 
+            GRID_COLOR * rgba(1, 1, 1,clamp(1.7 - d, 0%, 100%)³), Z_FOG)
+        d *= 90%
+        
+    intersect_clip({
+        corner: view_rect.corner + ½ (view_rect.size - fog_ss_size),
+        size: fog_ss_size})
+
+    starfield_update(starfield)
+    
+    // Background
+    draw_sprite({
+        sprite: space_sprite[0][0], 
+        pos: xy(½ space_sprite[0][0].size.x - 6 GRID_HEX_WIDTH - game_frames / 8, 0),
+        z: -128})    
+    
+    ship_draw(player_ship)
+    
+    iterate(cosmetic_array, "update")
+    
+    for hazard in hazard_array:
+        hazard.update(hazard)
+    
+    reset_camera()
+    
+    
+
+/* Returns the enemy or hazard of the hex that contains pixel `pos`, or ∅ if empty. */
+def hex_contents(pos):
+    pos = snap_to_grid_hex_center(pos)
+    
+    // Iterate through enemies
+    for obj in hazard_array:
+        if XY_DISTANCE(snap_to_grid_hex_center(obj.pos), pos) < ε:
+            return obj
+
+
+
+/* Returns `true` if the hex containing `pos` is empty of hazards and enemies and
+   `false` otherwise */
+def hex_empty(pos):
+    return not hex_contents(pos)

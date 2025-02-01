@@ -1,0 +1,5 @@
+{
+    "url": "asteroid.png",
+    "license": "https://opengameart.org/content/12-pixel-art-asteroids",
+    "sprite_size": {"x": 64, "y":64}
+}

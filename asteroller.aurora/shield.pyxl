@@ -1,0 +1,12 @@
+def shield_activate(shield, advance_to_next_bay):
+    todo("Animate/sound for shield changing")
+    player_ship.shield_power = shield.power
+    delay(advance_to_next_bay, 60)
+    
+    
+
+def shield_draw(ship):    
+    const center = ship.pos + ship.offset
+    
+    for s < ship.shield_power:
+        draw_disk(center, ship.size.x * (9% s + 76%), ∅, #FF0, ship.z)

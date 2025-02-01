@@ -1,0 +1,128 @@
+/* Helper for engine_activate callbacks */
+def interp(frames_left, total_frames, data):
+    const α = linstep(total_frames, 0, frames_left)
+    if data.ease_in:  
+        return α²
+    else if data.ease_out:
+        return sqrt(α)
+    else: 
+        return α
+        
+        
+        
+def engine_activate(engine, advance_to_next_bay):
+    const initial_pos = xy(player_ship.pos)    
+    
+    // Note that index h is of a HALF-move, so each moves only half a hex
+    def move(frames_left, total_frames, data):
+        player_ship.show_plume = true
+        const α = interp(frames_left, total_frames, data)
+        player_ship.pos = initial_pos + xy((data.half_move_index + α) * ½ GRID_HEX_WIDTH, 0)
+
+
+    def dodge(frames_left, total_frames, data):
+        const h = data.half_move_index
+        
+        const α = interp(frames_left, total_frames, data)
+        
+        // Odd half-move starts the dodge, even ends it
+        const β = if h ∩ 1 then α else 1 - α
+
+        // Accomplish the tilt over a ¼-move. Make back-to-back
+        // dodge use different directions
+        const sgn = 2 (((h - 1) bitshr 1) ∩ 1) - 1
+        player_ship.tilt = 45° min(100%, 2 β) * sgn
+
+        // Decrease the dodge power, triggering blinking in the rendering.
+        // There will always be two frames of dodging animation, so decrease
+        // by a net of ½
+        player_ship.dodge_power -= ½ / total_frames
+
+
+    def dodge_move(frames_left, total_frames, data):
+        dodge(frames_left, total_frames, data)
+        move(frames_left, total_frames, data)
+        
+        
+    def snap():
+        if |player_ship.tilt| < 1°: player_ship.tilt = 0
+        player_ship.pos.x = round(player_ship.pos.x, ½ GRID_HEX_WIDTH)
+        player_ship.dodge_power = round(player_ship.dodge_power, ½)
+        player_ship.show_plume = false
+        
+    
+    // Look at the whole flight as a series of HALF HEX moves.
+    // The half hex moves available are:
+    //
+    // - Fly straight (>)
+    // - Fly into collision (ꓘ)
+    // - Tilt towards max mag in some direction (^)
+    // - Tilt back towards zero in the opposite direction (v)
+    //
+    //   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .
+    //  / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \
+    // | *>|^Xv|^Xv|>* |   | *>|> >|>* |   | *>|^Xv|>* |   | *>|ꓘX>|>* |
+    //  \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ /
+    //   '   '   '   '   '   '   '   '   '   '   '   '   '   '   '   '
+    //
+    // This ensures that the tilt is always zero when crossing
+    // a hex edge, to connect moves smoothly.
+
+    // The initial move is always getting to the edge of the hex
+    let path = []
+    let dodges_left = player_ship.dodge_power
+    const animation = [60]
+            
+    // Each iteration adds two half-move animation elements to path
+    let half_move = ∅
+    for 1 ≤ i ≤ engine.power:
+        // Get from the previous hex center to the edge
+        // of hex i. If we were dodging, continue doing so,
+        // otherwise move
+        if half_move ≠ dodge_move: half_move = move
+
+        const ease_in = (i == 1)
+        push(animation, {
+            callback: half_move, 
+            data: {half_move_index: 2 i - 2, ease_in: ease_in}, 
+            end_callback: snap,
+            frames: (if ease_in then 2 else 1) * ANIMATION_HALF_HEX_MOVE_FRAMES})
+                        
+        const obj = hex_contents(initial_pos + xy(i * GRID_HEX_WIDTH, 0))     
+        let end_callback = snap
+        if not obj:
+            // Fly freely
+            half_move = move
+        else if dodges_left:
+            // Dodge the collision
+            --dodges_left
+            half_move = dodge_move
+        else:
+            // Fly into the collision
+            end_callback = ship_make_collide_and_destroy_callback(player_ship, obj, snap)
+            half_move = move
+            
+        const ease_out = (i == engine.power)
+        push(animation, {
+            callback: half_move,
+            end_callback: end_callback,
+            data: {half_move_index: 2 i - 1, ease_out: ease_out}, 
+            frames: (if ease_out then 2 else 1) * ANIMATION_HALF_HEX_MOVE_FRAMES})
+    
+    // If we ended on a dodge_move, add extra animation getting back
+    // to the center…which might be a collision
+    if half_move == dodge_move:
+        let end_callback = snap
+        const obj = hex_contents(initial_pos + xy(engine.power * GRID_HEX_WIDTH, 0))
+        if obj: end_callback = ship_make_collide_and_destroy_callback(player_ship, obj, snap)
+            
+        push(animation, {
+            callback: dodge, 
+            end_callback: end_callback,
+            data: {half_move_index: 2 engine.power}, 
+            frames: ANIMATION_HALF_HEX_MOVE_FRAMES})
+
+
+    // Submit the animation
+    sequence(…animation, 30, advance_to_next_bay)
+

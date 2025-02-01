@@ -1,0 +1,184 @@
+
+let player_ship = make_entity({
+    name: "player",
+    ship_type: "player",
+    sprite: spaceship64_sprite[1][0],
+    shape: "disk",
+    pos: to_pixels(st(0, 0)),
+    shield_power: 2,
+    sensor_power: 2,
+    
+    // If this is fractional, it is rendered blinking
+    // because that is during the dodge animation
+    dodge_power: if DEBUG then 2 else 0,
+    
+    credits: 152,
+    
+    // Used for rendering dodging, a pseudo-3D roll
+    tilt: 0°,
+    
+    // Engine plume
+    show_plume: false,
+    
+    z: Z_SHIP,
+    
+    // Every ship has an id used for stable z-ordering
+    // and individual phase offsets for animations.
+    id: 0})
+
+
+
+def ship_draw(ship)
+& with pos, tilt, sprite, size, z in ship:
+
+    // Stable z ordering
+    z = Z_SHIP + ship.id / 100
+    ship.scale = xy(1, 1)
+
+    // Slow bobbing
+    //const bob = cos(0.5 now() + ship.id)
+    //ship.scale = xy(1, 1) * (100% + 0.1 bob)
+    
+    if ship.tilt:
+        const sy = cos(|tilt|)
+        // Bank sideways
+        ship.offset = 25% GRID_HEX_WIDTH * |tilt| / 45° * angle_to_xy(ship.angle + 90° sign(ship.tilt))
+        
+        // Appear to change angle
+        ship.scale.y *= sy
+        
+        ship.override_color = rgba(if tilt > 0 then #FFF else #000, |ship.tilt| / 340°)
+
+        // Appear to pull up vertically
+        ship.scale *= 100% + 4% |tilt| / 45°
+        z += 10
+    else:
+        ship.override_color = ∅
+        const mag = 3 / get_camera().zoom
+        const bob = cos(0.5 now() + ship.id)
+        ship.offset = xy(0, bob * mag)
+
+    if ship.show_plume:
+        draw_sprite({sprite: plume_sprite, scale: xy(random(50%, 100%), 1), pos: ship.pos + ship.offset - 30 angle_to_xy(ship.angle), angle: ship.angle, z: z - ε})
+        
+    draw_entity_mipmapped(ship, [spaceship128_sprite, spaceship64_sprite, spaceship32_sprite])
+
+    // Pseudo-3D look by drawing offset ships to thicken a bit
+    if tilt ≠ 0:
+        const color = lerp(
+            rgb(sprite.mean_color), 
+            if tilt < 0 then #FFF else #000, 
+            |tilt| / 120°)
+            
+        for 1 ≤ i ≤ 3: 
+            draw_sprite({
+                sprite: sprite,
+                pos: ship.pos + ship.offset + xy(0, i * 0.1 sign(tilt)),
+                z: z - 0.1,
+                angle: ship.angle,
+                override_color: color,
+                scale: ship.scale})
+        
+    shield_draw(ship)
+    dodge_draw(ship)
+
+
+
+            
+/* Returns a callback of no arguments that when invoked will
+   handle `ship` (which must be `player_ship` currently)
+   hitting `obj` that is an `enemy_ship` or `hazard`,
+   guaranteeing the destruction of `obj` so that `ship`
+   can complete its intended move. 
+   
+   If `after_callback` is defined, it is invoked by the
+   returned callback value. */        
+def ship_make_collide_and_destroy_callback(ship, obj, after_callback default ∅):
+    def callback():
+        // Compute total damage caused by hitting obj
+        let damage = 0
+        if obj.hazard_type == "asteroid":
+            damage = 2 size(obj.asteroid_array)
+        else:
+            damage = 2 + obj.shield_power
+        
+        ship_take_damage(ship, damage)
+    
+        if obj.hazard_type == "asteroid":
+            // Make explosions on each asteroid
+            for asteroid in obj.asteroid_array:
+                explode(asteroid, 2)
+        else:
+            explode(obj, damage)
+
+        explode(ship, 3)
+        
+        // Wait a little bit into the explosion to 
+        // destroy obj
+        def destroy_obj():
+            remove_values(hazard_array, obj)
+            
+        delay(destroy_obj, 25)
+        
+        if after_callback: after_callback()
+        
+    return callback
+
+
+
+def ship_take_damage(ship, damage):
+    // Account for shields on ship, reducing damage and
+    // disabling them
+    ship.shield_power -= max(ship.shield_power, damage)
+    
+    // Perform the damage
+    assert(ship.ship_type == "player")
+    
+    todo("Show control panel explosions")
+    const bay = random_value(control_panel.bay_array)
+    if bay.bay_type == "cargo":
+        todo("* Damage cargo")
+    else:
+        todo("* Damage system")
+    
+    
+
+/* Draws `entity.sprite` but uses the pixels from the most
+   appropriate MIP-map to reduce aliasing. Does not implement
+   the `label` or recursive part of `draw_entity()`
+   
+   - `mip_array` must be sorted from largest to smallest sprites. 
+     Does not have to be powers of 2. */
+def draw_entity_mipmapped(entity, mip_array):
+    
+    const pixel_scale = get_camera().zoom * max(entity.scale.x, entity.scale.y)
+    
+    // Find the highest resolution MIP-map that won't alias too badly. 
+    // Positive bias = reduce aliasing, negative bias = reduce blurring
+    const MIP_BIAS = 5%
+    let spritesheet = entity.sprite.base
+    for i < size(mip_array):
+        const mip = mip_array[size(mip_array) - i - 1]
+        if pixel_scale < (100% - MIP_BIAS) * mip.sprite_size.x / entity.sprite.size.x:
+            spritesheet = mip
+     
+    // Draw the sprite
+    const sprite = sprite_transfer_orientation(entity.sprite, spritesheet)
+    draw_sprite({
+        sprite: sprite,
+        scale: entity.scale * entity.sprite.size.x / sprite.size.x,
+        pos: entity.pos + entity.offset,
+        angle: entity.angle,
+        override_color: entity.override_color,
+        override_blend: entity.override_blend,
+        pivot: entity.pivot,
+        z: entity.z})
+
+
+def enemy_ship_take_damage(ship, dmg):
+    dmg -= ship.shield_power
+    
+    if dmg > 0:
+        explode(ship, 4)
+        remove_values(hazard_array, ship)
+    

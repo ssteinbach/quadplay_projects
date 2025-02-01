@@ -1,0 +1,6 @@
+{
+    "url":          "plume.png",
+    "sprite_size":  {"x": 40, "y": 14},
+    "license":      "By Morgan McGuire 2025. In the Public Domain/Licensed as CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/",
+    "pivot":        {"x": 38.5, "y": 6.5},
+}

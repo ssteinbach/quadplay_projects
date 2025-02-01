@@ -1,0 +1,47 @@
+/* Creates an asteroid field at `pos` */
+def make_asteroid_field(pos):
+    
+    const field = {
+        pos: xy(pos),
+        hazard_type: "asteroid",
+        asteroid_array: [],
+        take_damage: asteroid_take_damage,
+        update: asteroid_field_update}
+    
+    // Number of asteroids = strength of hazard
+    const N = 4
+    for i < N:
+        const scale = random(50%, 80%)
+        push(field.asteroid_array, {
+            scale: xy(scale, scale),
+            sprite_index: random_integer(0, size(asteroid_sprite[0]) - 1),
+            // Jitter a little
+            pos: pos + 50% GRID_HEX_RADIUS * angle_to_xy(360° (i + random(0.0, 0.5)) / N ), 
+            angle: random(-180°, +180°),
+            shape: "disk",
+            size: asteroid_sprite[0][0].size,
+            spin: random_sign() * random(0.1°, 0.2°),
+            z: Z_SHIP - 1
+        })
+    
+    return field
+
+
+
+def asteroid_take_damage(field, dmg):
+    // Each asteroid is worth 2
+    while size(field.asteroid_array) > 0 and dmg ≥ 1:
+        // Blow up the last asteroid
+        explode(pop(field.asteroid_array), 2)
+        --dmg
+
+
+
+def asteroid_field_update(field):
+    // Avoid aliasing
+    const filter_index = if get_camera().zoom > 100% then 0 else 1
+    
+    for asteroid in field.asteroid_array:
+        asteroid.angle += asteroid.spin
+        draw_sprite({…asteroid, sprite: asteroid_sprite[filter_index][asteroid.sprite_index]})
+        

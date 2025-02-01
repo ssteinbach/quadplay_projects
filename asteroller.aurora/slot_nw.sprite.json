@@ -1,0 +1,12 @@
+{
+    "url": "charge_slot.png",
+    "license": "By Morgan McGuire 2025, released into the Public Domain/CC0",
+    "note": "Red -> White; White, Black, Green, Red -> Transparent",
+    "palette_swap" : {
+        "#000" : "#0000", 
+        "#00F" : "#0000",
+        "#0F0" : "#0000", 
+        "#F00" : "#FFFF",
+        "#FFF" : "#0000"
+    }
+}

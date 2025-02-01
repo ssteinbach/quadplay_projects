@@ -1,0 +1,101 @@
+/* Hex grid routines.
+
+The hex grid is stored in offset coordinates for this game,
+because it is only used for snapping and rendering gridlines.
+These operations are easiest in offset coords and the advantages
+of axial coordinates do not manifest.
+
+
+(0,0)(1,0)
+  (0,1)(1,1)
+(0,2)(1,2)
+
+(s, t) -> xy(s + ½ (t mod 2), t) * xy(GRID_HEX_WIDTH, GRID_HEX_HEIGHT)
+
+
+*/
+
+/* Radius of a grid cell */
+const GRID_HEX_RADIUS = GRID_HEX_WIDTH / sqrt(3)
+
+/* Vertical spacing between centers of rows */
+const GRID_HEX_HEIGHT = ½ sqrt(3) * GRID_HEX_WIDTH
+const GRID_HEX_SIZE = xy(GRID_HEX_WIDTH, GRID_HEX_HEIGHT)
+
+
+/* Vertices (which are the same as the normals) of a unit-radius, pointy-top hexagon */
+const HEXAGON = make_array(6)
+
+/* Scaled to the grid */
+const GRID_HEXAGON = make_array(6)
+for i < 6: 
+    HEXAGON[i] = angle_to_xy(90° + 60° i)
+    GRID_HEXAGON[i] = HEXAGON[i] * GRID_HEX_RADIUS
+    
+    
+def st(s, t):
+    return {s: s, t: t}
+
+
+/* World-space pixels to integer hex indices. Returns {s, t}. */
+def to_hex_index(pos):
+    // Unrounded coordinates
+    let t = DIV(MUL(⅔, pos.y), GRID_HEX_RADIUS)
+    let s = MAD(-½, t, DIV(pos.x, GRID_HEX_WIDTH))
+    
+    // Round to hex (see https://observablehq.com/@jrus/hexround)
+    
+    // Integer coordinates
+    const is = ROUND(s)
+    const it = ROUND(t)
+    
+    // Remainders
+    const fs = SUB(s, is)
+    const ft = SUB(t, it)
+    if ABS(fs) ≥ ABS(ft):
+        return st(ADD(is, ROUND(MAD(½, ft, fs))), it)
+    else:
+        return st(is, ADD(it, ROUND(MAD(½, fs, ft))))
+
+
+
+/* Returns the pixel at the center of the hex */
+def to_pixels(hex):
+    // Force to integer
+    const s = hex.s ∪ 0
+    const t = hex.t ∪ 0
+    
+    return xy(MUL(GRID_HEX_WIDTH, MAD(t ∩ 1, ½, s)), MUL(t, GRID_HEX_HEIGHT))
+
+
+
+def snap_to_grid_hex_center(pos):
+    return to_pixels(to_hex_index(pos))
+
+
+
+def draw_grid():
+    const z = Z_GRID
+
+    // The window of the visible part of the 
+    // grid is relative to the player,
+    // but the grid itself is fixed in world space
+    const center_pos = snap_to_grid_hex_center(player_ship.pos)
+    
+    // Radius in grid cells around the player that is visible
+    const r = player_ship.sensor_power + 1
+    
+    for -r ≤ Δs ≤ r:
+        for -r ≤ Δt ≤ r:
+            const pos = to_pixels(st(Δs, Δt)) + center_pos
+            
+            for k < 3:
+                draw_line(GRID_HEXAGON[k] + pos, GRID_HEXAGON[k + 1] + pos, GRID_COLOR, z, 0)
+
+    if DEBUG_GRID_SNAP:
+        // Visualize grid snapping
+        for -10 ≤ i ≤ 10:
+            const pos = player_ship.pos + xy(20 i, 40)
+            draw_disk(pos, 4, #F8F, ∅, 500)
+            draw_line(pos, snap_to_grid_hex_center(pos), #F8F, 500, 0)
+        

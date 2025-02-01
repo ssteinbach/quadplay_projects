@@ -1,0 +1,243 @@
+/* 
+   Control panel for the ship, composed of multiple systems.
+*/
+
+
+todo("Show seed")
+let universe_rng = make_random(1)
+const cursor = make_cursor(∅, ∅, ∅, dice_table_sound, blip_sound)
+
+def make_control_panel():
+    
+    const bay_array = []
+    while size(bay_array) < 7:
+        push(bay_array, make_cargo_bay([]))
+    
+    const control_panel = {
+        // Where it is on the screen
+        rect: {
+            corner:     xy(0, 0),
+            size:       xy(UI_CONTROL_PANEL_WIDTH, SCREEN_SIZE.y)
+        },
+        
+        // Used for rendering, not rolling
+        placed_dice: ∅,
+                
+        // Can have multiple systems with the same role.
+        // The ORDER of systems is important and must be the same as shown
+        // here for the simulation to make sense logically.
+        bay_array: bay_array,
+        
+        reactor: {
+            rolls_left: 0,
+            
+            // Set by the number of badge_sprite.charge badges in the bay_array
+            rolls_max: 0,
+            
+            // Dice tray for the reactor
+            dice: ∅,
+        }        
+    }
+
+    // All die positions are absolute on screen
+    control_panel.placed_dice = make_dice(control_panel.rect.corner + ½ control_panel.rect.size, control_panel.rect.size, ∅, dice_dice_sound, dice_table_sound, dice_wall_sound)
+
+    control_panel.reactor.dice = make_dice(
+            control_panel.rect.corner + xy(½ (UI_CONTROL_PANEL_WIDTH - UI_ROLL_BUTTON_WIDTH), 280 + ½ UI_DICE_TRAY_HEIGHT),
+            xy(UI_CONTROL_PANEL_WIDTH - UI_ROLL_BUTTON_WIDTH, UI_DICE_TRAY_HEIGHT),
+            ∅, dice_dice_sound, dice_table_sound, dice_wall_sound)
+    
+    return control_panel
+
+
+
+/* Removes dice and rolls due to the existing contents,
+   installs the new element, and adjusts any cargo.
+   
+   Must be called when there are no dice installed in the
+   bay and all dice are in the reactor.
+ */
+def control_panel_replace_bay(control_panel, bay_index, new_bay):
+    const old_bay = control_panel.bay_array[bay_index]
+    
+    assert(new_bay.bay_type == "cargo" or new_bay.bay_type == "blank" or BAY_TYPE_ARRAY[bay_index] == new_bay.bay_type, 
+        "System installed in the wrong bay type: " + new_bay.bay_type + " in bay " + bay_index)
+    
+    // Remove old
+    if old_bay.bay_type == "cargo":
+        // Cache the cargo
+        todo("Cache the cargo")
+    else:
+        // A system. Remove old dice and rolls
+        for badge in old_bay.badge_array:
+            if badge == badge_sprite.charge:
+                --control_panel.reactor.rolls_max
+            else:
+                control_panel_remove_die(control_panel, badge)
+        
+    // Install new
+    control_panel.bay_array[bay_index] = new_bay
+    if new_bay.bay_type ≠ "cargo":
+        // Add new dice and rolls
+        for badge in new_bay.badge_array:
+            if badge == badge_sprite.charge:
+                ++control_panel.reactor.rolls_max
+            else:
+                control_panel_add_die(control_panel, badge)
+
+                
+    control_panel.reactor.rolls_left = control_panel.reactor.rolls_max
+    todo("Re-store cargo")
+    
+    
+
+/* Find and remove one instance of one type of die from control panel reactor's dice */
+def control_panel_remove_die(control_panel, badge):
+    for die in control_panel.reactor.dice:
+        if die.badge == badge:
+            dice_remove_die(control_panel.reactor.dice, die)
+            return
+        
+    assert(false, "Could not find die to remove")
+        
+
+
+/* Creates a die and adds it to the control panel reactor's dice */
+def control_panel_add_die(control_panel, badge):
+
+    let value_array
+    let bright_color
+    let dim_color
+    const label_color = #000
+    
+    if badge == badge_sprite.die:
+        value_array = [1, 1, 1, 2, 2, 3, 3, 3]
+        bright_color = #4F0
+        dim_color = #08A
+    else if badge == badge_sprite.good_die:
+        value_array = [1, 2, 2, 2, 3, 3, 3, 4]
+        bright_color =  #EF0
+        dim_color = #9A0
+    else if badge == badge_sprite.bad_die:
+        value_array = [1, 1, 1, 1, 2, 2, 2, 3]
+        bright_color = #F60 
+        dim_color = #920
+
+    const label_array = []
+    
+    for v in value_array:
+        push(label_array, pip_sprite[0][v - 1])
+        
+    const die = dice_add_die(control_panel.reactor.dice, 8, ∅, DIE_RADIUS, font, label_array, value_array, bright_color, dim_color, label_color, ∅, true)
+    dice_correct_overlaps(control_panel.reactor.dice)
+    
+    // Stored so that this type of die can be found later for removal
+    die.badge = badge
+    return die
+
+    
+
+def draw_dice_tray():
+    // Lockout gate                
+    todo("Animate lockout gate")
+    if control_panel.reactor.rolls_left == control_panel.reactor.rolls_max:
+        draw_sprite(tray_gate_sprite, control_panel.reactor.dice.pos, ∅, ∅, ∅, 40)
+    
+    dice_update(control_panel.reactor.dice)
+    
+
+
+def draw_embossed_text(args):
+    draw_text({…args, pos: args.pos - 1, color: #CCC})
+    draw_text({…args, pos: args.pos + 1, color: #EEE})
+    draw_text(args)
+
+    
+    
+/* The button is active if `roll_callback ≠ ∅` */
+def draw_charge_button(roll_callback):
+    
+    const button_text = "CHARGE"
+    const button_size = xy(UI_ROLL_BUTTON_WIDTH, control_panel.reactor.dice.size.y)
+    const button_pos = xy(control_panel.reactor.dice.pos.x + ½ (control_panel.reactor.dice.size.x + button_size.x), control_panel.reactor.dice.pos.y)
+    const button_z = 20
+    draw_vertical_button(button_text, button_size, button_pos, button_z, roll_callback)
+
+    draw_embossed_text({font: font, text: "(" + control_panel.reactor.rolls_left + ")", pos: button_pos + xy(0, 30), color: if roll_callback then #000 else #999, z: button_z})
+
+
+
+def draw_vertical_button(button_text, button_size, button_pos, button_z, callback)
+& preserving_transform:
+    // Adjust z to be above dice but do not move xy
+    // as we're working from the screen-space dice
+    // tray specification
+    set_transform(∅, ∅, button_z)
+    
+    if callback:
+        cursor_register_target(cursor, button_pos, button_size, callback)
+        draw_rect(button_pos, button_size - 1, ∅, #666, ∅, -1)
+        draw_rect(button_pos - 1, button_size - 1, #DDD, #CCC)
+    else:
+        draw_rect(button_pos, button_size, #CCC, #AAA)
+
+    const color = if callback then #000 else #999
+    
+    // Vertical text
+    for c at i in button_text:
+        draw_embossed_text({font: small_font, text: c, pos: button_pos + xy(0, 9 i - 28), color: color})
+        
+
+/*
+
+  - `place_die_callback`: If not ∅, this is the callback for selecting a slot
+     in a system
+  
+*/
+def control_panel_update(place_die_callback, selected_die_value, roll_callback)
+& preserving_transform:
+    
+    draw_text({
+        font: font, 
+        text: "Credits: §" + player_ship.credits, 
+        pos: SCREEN_SIZE - xy(110, 10), 
+        color: #DDD, 
+        x_align: "left", 
+        z: 100})
+
+    draw_charge_button(roll_callback)
+    
+    set_transform(control_panel.rect.corner)
+    
+    for bay at b in control_panel.bay_array:
+        const y = UI_BAY_HEIGHT * b
+        if bay.bay_type == "cargo":
+            cargo_bay_draw(bay, y)
+        else:
+            system_draw(bay, y, selected_die_value, place_die_callback)
+            
+    // Draw the dice on the systems
+    dice_update(control_panel.placed_dice)
+    
+    draw_dice_tray()
+    
+
+
+/* Used by modes to show context-sensitive instructions to the player */
+def draw_instructions(major, minor default ∅):
+    
+    const text_args = {
+        font: font,
+        pos: view_rect.corner + xy(½ view_rect.size.x, 10),
+        color: #FFF,
+        shadow: #0005,
+        z: 100}
+    
+    draw_text({text: major, …text_args})
+    if minor:
+        draw_text({text: minor, …text_args, font: small_font, pos: text_args.pos + xy(0, 17)})
+
+
+
+const control_panel = make_control_panel()
+
