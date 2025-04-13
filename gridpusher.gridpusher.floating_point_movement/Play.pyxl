@@ -92,16 +92,25 @@ def add_block(game_grid, cell):
         "name": "block",
     }
 
-def advance_levels():
+def advance_levels(goal_cell):
     // todo: maybe a transition?
-    CURRENT_LEVEL += 1
-    GAME_GRID = load_level(LEVELS.level_order, CURRENT_LEVEL)
 
-def add_goal(game_grid, cell):
+    const goal = goal_cell.occupied_by
+
+    if goal.goal_target != nil:
+        debug_print("goal: ", goal.goal_target)
+        GAME_GRID = load_level_by_name(LEVELS.levels, goal.goal_target)
+    else:
+        CURRENT_LEVEL += 1
+        GAME_GRID = load_level_by_number(LEVELS.level_order, CURRENT_LEVEL)
+
+def add_goal(game_grid, cell, target):
     cell.visibility = true
     push(game_grid.goals, cell)
+
     return {
         "goal": true,
+        "goal_target": target,
         "sprite": goal_sprite[0][0],
         "overlap_fn":advance_levels,
         "pos": cell.pos,
@@ -212,11 +221,16 @@ def grid_size_of(lvl):
     assert(size(lines[0]) != 0 and size(lines[0]) != nil)
     return xy(size(lines[0]), size(lines))
 
-def load_level(levels, l_num):
+def load_level_by_number(level_order, l_num):
+    return load_level_by_name(LEVELS.levels, level_order[l_num])
+
+def load_level_by_name(levels, level_name):
+    debug_print("loading level: ", level_name)
+    CURRENT_LEVEL = find(LEVELS.level_order, level_name)
     remove_all(UNDOSTACK)
     LAST_UNDO_HASH = nil
 
-    const lvl = LEVELS.levels[[levels[l_num]]]
+    const lvl = levels[level_name]
     physics_remove_all(PHYSICS)
     physics_add_entity(PHYSICS, PLAYER)
 
@@ -235,6 +249,15 @@ def load_level(levels, l_num):
     debug_print(lines)
     for line at y in lines:
         for char at x in line:
+            let meta_string = nil
+
+            // handle goals and the meta table
+            if contains("0123456789", char):
+                debug_print("goal: ", char)
+                meta_string = LEVELS.levels_meta[level_name][char]
+                debug_print("goal: ", meta_string)
+                char = "O"
+
             let fn = LEVEL_ENTRY_KEY[char]
             if fn != nil:
                 // debug_print(char)
@@ -246,7 +269,7 @@ def load_level(levels, l_num):
                 const coord = xy(x, y)
                 debug_print("adding " + char + " at: ", coord)
                 let cell = grid_cell_xy(result, coord)
-                const ent = make_entity(fn(result, cell))
+                const ent = make_entity(fn(result, cell, meta_string))
                 ent.ascii = char
 
                 // pushes will be handled outside of simulation, just using sim
@@ -345,7 +368,6 @@ def update_visibility(level):
             // is there a path to the goal?
             if has_route_to_cell_through(level, cell, goal):
                 cell.visibility = true
-
 
 
 let pos = xy(SCREEN_SIZE.x / 2, 132)
@@ -462,6 +484,8 @@ def push_thing_in(new_cell_loc, movedir):
             // new_cell.occupied_by.pushes -= 1
             move_object(new_cell, cell_past_push)
 
+    update_visibility(GAME_GRID)
+
 def update_player_pos_discrete(input, grid):
     const movedir = xy(input.xx, input.yy)
     const new_cell_loc = grid.current_cell + movedir
@@ -514,7 +538,7 @@ def push_undo(game_grid):
 
 // load the level
 let CURRENT_LEVEL = 0
-GAME_GRID = load_level(LEVELS.level_order, CURRENT_LEVEL) 
+GAME_GRID = load_level_by_number(LEVELS.level_order, CURRENT_LEVEL) 
 
 update_visibility(GAME_GRID)
 
@@ -569,12 +593,10 @@ draw_text(
 
 debug_watch(GAME_GRID.size - CAMERA_EASE_BORDER)
 debug_watch(GAME_GRID.size)
-const camera_target_cell = max(
-    min(
-        GAME_GRID.current_cell,
-        GAME_GRID.size - CAMERA_EASE_BORDER
-    ),
-    CAMERA_EASE_BORDER
+const camera_target_cell = clamp(
+    grid_coord_xy_from_wpos(GAME_GRID, PLAYER.pos), // 17, 6
+    CAMERA_EASE_BORDER, // 54 8
+    GAME_GRID.size - CAMERA_EASE_BORDER // 1, 7
 )
 debug_watch(camera_target_cell)
 
@@ -605,7 +627,7 @@ physics_simulate(PHYSICS)
 const contacts = physics_entity_contacts(PHYSICS, PLAYER)
 
 handle_player_collision(PLAYER, contacts)
-update_visibility(GAME_GRID)
+// update_visibility(GAME_GRID)
 GAME_GRID.player_cell = grid_coord_xy_from_wpos(GAME_GRID, PLAYER.pos)
 GAME_GRID.current_hash = grid_hash(GAME_GRID)
 
