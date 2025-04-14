@@ -69,7 +69,11 @@ def main():
 
         # export style
         game_name_guess = dirname.split(".")[0]
-        export_game_json = os.path.join(d, game_name_guess, f"{game_name_guess}.game.json")
+        export_game_json = os.path.join(
+                d,
+                game_name_guess,
+                f"{game_name_guess}.game.json"
+        )
         deploy_version = DeployVersion.none
         if os.path.exists(export_game_json):
             game_json_files = export_game_json
@@ -124,8 +128,6 @@ def main():
             ],
             cwd=d
         ).decode("utf-8")
-        # @TODO: this needs to be left in the source repo, maybe a small json
-        #        blob? or into a file
         try:
             with open(os.path.join(d, "description.md"), 'r') as fi:
                 game_data["description"] = (
@@ -158,7 +160,8 @@ def main():
                 )
             else:
                 label += (
-                    f'[![{dirname}]({dirname}/{gamename}/{fname}.png)]({build["url"]})|'
+                    f'[![{dirname}]({dirname}/{gamename}/{fname}.png)]'
+                    f'({build["url"]})|'
                 )
 
             separator += "-----|"
