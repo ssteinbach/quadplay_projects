@@ -1,0 +1,40 @@
+{
+    "aseprite_json": "img/blue_door.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "closed": {
+            "end": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        "open": {
+            "end": {
+                "x": 0.0,
+                "y": 1.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 1.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 16,
+        "y": 16
+    },
+    "url": "blue_door.png"
+}
