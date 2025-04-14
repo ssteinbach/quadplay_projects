@@ -54,8 +54,8 @@ def main():
         cwd=target_dir,
     ).decode("utf-8")
     m = re.match(r".*:(?P<username>.*)/(?P<reponame>.*)\.git", git_remote)
-    username = m.group("username")
-    reponame = m.group("reponame")
+    username = m.group("username") # type: ignore
+    reponame = m.group("reponame") # type: ignore
 
     DATA = {
         "username": username,
@@ -99,8 +99,8 @@ def main():
         )
 
         m = re.match(r"(?P<game_name>.*?)\.(?P<branch_name>.*)", dirname)
-        game_data["name"] = m.group("game_name")
-        game_data["branch"] = m.group("branch_name")
+        game_data["name"] = m.group("game_name") # type: ignore
+        game_data["branch"] = m.group("branch_name") # type: ignore
         game_data["dirname"] = dirname
 
         game_data["commit-date-unix"] = subprocess.check_output(
