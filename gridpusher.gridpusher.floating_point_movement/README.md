@@ -1,5 +1,13 @@
 # Gridpusher Prototype
 
+## Todo 4/12/2025
+
+- [ ] feedback that goal is reachable
+- [ ] see one beyond a cell with some if you're standing next to it
+- [ ] feedback when you press undo
+- [ ] indicator for number of pushes to finish a level
+- [ ] feedback for how many keys you have
+
 ## Todo
 
 - [x] text format for levels
@@ -60,6 +68,12 @@
 - [ ] when you bump a door if the key isn't visible, it becomes visible
 - [ ] hazard
 - [ ] "metroidvania" level sequence
+    - [ ] rather than linear list of levels, doors that lead to a specific
+          place
+        - [x] add a _meta sheet that can be populated
+        - [x] allow goals to go to specific levels
+        - [ ] don't reset world state completely on level change
+    - [ ] build a little set of levels with a metroidvania vibe
 
 ## Things to turn into examples in the future
 
