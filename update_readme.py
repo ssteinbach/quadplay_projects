@@ -1,3 +1,4 @@
+import enum
 import os
 import subprocess
 import re
@@ -8,17 +9,31 @@ __doc__ = """Update the deployment README.md"""
 # - fetch the human readable game name out of the game.json
 # - read a description out of the game.json
 
-URL_TEMPLATE = (
-    "https://morgan3d.github.io/quadplay/console/quadplay.html"
-    "?game=https://{gh_user}.github.io/{reponame}/{dirname}/{gamejson}"
-)
-
 
 GAME_HEADER_TEMPLATE = """
 
 ### {gamename}
 
 """
+
+class DeployVersion(enum.Enum):
+    none = 0
+    # original style, which uses the linter / manifest to copy files manually
+    # and then uses the deployed quadplay version to point at this
+    v1_copy = 1
+    # does an html export and puts the export in the target directory
+    v2_export = 2
+
+
+URL_TEMPLATE = {
+    DeployVersion.v1_copy : (
+        "https://morgan3d.github.io/quadplay/console/quadplay.html"
+        "?game=https://{gh_user}.github.io/{reponame}/{dirname}/{gamejson}"
+    ),
+    DeployVersion.v2_export : (
+        "https://{gh_user}.github.io/{reponame}/{dirname}"
+    ),
+}
 
 
 def main():
@@ -48,19 +63,31 @@ def main():
         game_data = {}
         dirname = os.path.basename(d)
 
-        game_json_files = [
-            t for t in os.listdir(d) if t.endswith(".game.json")
-        ]
-        if len(game_json_files) != 1:
-            print(
-                f"Warning: Should only have one game.json in {d}, found: "
-                f"{len(game_json_files)}"
-            )
-            continue
+        # export style
+        game_name_guess = dirname.split(".")[0]
+        export_game_json = os.path.join(d, game_name_guess, f"{game_name_guess}.game.json")
+        deploy_version = DeployVersion.none
+        if os.path.exists(export_game_json):
+            game_json_files = export_game_json
+            deploy_version = DeployVersion.v2_export
+        else:
+            # find the old style game.json
+            game_json_files = [
+                t for t in os.listdir(d) if t.endswith(".game.json")
+            ]
+            if len(game_json_files) != 1:
+                print(
+                    f"Warning: Should only have one game.json in {d}, found: "
+                    f"{len(game_json_files)}"
+                )
+                continue
+            game_json_files = game_json_files[0]
+            deploy_version = DeployVersion.v1_copy
 
         # should only be one game.json
-        game_data["jsonpath"] = game_json_files[0]
-        game_data["url"] = URL_TEMPLATE.format(
+        game_data["jsonpath"] = game_json_files
+        game_data["deploy_version"] = deploy_version
+        game_data["url"] = URL_TEMPLATE[deploy_version].format(
             gh_user=username,
             reponame=reponame,
             dirname=dirname,
@@ -118,11 +145,18 @@ def main():
         for build in builds:
             dirname = build["dirname"]
 
+            # which label image to use
             fname = "label128"
 
-            label += (
-                f'[![{dirname}]({dirname}/{fname}.png)]({build["url"]})|'
-            )
+            if build["deploy_version"] is DeployVersion.v1_copy:
+                label += (
+                    f'[![{dirname}]({dirname}/{fname}.png)]({build["url"]})|'
+                )
+            else:
+                label += (
+                    f'[![{dirname}]({dirname}/{gamename}/{fname}.png)]({build["url"]})|'
+                )
+
             separator += "-----|"
             branch += f'{build["branch"]}|'
             description += f'{build["description"]}|'
