@@ -1,13 +1,17 @@
+#!/usr/bin/env python
+
 import enum
 import os
 import subprocess
 import re
 
-__doc__ = """Update the deployment README.md"""
+__doc__ = """Update the deployment README.md
 
-# @TODO:
-# - fetch the human readable game name out of the game.json
-# - read a description out of the game.json
+Scans each of the directories under this and builds tables by game name,
+detecting what the deployment version is and using the label, description.md
+and other information to fill in the table.
+
+"""
 
 
 GAME_HEADER_TEMPLATE = """
