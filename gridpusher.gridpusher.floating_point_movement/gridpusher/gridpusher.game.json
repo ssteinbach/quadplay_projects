@@ -3,20 +3,25 @@
     "assets": {
         "astronaut": "quad://sprites/kenney-alien-yellow-16x32.sprite.json",
         "blip_sound": "quad://sounds/blip-04.sound.json",
+        "block_2_sprite": "img/block_2.sprite.json",
         "block_sprite": "img/block.sprite.json",
         "blue_door_sprite": "img/blue_door.sprite.json",
         "blue_key_sprite": "img/blue_key.sprite.json",
-        "font": "quad://fonts/deja-8.font.json",
-        "goal_sprite": "img/goal.sprite.json",
-        "grabber_sprite": "img/grabber.sprite.json",
-        "palette_sprite": "img/ufo50_palette_256sq.sprite.json",
-        "pushable_wall_sprite": "img/pushable_wall.sprite.json",
-        "shapes": "quad://sprites/shapes-32x32.sprite.json",
         "dark_waves_snd": "mus/dark_waves.sound.json",
         "drums_snd": "mus/drums.sound.json",
         "electric_kick_snd": "mus/electric_kick.sound.json",
+        "font": "quad://fonts/deja-8.font.json",
+        "goal_sprite": "img/goal.sprite.json",
+        "grabber_sprite": "img/grabber.sprite.json",
+        "ground_16_sprite": "img/ground_16.sprite.json",
+        "ground_tiles_sprite": "img/ground_tiles.sprite.json",
         "odd_strings_snd": "mus/odd_strings.sound.json",
-        "piano_snd": "mus/piano.sound.json"
+        "palette_sprite": "img/ufo50_palette_256sq.sprite.json",
+        "piano_snd": "mus/piano.sound.json",
+        "pushable_wall_sprite": "img/pushable_wall.sprite.json",
+        "shapes": "quad://sprites/shapes-32x32.sprite.json",
+        "wall_side_sprite": "img/wall_side.sprite.json",
+        "wall_sprite": "img/wall.sprite.json"
     },
     "competitive": false,
     "constants": {
@@ -82,9 +87,27 @@
             "type": "boolean",
             "value": false
         },
+        "DEBUG_DRAW_MOVEMENT_CELLS": {
+            "type": "boolean",
+            "value": false
+        },
+        "DEBUG_DRAW_PLAYER_CELL": {
+            "description": "draw the cell the player is on top of ",
+            "type": "boolean",
+            "value": false
+        },
         "LEVELS": {
             "type": "raw",
             "url": "levels.yml"
+        },
+        "PUSH_TIME": {
+            "description": "time to press on a block before executing a push, in frames",
+            "format": "0.00",
+            "max": 100,
+            "min": 0,
+            "quantum": 0.01,
+            "type": "number",
+            "value": "10.00"
         },
         "TEXT_COLOR": {
             "type": "rgb",
@@ -108,28 +131,10 @@
             "quantum": 0.01,
             "type": "number",
             "value": "100.00"
-        },
-        "DEBUG_DRAW_PLAYER_CELL": {
-            "type": "boolean",
-            "value": false,
-            "description": "draw the cell the player is on top of "
-        },
-        "PUSH_TIME": {
-            "type": "number",
-            "value": "10.00",
-            "description": "time to press on a block before executing a push, in frames",
-            "min": 0,
-            "max": 100,
-            "format": "0.00",
-            "quantum": 0.01
-        },
-        "DEBUG_DRAW_MOVEMENT_CELLS": {
-            "type": "boolean",
-            "value": false
         }
     },
     "cooperative": false,
-    "copyright": "©2023 Your Name Here",
+    "copyright": "\u00a92023 Your Name Here",
     "description": "Description of your game in about 100 characters.",
     "developer": "Your Name Here",
     "docs": [],

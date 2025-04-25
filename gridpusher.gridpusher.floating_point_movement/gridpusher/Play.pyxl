@@ -77,19 +77,25 @@ def set_player_start(game_grid, coord):
     PLAYER.pos = clone(grid_cell_xy(game_grid, coord).pos)
 
 def add_barrier(game_grid, cell):
+    let wall_ind = cell.flat mod size(wall_sprite)
     return {
-        "sprite": block_sprite[0][0],
+        "sprite": wall_sprite[wall_ind][0],
         pos: cell.pos,
     }
 
 
 def add_block(game_grid, cell):
     return {
-        sprite: pushable_wall_sprite[0][0],
+        "sprite": block_2_sprite[0][0],
         "pushes": 2,
         "frame": 0,
         "pos": cell.pos,
         "name": "block",
+        "sprite_by_pushes": [
+            block_2_sprite[2][0],
+            block_2_sprite[1][0],
+            block_2_sprite[0][0],
+        ],
     }
 
 def advance_levels(goal_cell):
@@ -656,7 +662,7 @@ if joy.aa:
 else if joy.bb and GAME_GRID.player_has_grabber:
     player_fn_pull(GAME_GRID)
 
-draw_rect(GRID_CENTER_px, GAME_GRID.size_px, COLORS.bg_grid)
+// draw_rect(GRID_CENTER_px, GAME_GRID.size_px, COLORS.bg_grid)
 
 
 const DUST_TO_REMOVE = []
@@ -676,6 +682,14 @@ for c in GAME_GRID.cells:
     if not DEBUG_DISABLE_VISIBILITY and not c.visibility:
         draw_rect(c.pos, xy(16,16), COLORS.bg)
         continue
+    else:
+        // let spr_ind = c.flat mod size(ground_16_sprite)
+        let spr_ind = c.flat mod 4
+        // let spr_ind = 0
+        draw_sprite(
+            ground_16_sprite[spr_ind][0],
+            c.pos,
+        )
 
     if c.occupied_by:
         if c.occupied_by != "player":

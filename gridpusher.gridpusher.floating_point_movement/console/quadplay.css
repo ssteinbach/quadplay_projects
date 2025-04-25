@@ -79,7 +79,7 @@ html {
     top: 42px;
     left:0px;
     right:0px;
-    bottom:0px;
+    bottom:42px;
     scrollbar-width: unset;
     overflow: scroll;
 }
@@ -119,11 +119,9 @@ html {
     height: 38px;
 }
 
-/*#spriteEditorInfo {
-    white-space: nowrap;
-    display: table;
-    text-shadow: 0px 1px 4px #000, 0px 0px 2px #000, 0px 0px 3px #000;
-}*/
+#spriteEditorInfo {
+    color: #0f0;
+}
 
 #serverQRCode img {
     margin-left: auto;

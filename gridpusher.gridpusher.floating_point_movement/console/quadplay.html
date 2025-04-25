@@ -295,21 +295,27 @@
           <div id="mapEditor"><canvas id="mapDisplayCanvas" style="border:1px solid #ccc" class="pixelate"></canvas></div>
           <div id="spriteEditor">
             <div id="spriteEditorToolbar" class="toolbar">
-              <div id="spriteEditorInfo" class="unselectable" style="font-family: monospace">
+              <div style="position: absolute; left: 0px; top: 19px; width: 100%">
+                <span style="font-size: 14px; font-weight: bold; vertical-align: middle; position: relative; top: -1px" class="unselectable">
+                  −&nbsp;<input type="range" min="1" max="100" value="50" style="width: 80px; vertical-align: middle" id="spriteEditorZoomSlider" oninput="onSpriteEditorZoomSliderChange()" onchange="onSpriteEditorZoomSliderChange()">&nbsp;+
+                </span>
+                <span style="margin-left:20px" onclick="onSpriteEditorViewChange()">
+                  <input type="radio" name="spriteEditorView" id="spriteEditorViewPNG" checked="true">
+                  <label for="spriteEditorViewPNG">PNG</label>
+                  <input type="radio" name="spriteEditorView" id="spriteEditorViewSpriteSheet">
+                  <label id="spriteEditorViewSpriteSheetLabel" for="spriteEditorViewSpriteSheet">Sprite Sheet</label>
+                </span>
+              </div>
+            </div>
+              <div id="spriteEditorInfo" class="unselectable" style="font-family: monospace; bottom: 0px; left: 0px; right: 0px; height: 38px; position: absolute; border-top: 1px solid #888;">
                 <div id="spriteEditorInfoName" style="display: inline-block; width: 200px"></div>
                 <div id="spriteEditorInfoAnimationName" style="display: inline-block; width: 200px"></div>
                 <div id="spriteEditorInfoFrames" style="display: inline-block; width: 100px"></div>
                 <div id="spriteEditorInfoXY" style="display: inline-block; width: 100px"></div>
                 <div id="spriteEditorInfoRGBA" style="display: inline-block; width: 100px"></div>
               </div>
-              <div style="position: absolute; left: 0px; top: 19px; width: 100%">
-                <span style="font-size: 14px; font-weight: bold; vertical-align: middle; position: relative; top: -1px" class="unselectable">
-                  −&nbsp;<input type="range" min="1" max="100" value="50" style="width: 80px; vertical-align: middle" id="spriteEditorZoomSlider" oninput="onSpriteEditorZoomSliderChange()" onchange="onSpriteEditorZoomSliderChange()">&nbsp;+
-                </span>
-              </div>
-            </div>
             <div id="spriteEditorCanvasScrollPane" class="force-show-scrollbars checker-background">
-              <div id="spriteEditorCanvas" class="pixelate" style="position: absolute; top: 0; left: 0; transform-origin: top left;"></div>
+              <canvas id="spriteEditorCanvas" class="pixelate" style="position: absolute; top: 0; left: 0; transform-origin: top left;"></canvas>
               <div id="spriteEditorHighlight">
                 <div id="spriteEditorPivot" class="unselectable">☩</div>
               </div>
@@ -1124,6 +1130,7 @@
   <script defer src="quadplay-edit-code.js?" charset="utf-8"></script>
   <script defer src="quadplay-edit-game.js?" charset="utf-8"></script>
   <script defer src="quadplay-edit-asset.js?" charset="utf-8"></script>
+  <script defer src="quadplay-edit-sprite.js?" charset="utf-8"></script>
   <script defer src="quadplay-edit-constant.js?" charset="utf-8"></script>
   <script defer src="quadplay-help.js?" charset="utf-8"></script>
   <script defer src="quadplay-debug.js?" charset="utf-8"></script>

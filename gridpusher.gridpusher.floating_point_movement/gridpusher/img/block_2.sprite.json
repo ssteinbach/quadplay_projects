@@ -1,0 +1,28 @@
+{
+    "aseprite_json": "img/block_2.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "idle": {
+            "end": {
+                "x": 2.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0,
+                6.0,
+                6.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 16,
+        "y": 16
+    },
+    "url": "block_2.png"
+}

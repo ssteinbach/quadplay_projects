@@ -2268,7 +2268,9 @@ function onProjectSelect(target, type, object) {
         spriteEditorHighlight.style.visibility = 'hidden';
         spriteEditorPivot.style.visibility = 'hidden';
         spriteEditorCanvas.onmousemove = spriteEditorCanvas.onmousedown = undefined;
-        
+        spriteEditorAsset = object;
+        spriteEditorAssetName = assetName;
+
         if (/\.png$/i.test(url)) {
             showPNGEditor(object, assetName);
         } else if (/\.mp3$/i.test(url)) {
