@@ -1,0 +1,28 @@
+{
+    "aseprite_json": "img/wall_side.json",
+    "license": "None",
+    "locked_size": false,
+    "names": {
+        "side": {
+            "end": {
+                "x": 2.0,
+                "y": 0.0
+            },
+            "extrapolate": "clamp",
+            "frames": [
+                6.0,
+                6.0,
+                6.0
+            ],
+            "start": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        }
+    },
+    "sprite_size": {
+        "x": 16,
+        "y": 16
+    },
+    "url": "wall_side.png"
+}

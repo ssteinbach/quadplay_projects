@@ -1,0 +1,5 @@
+# mapping of pixels to sample for coloring from the palette sprite
+text: [0, 0]
+bg_grid: [27, 0]
+# bg: [29, 0]
+bg: [24, 0]
