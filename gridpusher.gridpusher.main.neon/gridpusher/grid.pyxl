@@ -1,0 +1,202 @@
+
+// library for working with 2d grids (2d arrays)
+
+// @{ random functions
+def random_cell_coords_xy_in(grid, min_coord default xy(0,0), max_coord):
+    if max_coord == nil:
+        max_coord = grid.size - xy(1,1)
+    return xy(
+        random_integer(min_coord.x, max_coord.x),
+        random_integer(min_coord.y, max_coord.y),
+    )
+
+def random_cell_in(grid, min_coord, max_coord):
+    let coords_xy = random_cell_coords_xy_in(grid, min_coord, max_coord)
+    debug_print(coords_xy)
+
+    let result = grid_cell_xy(grid, coords_xy)
+
+    // debug code
+    assert(
+        result != nil,
+        "target cell was nil, coordinates: " + coords_xy.x + ", " + coords_xy.y
+    )
+
+    return result
+// @}
+
+// @{ coordinates and cells
+def grid_coord_xy(grid, index_flat):
+    return xy(
+        grid.size.x mod index_flat,
+        floor(index_flat/grid.size.y)
+    )
+
+// returns the grid cell of a given world space position
+def grid_coord_xy_from_wpos(grid, pos):
+    const grid_space_pos = (
+        pos - (
+            grid.center_px 
+            - grid.size_px/2 
+            + grid.cell_size_px/2
+        )
+    )
+    return xy(
+        round(grid_space_pos.x / CELL_SIZE_PX.x),
+        round(grid_space_pos.y / CELL_SIZE_PX.y),
+    )
+
+def grid_coord_flat_from_wpos(grid, pos):
+    const xy_coord = grid_coord_xy_from_wpos(grid, pos)
+    return grid_coord_flat(grid, xy_coord)
+
+def neighbors_of(grid, cell):
+    let neighbors = []
+
+    let coords = cell.coord
+
+    const offsets = [
+        xy(-1, -1),
+        xy(-1, 0),
+        xy(-1, 1),
+        xy(0, 1),
+        xy(1, 1),
+        xy(1, 0),
+        xy(1, -1),
+        xy(0, -1),
+    ]
+    let results = []
+    for off in offsets:
+        const new_cell = grid_cell_xy(grid, coords + off)
+        if not new_cell:
+            continue
+
+        push(results, new_cell)
+
+    return results
+
+// returns nil if the index_xy is not within the bounds of the grid
+def grid_cell_xy(grid, index_xy):
+    if (
+            index_xy.x < 0 
+            or index_xy.y < 0
+            or index_xy.x >= grid.size.x
+            or index_xy.y >= grid.size.y
+    ):
+        return nil
+
+    return grid.cells[grid_coord_flat(grid, index_xy)]
+
+def grid_cell_world_xy(grid, pos):
+    const index_xy = grid_coord_xy_from_wpos(grid, pos)
+    return grid_cell_xy(grid, index_xy)
+
+def grid_coord_flat(grid, index_xy):
+    return index_xy.y + index_xy.x*grid.size.y
+
+def flat_size(grid):
+    return grid.size.x * grid.size.y
+// @}
+
+// @{ path finding
+def path_estimate(start, goal, grid):
+    return magnitude(goal.coord - start.coord)
+
+def path_edge_cost(start, goal, grid):
+    return 1
+
+def path_visible_neighbors_of(cell, grid, debug default false):
+    let result = []
+
+    if debug:
+        debug_print("vn: ", cell.coord, cell.flat)
+
+    // checks cardinal directions
+    for off in [
+            xy(-1, 0),
+            xy(1, 0),
+            xy(0, 1),
+            xy(0, -1),
+    ]:
+        if debug:
+            debug_print("check: ", off)
+        const next = grid_cell_xy(grid, cell.coord + off)
+        if debug:
+            debug_print("ex1", off)
+        if not next:
+            if debug:
+                debug_print("ex1.1", off)
+            continue
+        if (
+                not next.occupied_by 
+                or next.occupied_by == "player" 
+                or next.occupied_by.goal == true
+        ):
+            push(result, next)
+            if debug:
+                debug_print("ex2",off, next.coord, next.flat)
+        else:
+            if debug:
+                debug_print("ex3",off, next.coord, next.flat, next.occupied_by)
+
+    if debug:
+        debug_print("ex3")
+    return result
+
+def path_grid_coord_flat_alt(cell, grid):
+    return cell.flat
+
+def has_route_to_cell_through(grid, start_cell, goal_cell):
+    const result = (
+        find_path(
+            start_cell,
+            goal_cell,
+            path_estimate,
+            path_edge_cost,
+            path_visible_neighbors_of,
+            path_grid_coord_flat_alt,
+            grid
+        ) != nil
+    )
+    return result
+
+// @}
+
+// grid constructor
+def make_grid(
+        grid_size_xy,
+        // function  that takes a coordinate, flat coordinate, and the entire
+        // grid and builds the cell at the coordinates
+        make_cell,
+        // size of each cell in pixels
+        cell_size_px,
+        center_px,
+):
+    let grid = {
+        // xy dimensions of the grid (rows and columns, not pixels)
+        size: grid_size_xy,
+        cell_size_px: cell_size_px,
+        size_px: grid_size_xy * cell_size_px,
+        center_px: center_px,
+        
+        // cells are in a flat list
+        cells: [],
+
+        // goals
+        goals: [],
+    }
+
+    for ix < grid_size_xy.x:
+        for iy < grid_size_xy.y:
+            let coord = xy(ix, iy)
+            push(
+                grid.cells,
+                make_cell(
+                    coord,
+                    grid_coord_flat(grid, coord),
+                    grid,
+                    cell_size_px
+                )
+            )
+
+    return grid
