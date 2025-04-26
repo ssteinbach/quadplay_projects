@@ -2,8 +2,8 @@
     "license": "None",
     "locked_size": false,
     "sprite_size": {
-        "x": 256,
-        "y": 256
+        "x": 32,
+        "y": 32
     },
     "url": "ufo50_palette_256sq.png"
 }

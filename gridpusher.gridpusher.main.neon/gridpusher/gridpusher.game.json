@@ -2,7 +2,6 @@
     "achievements": false,
     "assets": {
         "astronaut": "quad://sprites/kenney-alien-red-16x32.sprite.json",
-        "blip_sound": "quad://sounds/blip-04.sound.json",
         "block_2_sprite": "img/block_2.sprite.json",
         "block_sprite": "img/block.sprite.json",
         "blue_door_sprite": "img/blue_door.sprite.json",
@@ -14,12 +13,10 @@
         "goal_sprite": "img/goal.sprite.json",
         "grabber_sprite": "img/grabber.sprite.json",
         "ground_16_sprite": "img/ground_16.sprite.json",
-        "ground_tiles_sprite": "img/ground_tiles.sprite.json",
         "odd_strings_snd": "mus/odd_strings.sound.json",
         "palette_sprite": "img/ufo50_palette_256sq.sprite.json",
         "piano_snd": "mus/piano.sound.json",
         "pushable_wall_sprite": "img/pushable_wall.sprite.json",
-        "shapes": "quad://sprites/shapes-32x32.sprite.json",
         "wall_side_sprite": "img/wall_side.sprite.json",
         "wall_sprite": "img/wall.sprite.json"
     },
