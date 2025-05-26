@@ -368,6 +368,9 @@ function setColorScheme(scheme) {
         break;
     }
     
+    // Set the theme color CSS variable
+    document.documentElement.style.setProperty('--theme-color', hrefColor);
+    
     // Find the relevant rules and remove them
     for (let i = 0; i < stylesheet.cssRules.length; ++i) {
         const rule = stylesheet.cssRules[i];
@@ -484,23 +487,32 @@ function unlockAudio() {
 
 function requestFullScreen() {
     // Full-screen the UI. This can fail if not triggered by a user interaction.
+
+    function ignoreException(e) {
+        console.log('Suppressed browser security exception during requestFullScreen():', e);
+    }
+
     try { 
         const body = document.getElementsByTagName('body')[0];
         if (body.requestFullscreen) {
-            body.requestFullscreen().catch(function(){});
+            body.requestFullscreen().catch(ignoreException);
         } else if (body.webkitRequestFullscreen) {
-            body.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+            body.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT).catch(ignoreException);
         } else if (body.mozRequestFullScreen) {
-            body.mozRequestFullScreen();
+            body.mozRequestFullScreen().catch(ignoreException);;
         } else if (body.msRequestFullscreen) {
-            body.msRequestFullscreen();
+            body.msRequestFullscreen().catch(ignoreException);;
         }
-    } catch (e) {}
+    } catch (e) {
+        ignoreException(e);
+    }
 
     try {
         // Capture the escape key (https://web.dev/keyboard-lock/)
-        window.top.navigator.keyboard.lock();
-    } catch (e) {}
+        window.top.navigator.keyboard.lock().catch(ignoreException);
+    } catch (e) {
+        ignoreException(e);
+    }
 }
 
 let backgroundPauseEnabled = true;
@@ -882,6 +894,12 @@ function onStopButton(inReset, preserveNetwork) {
         saveIDEState();
     }
 
+    // Remove highlight from all nodes in the mode diagram
+    const modeGraph = document.querySelector('.modeGraph');
+    if (modeGraph) {
+        modeGraph.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+    }
+
     // Destroy the virtual GPU
     if (QRuntime.$GPU) { QRuntime.$GPU.terminate(); }
     usePointerLock = false;
@@ -1067,6 +1085,11 @@ function onPlayButton(slow, isLaunchGame, args, callback) {
                     } catch (e) {
                         console.log('Ignoring MIDI initialization error', e);
                     }
+                }
+                
+                // Force mode graph tab to be generated if useIDE is true
+                if (useIDE) {
+                    visualizeModes(document.getElementById('modeEditor'));
                 }
                 
                 restartProgram(isLaunchGame ? BOOT_ANIMATION.NONE : useIDE ? BOOT_ANIMATION.SHORT : BOOT_ANIMATION.REGULAR);
@@ -2114,15 +2137,19 @@ function showGamepads() {
 
 let soundEditorCurrentSound = null;
 
-/** Called when a project tree control element is clicked.
+/** UI callback for a project tree control element is clicked. Sometimes
+    also directly called by debugging tools to force a display to load in
+    the IDE. 
 
     For the overview Mode and Constants page, the object is undefined.
 
-    - `target` is the project hierarchy element that links. 
+    - `target` is the Project HTML hierarchy element for the . 
       It can often be obtained from the name, for example: 
-      document.getElementById('projectAsset_${assetName}')
-      defined by the caller, it will be discovered
+      document.getElementById('projectAsset_${assetName}').
+      If not defined by the caller, it will be discovered
+    
     - `type` is one of: 'asset', 'constant', 'mode', 'script', 'doc'
+    
     - `object` is the underlying gameSource child to modify
  */
 function onProjectSelect(target, type, object) {
@@ -2164,7 +2191,11 @@ function onProjectSelect(target, type, object) {
     if ((type === 'mode') && (object === undefined)) {
         // Select the mode diagram itself
         target.classList.add('selectedProjectElement');
-        visualizeModes(modeEditor);
+        // Skip visualization if game is running and useIDE is true since the mode diagram
+        // was already created during game restart to highlight the active mode for debugging
+        if (!(useIDE && QRuntime && QRuntime.$gameMode)) {
+            visualizeModes(modeEditor);
+        }
         modeEditor.style.visibility = 'visible';
         return;
     }
@@ -2197,6 +2228,10 @@ function onProjectSelect(target, type, object) {
             }
         }
         return;
+    }
+
+    if (! target && type === 'mode' && object) {
+        target = document.getElementById('ModeItem_' + object.name);
     }
 
     if (type === 'game') {
@@ -3657,6 +3692,10 @@ function reloadRuntime(oncomplete) {
         QRuntime.$set_texture(spritesheetArray, fontArray);
         QRuntime.$quit_action = quitAction;
 
+        // Don't bother updating the mode graph if the IDE isn't loaded. That is, in exported
+        // more
+        QRuntime.$updateIDEModeGraph = useIDE ? $updateIDEModeGraph : function () {};
+        
         // Remove any base URL that appears to include the quadplay URL
         QRuntime.$window = window;
         QRuntime.$gameURL = gameSource ? (gameSource.jsonURL || '').replace(location.href.replace(/\?.*/, ''), '') : '';
@@ -4666,18 +4705,20 @@ function loadGameIntoIDE(url, callback, loadFast, noUpdateCode) {
 
             if (callback) { callback(); }
 
-            if (! loadFast && editableProject && serverConfig.hasGit) {                          
-                // See if this project is in git
-                serverGitCommand('status .', function (text, code) {
-                    if (code === 0) {
-                        gameSource.versionControl = 'git';
+            if (editableProject && serverConfig.hasGit) {
+                if (! loadFast) {                          
+                    // See if this project is in git
+                    serverGitCommand('status .', function (text, code) {
+                        if (code === 0) {
+                            gameSource.versionControl = 'git';
+                            document.getElementById('versionControl').style.visibility = 'visible';
+                        }
+                    });
+                } else {
+                    gameSource.versionControl = oldVersionControl;
+                    if (oldVersionControl === 'git') {
                         document.getElementById('versionControl').style.visibility = 'visible';
                     }
-                });
-            } else {
-                gameSource.versionControl = oldVersionControl;
-                if (oldVersionControl === 'git') {
-                    document.getElementById('versionControl').style.visibility = 'visible';
                 }
             }
 

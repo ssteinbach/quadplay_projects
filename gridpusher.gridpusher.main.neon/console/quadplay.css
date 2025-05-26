@@ -253,7 +253,7 @@ div#header {
 
 /** Do not change this selector without changing quadplay-ide.js setColorScheme() */
 a, #header a, .menu a {
-    color: #e61b9d !important;
+    color: var(--theme-color, #e61b9d) !important;
     text-decoration: none;
 }
 
@@ -660,6 +660,13 @@ div.debugOverride.disabled {
     cursor:           pointer;
 }
 
+.button label {
+    cursor: pointer;
+}
+
+.button input {
+    cursor: pointer;
+}
 
 .unselectable {
     touch-action: none;
@@ -716,6 +723,10 @@ div.debugOverride.disabled {
     background-position: center;
     background-size: contain;
     width:32px; height:16px    
+}
+
+#restartButtonContainer .buttonIcon {
+    background-image: url('icons/button-reload.png');
 }
 
 #stopButtonContainer .buttonIcon {
@@ -1818,9 +1829,8 @@ tabbox > label.ide:hover {
 }
 
 tabbox > input:checked + label.ide {
-    color: #0af;
-    border: 1px solid #888;
-    border-top: 2px solid #0af;
+    color: var(--theme-color, #0af);
+    border-top: 2px solid var(--theme-color, #0af);
     border-bottom: 1px solid #302b2b;
     background:    #302b2b;
 }
@@ -1854,13 +1864,13 @@ tabbox #serverTab:checked ~ #serverPane {
 #codePlusFrame.resizing #doc {
     pointer-events: none;
 }
-/********************************************************/
-
+/********************** Mode Graph **********************************/
 svg.modeGraph .node {
     filter: url(#shadow);
 }
 
 svg.modeGraph text.nodeLabel {
+    pointer-events: none;
     font-size: 12px;
     text-anchor: middle;
     font-weight: bold;
@@ -1869,6 +1879,10 @@ svg.modeGraph text.nodeLabel {
 }
 
 svg.modeGraph .edge {
+    pointer-events: visiblePainted;
+}
+
+svg.modeGraph .edgeLine {
     stroke-width: 2;
     fill: none;
     filter: url(#outerglow);
@@ -1882,6 +1896,57 @@ svg.modeGraph text.edgeLabel {
     filter: url(#outerglow);
 }
 
+/* Interaction */
+svg.modeGraph .node:hover, svg.modeGraph .edge:hover {
+    filter: invert(25%) hue-rotate(180deg);
+}
+
+svg.modeGraph .node, svg.modeGraph .edge {
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Used to highlight the current mode and the last active transition in the diagram when the game is playing */
+svg.modeGraph .highlight {
+    filter: url(#whiteglow) !important;
+}
+
+/* Use smaller glow for edge elements */
+svg.modeGraph .highlight.edge {
+    filter: url(#whiteglow-edge) !important;
+}
+
+/* Add stroke only to non-text elements inside highlighted groups */
+svg.modeGraph .highlight.node > *:not(text) {
+    stroke: white !important;
+    stroke-width: 4px !important;
+    paint-order: stroke !important;
+}
+
+/* Make highlighted edges bright white */
+svg.modeGraph .highlight.edge .edgeLine {
+    stroke: white !important;
+}
+
+svg.modeGraph .highlight.edge marker path {
+    fill: white !important;
+}
+
+/* Add black border inside white border for highlighted nodes */
+svg.modeGraph .highlight.node > rect {
+    stroke: rgba(255, 255, 255, 0.8) !important;
+    stroke-width: 1px !important;
+}
+
+svg.modeGraph .highlight.node > .border {
+    stroke: rgba(0, 0, 0, 0.6) !important;
+    stroke-width: 2px !important;
+}
+
+/***************************************************************************/
 
 #debugWatchDisplayPane td {
     border: solid 1px #888;
@@ -2000,4 +2065,14 @@ button.license {
 .terminalCommand {
     font-weight: bold;
     color: #a569bd;
+}
+
+.button img {
+    pointer-events: none;
+}
+
+.button.disabled,
+.button.disabled label,
+.button.disabled input {
+    cursor: default;
 }

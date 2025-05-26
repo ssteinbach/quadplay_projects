@@ -14,7 +14,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|-----|-----|-----|-----|-----|-----|
 |branch|gridpusher.main.neon|gridpusher.float_music_mix_test|main.discrete|gridpusher.main|gridpusher.floating_point_movement|main.neon|gridpusher.discrete_mix_test|
 |description||Floating point music mixing test<br><br>- move aroudn the circles and hear stems fade in and out|No description on branch.|main development branch for gridpusher|test of gridpusher prototype with 2d zelda style movement||discrete version of stem mixer|
-|Deployed on|04/25/2025|04/24/2025|04/24/2025|04/24/2025|04/24/2025|04/24/2025|04/24/2025|
+|Deployed on|04/26/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|
 |link|[play gridpusher.main.neon](https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.main.neon)|[play gridpusher.float_music_mix_test](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.float_music_mix_test/gridpusher.game.json)|[play main.discrete](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.main.discrete/gridpusher.game.json)|[play gridpusher.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.main/gridpusher.game.json)|[play gridpusher.floating_point_movement](https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.floating_point_movement)|[play main.neon](https://ssteinbach.github.io/quadplay_projects/gridpusher.main.neon)|[play gridpusher.discrete_mix_test](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.discrete_mix_test/gridpusher.game.json)|
 
 
@@ -24,7 +24,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|dynamic_accel.main|
 |description|No description on branch.|
-|Deployed on|04/24/2025|
+|Deployed on|04/26/2025|
 |link|[play dynamic_accel.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dynamic_accel.dynamic_accel.main/dynamic_accel.game.json)|
 
 
@@ -34,7 +34,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|aurora|
 |description||
-|Deployed on|04/24/2025|
+|Deployed on|04/26/2025|
 |link|[play aurora](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/asteroller.aurora/asteroller.game.json)|
 
 
@@ -44,7 +44,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|dog_test.main|
 |description|simple animated character test|
-|Deployed on|04/24/2025|
+|Deployed on|04/26/2025|
 |link|[play dog_test.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/dog_test.dog_test.main/dog_test.game.json)|
 
 
@@ -54,7 +54,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|doom_fire.main|
 |description|Experiment using the doom fire algorithm|
-|Deployed on|04/24/2025|
+|Deployed on|04/26/2025|
 |link|[play doom_fire.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/doom_fire.doom_fire.main/doom_fire.game.json)|
 
 
@@ -64,7 +64,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|snes_prototype.boxes|
 |description|box throwing demo from the snes_prototype/super beat the wizzard|
-|Deployed on|04/24/2025|
+|Deployed on|04/26/2025|
 |link|[play snes_prototype.boxes](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/snes_prototype.snes_prototype.boxes/snes_prototype.game.json)|
 
 
@@ -74,7 +74,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|splitsnap.main|
 |description|color matching action puzzle game|
-|Deployed on|04/24/2025|
+|Deployed on|04/26/2025|
 |link|[play splitsnap.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/snipsnap.splitsnap.main/snipsnap.game.json)|
 
 
@@ -84,7 +84,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|scooper.main|
 |description|Jam 2 game about picking up dog poop|
-|Deployed on|04/24/2025|
+|Deployed on|04/26/2025|
 |link|[play scooper.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/scooper.scooper.main/scooper.game.json)|
 
 
@@ -94,6 +94,6 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|
 |branch|reach.world_gen|
 |description|No description on branch.|
-|Deployed on|04/24/2025|
+|Deployed on|04/26/2025|
 |link|[play reach.world_gen](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/reach.reach.world_gen/reach.game.json)|
 
