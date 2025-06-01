@@ -50,6 +50,9 @@ var $console = console;
 var $Math = Math;
 var $performance = performance;
 
+// Used by games without the IDE to trigger the system menu as if P was pressed
+var $goToSystemMenu = false;
+
 // If non-nil and matches the current mode, then the Copy Host
 // Code/Copy Host URL buttons are displayed. See also start_hosting()
 var $showCopyButtonsMode = undefined;
@@ -68,6 +71,7 @@ var $numBootAnimationFrames = 120;
    pop_mode, reset_game.  */
 function $setGameMode(newMode, url, line, reason) {
     $gameMode = newMode;
+    // $updateIDEModeGraph is safe to call even when IDE files aren't loaded - it checks for useIDE internally
     $updateIDEModeGraph(newMode, url, line, reason);
 }
 
@@ -7221,7 +7225,7 @@ var overlaps = (function() {
 
             // Trivial axis-aligned test against a rectangle
             return ($Math.abs(B.pos.x - A.pos.x) * 2 <= $Math.abs(A.size.x * A.scale.x) &&
-                    $Math.abs(B.pos.y - A.pos.y) * 2 <= $Math.abs(A.size.y * A.scale.y));
+                    $Math.abs(B.pos.y - A.pos.y) * 2 <= $Math.abs(A.size.y * A.scale.x));
     
         } else if (B.shape === 'disk') {
             // Box A vs. Disk B 
@@ -10385,7 +10389,7 @@ function $show() {
     // frame rate and pruning graphics.  Use mode_frames instead of
     // game_frames to ensure that frame 0 is always rendered for a mode.
     if (mode_frames % $graphicsPeriod === 0) {
-        if ($onScreenHUDEnabled) {
+        if ($onScreenHUDEnabled && $onScreenHUDDisplay) {
             // Submit diagnostics HUD as additional graphics calls
             $onScreenDrawBarGraph('Frame:', $onScreenHUDDisplay.time.frame, 0xFA5F, 0);
             $onScreenDrawBarGraph('  60fps Logic:', $onScreenHUDDisplay.time.logic, 0xFFA0, 1);
