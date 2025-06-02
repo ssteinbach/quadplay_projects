@@ -460,14 +460,54 @@ function onWelcomeTouch(hasTouchScreen) {
         pauseMessage.style.zIndex = 120;
         pauseMessage.style.visibility = 'visible';
         pauseMessage.style.opacity = 1;
-        setTimeout(function () {
+
+        // Track if we've already handled the skip
+        let skipHandled = false;
+        const startTime = Date.now();
+
+        // Function to hide message and continue
+        const hideMessage = function() {
+            if (skipHandled) return;
+            skipHandled = true;
+            
+            // Clean up event listeners
+            document.removeEventListener('keydown', keyHandler, {capture: true});
+            document.removeEventListener('mousedown', pointerHandler, {capture: true});
+            document.removeEventListener('touchstart', pointerHandler, {capture: true});
+            
+            // Start fade out
             pauseMessage.style.opacity = 0;
             setTimeout(function() {
                 pauseMessage.style.visibility = 'hidden';
                 pauseMessage.style.zIndex = 0;
                 onPlayButton(undefined, undefined, undefined, callback);
             }, 200);
-        }, 3000);
+        };
+
+        // Handle keyboard input
+        const keyHandler = function(event) {
+            if (Date.now() - startTime < 200) return;
+            hideMessage();
+            event.stopPropagation();
+        };
+
+        // Handle mouse/touch input
+        const pointerHandler = function(event) {
+            if (Date.now() - startTime < 200) return;
+            // Only handle primary button clicks and touches
+            if (event.type === 'mousedown' && event.button !== 0) return;
+            hideMessage();
+            event.stopPropagation();
+        };
+
+        // Add event listeners with capture
+        const options = {capture: true};
+        document.addEventListener('keydown', keyHandler, options);
+        document.addEventListener('mousedown', pointerHandler, options);
+        document.addEventListener('touchstart', pointerHandler, options);
+
+        // Auto-hide after 3 seconds
+        setTimeout(hideMessage, 3000);
     } else {
         onPlayButton(undefined, undefined, undefined, callback);
     }
