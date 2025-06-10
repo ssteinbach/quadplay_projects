@@ -14,7 +14,7 @@ This repo contains a number of prototypes in various stages of completion.
 |-|-----|-----|-----|-----|-----|-----|-----|
 |branch|gridpusher.main.neon|gridpusher.float_music_mix_test|main.discrete|gridpusher.main|gridpusher.floating_point_movement|main.neon|gridpusher.discrete_mix_test|
 |description||Floating point music mixing test<br><br>- move aroudn the circles and hear stems fade in and out|No description on branch.|main development branch for gridpusher|test of gridpusher prototype with 2d zelda style movement||discrete version of stem mixer|
-|Deployed on|06/05/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|
+|Deployed on|06/09/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|04/26/2025|
 |link|[play gridpusher.main.neon](https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.main.neon)|[play gridpusher.float_music_mix_test](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.float_music_mix_test/gridpusher.game.json)|[play main.discrete](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.main.discrete/gridpusher.game.json)|[play gridpusher.main](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.main/gridpusher.game.json)|[play gridpusher.floating_point_movement](https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.floating_point_movement)|[play main.neon](https://ssteinbach.github.io/quadplay_projects/gridpusher.main.neon)|[play gridpusher.discrete_mix_test](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/gridpusher.gridpusher.discrete_mix_test/gridpusher.game.json)|
 
 
@@ -66,6 +66,16 @@ This repo contains a number of prototypes in various stages of completion.
 |description|box throwing demo from the snes_prototype/super beat the wizzard|
 |Deployed on|04/26/2025|
 |link|[play snes_prototype.boxes](https://morgan3d.github.io/quadplay/console/quadplay.html?game=https://ssteinbach.github.io/quadplay_projects/snes_prototype.snes_prototype.boxes/snes_prototype.game.json)|
+
+
+### across_the_lake
+
+|label|[![across_the_lake.across_the_lake](across_the_lake.across_the_lake/across_the_lake/label128.png)](https://ssteinbach.github.io/quadplay_projects/across_the_lake.across_the_lake)|
+|-|-----|
+|branch|across_the_lake|
+|description||
+|Deployed on||
+|link|[play across_the_lake](https://ssteinbach.github.io/quadplay_projects/across_the_lake.across_the_lake)|
 
 
 ### snipsnap

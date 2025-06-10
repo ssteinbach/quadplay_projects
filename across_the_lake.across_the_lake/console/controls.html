@@ -1,0 +1,69 @@
+<meta charset="utf-8">
+<title>controls✜</title>
+<p>
+quadplay✜ supports keyboard, touch controls, mouse,
+Xbox One, Xbox 360, PS4, 8BitDo, Switch, and
+Stadia controllers for input, and USB MIDI devices for input
+and output.
+</p>
+
+<p>
+Press the <b>"P"</b> key
+or <b>"☰"</b>, <b>"Options"</b>, or <b>"Start"</b> controller
+button to pause and configure controllers and the system.
+</p>
+<script>
+{
+function getQueryString(field) {
+    const reg = new RegExp('[?&]' + field + '=([^&#]*)', 'i');
+    const string = reg.exec(location.search);
+    return string ? string[1] : null;
+}
+
+const s = getQueryString('devices');
+if (s) {
+    document.write('<p>Connected devices when this window opened:<pre style="background:#000">' + decodeURIComponent(s) +'</pre></p>');
+}
+}  
+</script>
+<center>
+  <p>
+    <img src="keyboard.png" style="border:none; width: 100%">
+  </p>
+  <p>
+    <img src="xbox_controller.png" style="border:none; width:80%">
+  </p>
+  <p>
+    <img src="gamepad.png" style="border:none; width:80%">
+  </p>
+  
+<p>
+<table border=1 cellspacing=0>
+<tr style="background: #ccc; color: #222"><th>Input</th><th>P1 Key</th><th>P2 Key</th><th>Xbox</th><th>PlayStation</th><th>Nintendo</th></tr>
+<tr><td>⍐         </td><td> W or ↑      </td><td> I           </td><td> ▲          </td><td> ▲          </td><td> ▲</td></tr>
+<tr><td>⍇         </td><td> A or ←      </td><td> J           </td><td> ◀          </td><td> ◀          </td><td> ◀</td></tr>
+<tr><td>⍗         </td><td> S or ↓      </td><td> K           </td><td> ▼          </td><td> ▼          </td><td> ▼</td></tr>
+<tr><td>⍈         </td><td> D or →      </td><td> L           </td><td> ▶          </td><td> ▶          </td><td> ▶</td></tr>
+<tr><td>ⓐ         </td><td> B or space  </td><td> /           </td><td> Ⓐ          </td><td> ╳          </td><td> Ⓑ</td></tr>
+<tr><td>ⓑ         </td><td> H or enter  </td><td> '           </td><td> Ⓑ          </td><td> ◯          </td><td> Ⓐ</td></tr>
+<tr><td>ⓒ         </td><td> V           </td><td> .           </td><td> Ⓧ          </td><td> ▢          </td><td> Ⓨ</td></tr>
+<tr><td>ⓓ         </td><td> G           </td><td> ;           </td><td> Ⓨ          </td><td> △          </td><td> Ⓧ</td></tr>
+<tr><td>ⓔ         </td><td> L.shift     </td><td> N           </td><td> LB         </td><td> L1         </td><td> L     </td></tr>
+<tr><td>ⓕ         </td><td> C or R. Shift</td><td> L. Alt / ⌥  </td><td> RB         </td><td> R1         </td><td> R</td></tr>
+<tr><td>ⓠ         </td><td> 1 or Q      </td><td> 7           </td><td> ⧉          </td><td> Share      </td><td> Select</td></tr>
+<tr><td>ⓟ         </td><td> 4 or P      </td><td> 0           </td><td> ☰          </td><td> Options    </td><td> Start</td></tr>
+</table>
+</p>
+When using arcade controllers that sends keystrokes,
+use the quadplay Console menu to select Ultimarc Mini PAC or MAME Default,
+and then in-game use the pause menu or kiosk mode to select
+arcade button prompts.
+</center>
+<style>
+body {
+font-family: Arial;
+background: #444;
+color: #ddd;
+}
+
+</style>
