@@ -131,7 +131,7 @@
     "developer": "Your Name Here",
     "docs": [],
     "dual_dpad": false,
-    "highscores": false,
+    "high_scores": false,
     "license": "CC0/Public Domain (Replace with your own license)",
     "max_players": 1,
     "midi_sysex": false,

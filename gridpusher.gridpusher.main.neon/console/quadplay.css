@@ -1056,7 +1056,9 @@ code, .code {
 
 .unselectable {
     user-select: none;
-    -webkit-user-select: none; 
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;    
 }
 
 /* When in the TestUI *and* the screen is wide, adjust the debugger
@@ -1432,6 +1434,7 @@ code, .code {
     margin-top: -1px;
     padding: 1px 1px 3px 1px;
     overflow: hidden;
+    background: #331c2a;
 }
 
 .GhostUI .emulator, .GhostUI div#emulatorPane, .MaximalUI .emulator, .MaximalUI div#emulatorPane {

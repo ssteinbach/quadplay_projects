@@ -2,7 +2,7 @@
 "use strict";
 
 // Set to false when working on quadplay itself.
-const deployed = false;
+const deployed = true;
 
 // If true, use a WebWorker thread for the virtual GPU. This variable
 // appears in the CPU runtime as well.
@@ -178,7 +178,7 @@ if (! $THREADED_GPU) { document.getElementById('debugGPUTimeRow').style.display 
 // 'WideIDE', 'IDE', 'Test', 'Emulator', 'Editor', 'Windowed',
 // 'Maximal', 'Ghost'. See also setUIMode().
 let uiMode = 'IDE';
-const BOOT_ANIMATION = Object.freeze({
+const RESET_ANIMATION_LENGTH = Object.freeze({
     NONE:      0,
     SHORT:    32 + 13 + 8, // = 32 frames animation + 13 frames fade in + 8 frames hold black
     REGULAR: 220 + 13 + 47
@@ -443,7 +443,7 @@ function onAppWelcomeTouch(hasTouchScreen) {
     let url = getQueryString('game');
     let other_host_code = getQueryString('host');
     
-    const showPause = (url || other_host_code) && ! useIDE;
+    const showPause = (url || other_host_code) && ! useIDE && ! gameSource.extendedJSON.skip_start_animation;
     
     url = url || launcherURL;
     // If the url doesn't have a prefix and doesn't begin with a slash,
@@ -665,7 +665,7 @@ function setUIMode(d, noFullscreen) {
     }
 }
 
-
+/* Choose the most appropriate layout for the aspect ratio and scaling factor. */
 function onResize() {
     const body         = document.getElementsByTagName('body')[0];
     const background   = document.getElementsByClassName('emulatorBackground')[0];
@@ -680,6 +680,7 @@ function onResize() {
         body.classList.add(screen.orientation.type);
     }
     
+    // Portrait orientation: prefer gameboy layout
     const gbMode = window.matchMedia('(orientation: portrait)').matches;
 
     let windowWidth = window.innerWidth, windowHeight = window.innerHeight;
@@ -751,14 +752,16 @@ function onResize() {
                 scale = Math.max(0, Math.min((window.innerHeight - useScreenBorder * 70) / SCREEN_HEIGHT, (windowWidth - 254) / SCREEN_WIDTH));
             }
             
-            if ((scale * window.devicePixelRatio <= 2.5) && (scale * window.devicePixelRatio > 1)) {
-                // Round to nearest even multiple of the actual pixel size for small screens to
-                // keep per-pixel accuracy
+            // Round to nearest even multiple of the actual pixel size for small emulator screens to
+            // keep per-pixel accuracy. Disable this if the physical screen is not very large, 
+            // e.g., on a phone, where limiting scaling to integers would make it ridiculously small with large margins
+            if ((window.screen.width > 500 && window.screen.height > 500) &&
+                (scale * window.devicePixelRatio <= 2.5) && 
+                (scale * window.devicePixelRatio > 1)) {
                 scale = Math.floor(scale * window.devicePixelRatio) / window.devicePixelRatio;
             }
 
             // Amount to shift vertically to center the screen
-            //const delta = (windowHeight - Math.max(windowHeight + 30, 90 + SCREEN_HEIGHT * scale)) / 2;
             let delta = 0;
             if (! gbMode) {
                 // Resize the background to bound the screen more tightly.
@@ -766,7 +769,8 @@ function onResize() {
                 // stay near the edges of the screen horizontally to make
                 // them reachable on mobile. In gbMode, the emulator fills
                 // the screen and this is not needed.
-                const height = Math.min(windowHeight - 27, Math.round(SCREEN_HEIGHT * scale + 19));
+                const MIN_LANDSCAPE_HEIGHT = 300;
+                const height = Math.min(windowHeight - 27, Math.max(MIN_LANDSCAPE_HEIGHT, Math.round(SCREEN_HEIGHT * scale + 19)));
                 delta = Math.ceil(height / 2);
                 background.style.top = Math.round((windowHeight - height) / 2 - 17) + 'px';
                 background.style.height = height + 'px';
@@ -1065,9 +1069,9 @@ let alreadyInPlayButtonAttempt = false;
 // Allows a framerate to be specified so that the slow button can re-use the logic.
 //
 // slow = run at slow framerate (used for *every* slow step as well)
-// isLaunchGame = "has this been triggered by QRuntime.launch_game()"
+// skipStartAnimation = Used when the game was exported with no sizzle or has been triggered by QRuntime.launch_game()
 // args = array of arguments to pass to the new program
-function onPlayButton(slow, isLaunchGame, args, callback) {
+function onPlayButton(slow, skipStartAnimation, args, callback) {
     if (isSafari && ! isMobile) { unlockAudio(); }
     emulatorKeyboardInput.focus({preventScroll:true});
 
@@ -1175,7 +1179,7 @@ function onPlayButton(slow, isLaunchGame, args, callback) {
                     visualizeModes(document.getElementById('modeEditor'));
                 }
                 
-                restartProgram(isLaunchGame ? BOOT_ANIMATION.NONE : useIDE ? BOOT_ANIMATION.SHORT : BOOT_ANIMATION.REGULAR);
+                restartProgram(skipStartAnimation ? RESET_ANIMATION_LENGTH.NONE : useIDE ? RESET_ANIMATION_LENGTH.SHORT : RESET_ANIMATION_LENGTH.REGULAR);
             } else {
                 programNumLines = 0;
                 onStopButton();
@@ -1203,7 +1207,7 @@ function onPlayButton(slow, isLaunchGame, args, callback) {
         // Reload the program
         if (loadManager && loadManager.status !== 'complete' && loadManager.status !== 'failure') {
             console.log('Load already in progress...');
-        } else if (useIDE && ! isLaunchGame) {
+        } else if (useIDE && ! skipStartAnimation) {
             if (savesPending === 0) {
                 // Force a reload of the game
                 console.log('Reloading in case of external changes.')
@@ -1224,7 +1228,7 @@ function onPlayButton(slow, isLaunchGame, args, callback) {
                     alreadyInPlayButtonAttempt = true;
                     setTimeout(function () {
                         try {
-                            onPlayButton(slow, isLaunchGame, args);
+                            onPlayButton(slow, skipStartAnimation, args);
                         } finally {
                             alreadyInPlayButtonAttempt = false;
                         }
@@ -1739,7 +1743,7 @@ function setErrorStatus(e, location) {
 
 /** Called by reset_game() as well as the play and reload buttons to
     reset all game state and load the game.  */
-function restartProgram(numBootAnimationFrames) {
+function restartProgram(numStartAnimationFrames) {
     resetEmulatorKeyState();
 
     reloadRuntime(function () {
@@ -1758,7 +1762,7 @@ function restartProgram(numBootAnimationFrames) {
         // that it sees those variables.
         try {
             coroutine = QRuntime.$makeCoroutine(compiledProgram);
-            QRuntime.$numBootAnimationFrames = numBootAnimationFrames;
+            QRuntime.$numStartAnimationFrames = numStartAnimationFrames;
             lastAnimationRequest = setTimeout(mainLoopStep, 0);
             emulatorKeyboardInput.focus({preventScroll: true});
             if (useIDE) {
@@ -2706,7 +2710,7 @@ function mainLoopStep() {
         if (e.reset_game === 1) {
             // Automatic
             onStopButton(true);
-            restartProgram(BOOT_ANIMATION.NONE);
+            restartProgram(RESET_ANIMATION_LENGTH.NONE);
             return;
         } else if (e.quit_game === 1) {
             if (useIDE) {

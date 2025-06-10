@@ -1695,7 +1695,7 @@ draw_corner_rect({x: 0, y: 0}, SCREEN_SIZE, rgb(0,0,0), undefined, -1);
 ///////////////////////////////////////////////////////////////////////////////////
 // Reset animation
 function $play_reset_animation() {
-   if ($numBootAnimationFrames <= 0) {       
+   if ($numStartAnimationFrames <= 0) {       
        $start_program();
        return; 
    }
@@ -1704,10 +1704,10 @@ function $play_reset_animation() {
    const fadeLen = 13;
 
    // Hold black at the end
-   const holdLen = $numBootAnimationFrames > 100 ? 47 : 8;
+   const holdLen = $numStartAnimationFrames > 100 ? 47 : 8;
 
    // Middle section of dots animation
-   const midLen = $numBootAnimationFrames - fadeLen - holdLen;
+   const midLen = $numStartAnimationFrames - fadeLen - holdLen;
 
    let frame = mode_frames;
 

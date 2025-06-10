@@ -12,7 +12,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/animation/",
@@ -32,7 +32,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/boids/",
@@ -45,7 +45,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/camera_shake/",
@@ -58,7 +58,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/cards/",
@@ -71,7 +71,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/change_res/",
@@ -84,7 +84,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/clouds/",
@@ -97,7 +97,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/color_wheel/",
@@ -110,7 +110,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/coordinate_system/",
@@ -123,7 +123,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/countdown/",
@@ -136,7 +136,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/dark_drive/",
@@ -149,7 +149,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/dice/",
@@ -162,7 +162,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/dual-stick/",
@@ -175,7 +175,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/dynamic_accel/",
@@ -188,7 +188,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/entity/",
@@ -201,7 +201,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/fluid/",
@@ -214,7 +214,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/fontpreview/",
@@ -234,7 +234,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/helloworld/",
@@ -253,7 +253,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/highscore/",
@@ -266,7 +266,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": true
+            "high_scores": true
         },
         {
             "url": "quad://examples/input/",
@@ -286,7 +286,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/kart/",
@@ -299,7 +299,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/lift_team/",
@@ -312,7 +312,7 @@
             "cooperative": true,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/maze/",
@@ -325,7 +325,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/midi_8x8/",
@@ -338,7 +338,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/midi_fcb1010/",
@@ -351,7 +351,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/midi_launchpad/",
@@ -364,7 +364,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/midi_starrypad/",
@@ -377,7 +377,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/multitouch/",
@@ -390,7 +390,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/perceptual_color/",
@@ -403,7 +403,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/physics/",
@@ -416,7 +416,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/physics_arrow/",
@@ -429,7 +429,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/piano/",
@@ -442,7 +442,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/planetgen/",
@@ -455,7 +455,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": true,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/platformer/",
@@ -468,7 +468,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/private_view/",
@@ -481,7 +481,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/robot/",
@@ -501,7 +501,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/rpg/",
@@ -521,7 +521,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/speedstreet/",
@@ -534,7 +534,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/spritestack/",
@@ -547,7 +547,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/sproing/",
@@ -560,7 +560,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/starter/",
@@ -573,7 +573,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/text/",
@@ -593,7 +593,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": true
+            "high_scores": true
         },
         {
             "url": "quad://examples/tic_tac_toe/",
@@ -606,7 +606,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/touch/",
@@ -619,7 +619,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/twin_analog/",
@@ -632,7 +632,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/vaporwave/",
@@ -652,7 +652,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/warlock3D/",
@@ -665,7 +665,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/word_game/",
@@ -678,7 +678,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/zcar/",
@@ -691,7 +691,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/zoom/",
@@ -704,7 +704,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://examples/zoom2D/",
@@ -717,7 +717,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         }
     ],
     "builtins": [
@@ -732,7 +732,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/beat_the_gobblins/",
@@ -745,7 +745,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": true
+            "high_scores": true
         },
         {
             "url": "quad://games/beyond_control/",
@@ -758,7 +758,7 @@
             "cooperative": true,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/but_skunks/",
@@ -771,7 +771,7 @@
             "cooperative": true,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/doublesdepon/",
@@ -784,7 +784,7 @@
             "cooperative": true,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/drop_bloq/",
@@ -797,7 +797,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/duality/",
@@ -810,7 +810,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/firmament/",
@@ -823,7 +823,7 @@
             "cooperative": true,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/friendly_fishing/",
@@ -836,7 +836,7 @@
             "cooperative": true,
             "competitive": false,
             "achievements": false,
-            "highscores": true
+            "high_scores": true
         },
         {
             "url": "quad://games/gravity/",
@@ -849,7 +849,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": true
+            "high_scores": true
         },
         {
             "url": "quad://games/hexflipper/",
@@ -862,7 +862,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/icetime/",
@@ -875,7 +875,7 @@
             "cooperative": true,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/minimecha/",
@@ -888,7 +888,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": true
+            "high_scores": true
         },
         {
             "url": "quad://games/quadpaddle/",
@@ -901,7 +901,7 @@
             "cooperative": true,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/rescue_roguelike/",
@@ -914,7 +914,7 @@
             "cooperative": false,
             "competitive": false,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/rps/",
@@ -927,7 +927,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         },
         {
             "url": "quad://games/serpitron/",
@@ -940,7 +940,7 @@
             "cooperative": false,
             "competitive": true,
             "achievements": false,
-            "highscores": false
+            "high_scores": false
         }
     ]
 }
